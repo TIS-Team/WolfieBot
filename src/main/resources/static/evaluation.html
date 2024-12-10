@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocena użytkowników</title>
+</head>
+<body>
+<h1>Ocena użytkowników</h1>
+<form action="/evaluate/${SESSION_ID}/submit" method="post">
+    <div class="title">
+        <label for="missionTitle">Tytuł misji:</label>
+        <input type="text" id="missionTitle" name="missionTitle" required>
+    </div>
+    <div class="users-container">
+        ${USER_HTML}
+    </div>
+    <div class="submit-wrapper">
+        <div>
+            <button type="button" class="cancel-button" onclick="cancelEvaluation()">Przerwij ocenianie</button>
+            <button type="submit">Zakończ ocenianie</button>
+        </div>
+    </div>
+</form>
+</body>
+</html>
