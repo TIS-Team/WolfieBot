@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class BotReadyEventListener extends ListenerAdapter {
+public class BotReadyEventListener extends ListenerAdapter
+{
     @Override
     public void onReady(@NotNull ReadyEvent event) {
         log.info("Wolfie is ready!");

@@ -1,46 +1,44 @@
 package pl.tispmc.wolfie.discord;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.dv8tion.jda.api.utils.ChunkingFilter;
-import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import pl.tispmc.wolfie.discord.config.BotConfig;
-import pl.tispmc.wolfie.discord.listener.BotReadyEventListener;
+import pl.tispmc.wolfie.discord.command.SlashCommand;
+
+import java.util.List;
 
 @Component
-
+@AllArgsConstructor
+@Getter
 public class WolfieBot {
 
-    private JDA jda;
-
-    private BotConfig botConfig;
-    private BotReadyEventListener botReadyEventListener;
-
-    public WolfieBot(BotReadyEventListener botReadyEventListener, BotConfig botConfig){
-        this.botReadyEventListener = botReadyEventListener;
-        this.botConfig = botConfig;
-    }
-
+    private final JDA jda;
+    private final List<SlashCommand> slashCommands;
 
     @EventListener(ApplicationReadyEvent.class)
     public void onAppReady(){
         try {
-            this.jda = JDABuilder.createDefault(this.botConfig.getToken())
-                    .enableIntents(GatewayIntent.GUILD_MEMBERS,GatewayIntent.GUILD_MESSAGES)
-                    .setMemberCachePolicy(MemberCachePolicy.ALL)
-                    .setChunkingFilter(ChunkingFilter.ALL)
-                    .addEventListeners(this.botReadyEventListener)
-                    .setAutoReconnect(true)
-                    .setActivity(Activity.customStatus("Ocenia graczy TIS'U"))
-                    .build()
-                    .awaitReady();
+            this.jda.awaitReady();
+            registerSlashCommands();
+
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
+
+    public void registerSlashCommands() {
+        for (Guild guild : this.jda.getGuilds()) {
+            List<SlashCommandData> slashCommandDataList = slashCommands.stream()
+                    .map(SlashCommand::getSlashCommandData)
+                    .toList();
+            guild.updateCommands().addCommands(slashCommandDataList).queue();
+        }
+    }
 }
+
+
