@@ -39,6 +39,7 @@ public class WolfieBot {
             guild.updateCommands().addCommands(slashCommandDataList).queue();
         }
     }
+
 }
 
 

@@ -14,7 +14,7 @@ public class RankCommand implements SlashCommand
     @Override
     public SlashCommandData getSlashCommandData(){
         return SlashCommand.super.getSlashCommandData()
-                .addOption(OptionType.USER, "gracz", "Wybierz gracza", true);
+                .addOption(OptionType.USER, "gracz", "Wybierz gracza");
     }
 
     @Override
@@ -26,7 +26,7 @@ public class RankCommand implements SlashCommand
     @Override
     public String getDescription()
     {
-        return "Sprawdź szczegóły rankingu gracza";
+        return "Sprawdź szczegóły swojego rankingu bądź wybranego gracza";
     }
 
     @Override

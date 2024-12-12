@@ -15,8 +15,9 @@ public class SummaryCommand implements SlashCommand
     public SlashCommandData getSlashCommandData()
     {
         return SlashCommand.super.getSlashCommandData()
-                .addOption(OptionType.STRING, "gracze", "Lista graczy")
-                .addOption(OptionType.STRING, "mission_maker", "Wybierz Mission Makera");
+                .addOption(OptionType.STRING, "mission_maker", "Wybierz Mission Makera")
+                .addOption(OptionType.STRING, "gracze", "Lista graczy");
+
     }
 
     @Override

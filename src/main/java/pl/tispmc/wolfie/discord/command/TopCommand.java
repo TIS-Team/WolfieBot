@@ -14,9 +14,9 @@ public class TopCommand implements SlashCommand
     @Override
     public SlashCommandData getSlashCommandData(){
         return SlashCommand.super.getSlashCommandData()
-                .addOption(OptionType.STRING, "poziom", "Sortuje ranking po poziomach")
-                .addOption(OptionType.STRING, "exp", "Sortuje ranking po EXP")
-                .addOption(OptionType.STRING, "misje", "Sortuje ranking po zagranych misjach");
+                .addOption(OptionType.BOOLEAN, "poziom", "Sortuje ranking po poziomach")
+                .addOption(OptionType.BOOLEAN, "exp", "Sortuje ranking po EXP")
+                .addOption(OptionType.BOOLEAN, "misje", "Sortuje ranking po zagranych misjach");
     }
 
     @Override
