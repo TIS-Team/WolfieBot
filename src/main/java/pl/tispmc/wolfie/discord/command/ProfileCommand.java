@@ -58,7 +58,6 @@ public class ProfileCommand implements SlashCommand
                 ? event.getOption("gracz").getAsUser()
                 : event.getUser();
 
-        // Fetch user stats from UserStatsService
         var stats = userStatsService.getUserStats(user.getId());
 
         EmbedBuilder embedBuilder = new EmbedBuilder()
