@@ -1,4 +1,4 @@
-package pl.tispmc.wolfie.discord.model;
+package pl.tispmc.wolfie.common.model;
 
 import lombok.Getter;
 

@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.springframework.stereotype.Component;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
-import pl.tispmc.wolfie.discord.service.UserStatsService;
+import pl.tispmc.wolfie.common.service.UserDataService;
 
 import java.awt.*;
 import java.util.List;
@@ -26,10 +26,10 @@ public class ProfileCommand implements SlashCommand
     private static final String FIELD_REPRIMANDS = "Nagany";
     private static final String FIELD_SPECIAL_AWARDS = "Nagrody Specjalne";
 
-    private final UserStatsService userStatsService;
+    private final UserDataService userDataService;
 
-    public ProfileCommand(UserStatsService userStatsService) {
-        this.userStatsService = userStatsService;
+    public ProfileCommand(UserDataService userDataService) {
+        this.userDataService = userDataService;
     }
 
     @Override
@@ -57,7 +57,7 @@ public class ProfileCommand implements SlashCommand
                 ? event.getOption(PLAYER_PARAM).getAsUser()
                 : event.getUser();
 
-        var stats = userStatsService.getUserStats(user.getId());
+        var stats = userDataService.find(user.getIdLong());
 
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle(TITLE)

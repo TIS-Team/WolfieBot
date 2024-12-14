@@ -1,4 +1,4 @@
-package pl.tispmc.wolfie.discord.model;
+package pl.tispmc.wolfie.common.model;
 
 import java.util.List;
 import java.util.Map;

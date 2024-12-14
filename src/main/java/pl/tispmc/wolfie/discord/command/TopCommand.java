@@ -11,12 +11,17 @@ import java.util.List;
 @Component
 public class TopCommand implements SlashCommand
 {
+
+    public static final String LEVEL_PARAM = "poziom";
+    public static final String EXP_PARAM = "exp";
+    public static final String MISSIONS_PARAM = "misje";
+
     @Override
     public SlashCommandData getSlashCommandData(){
         return SlashCommand.super.getSlashCommandData()
-                .addOption(OptionType.BOOLEAN, "poziom", "Sortuje ranking po poziomach")
-                .addOption(OptionType.BOOLEAN, "exp", "Sortuje ranking po EXP")
-                .addOption(OptionType.BOOLEAN, "misje", "Sortuje ranking po zagranych misjach");
+                .addOption(OptionType.BOOLEAN, LEVEL_PARAM, "Sortuje ranking po poziomach")
+                .addOption(OptionType.BOOLEAN, EXP_PARAM, "Sortuje ranking po EXP")
+                .addOption(OptionType.BOOLEAN, MISSIONS_PARAM, "Sortuje ranking po zagranych misjach");
     }
 
     @Override

@@ -11,10 +11,15 @@ import java.util.List;
 @Component
 public class RankCommand implements SlashCommand
 {
+
+
+    public static final String USER_PARAM = "gracz";
+
+
     @Override
     public SlashCommandData getSlashCommandData(){
         return SlashCommand.super.getSlashCommandData()
-                .addOption(OptionType.USER, "gracz", "Wybierz gracza");
+                .addOption(OptionType.USER, USER_PARAM, "Wybierz gracza");
     }
 
     @Override

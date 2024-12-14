@@ -1,4 +1,4 @@
-package pl.tispmc.wolfie.discord.model;
+package pl.tispmc.wolfie.common.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,9 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserStats {
+public class UserData
+{
     private String name;
-    private String userId;
+    private long userId;
     private int exp;
     private int level;
     private int appraisalsCount;
