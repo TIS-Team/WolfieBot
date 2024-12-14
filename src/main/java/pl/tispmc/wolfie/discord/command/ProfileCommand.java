@@ -1,5 +1,6 @@
 package pl.tispmc.wolfie.discord.command;
 
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
@@ -14,6 +15,7 @@ import java.util.List;
 @Component
 public class ProfileCommand implements SlashCommand
 {
+    private static final String PLAYER_PARAM = "gracz";
     private static final String TITLE = "Profil Użytkownika";
     private static final String FIELD_NAME = "Nazwa";
     private static final String FIELD_ID = "ID";
@@ -32,11 +34,8 @@ public class ProfileCommand implements SlashCommand
 
     @Override
     public SlashCommandData getSlashCommandData(){
-        return createBaseCommandData().addOption(OptionType.USER, "gracz", "Wybierz gracza");
-    }
-
-    private SlashCommandData createBaseCommandData() {
-        return SlashCommand.super.getSlashCommandData();
+        return SlashCommand.super.getSlashCommandData()
+                .addOption(OptionType.USER, PLAYER_PARAM, "Wybierz gracza");
     }
 
     @Override
@@ -54,8 +53,8 @@ public class ProfileCommand implements SlashCommand
     @Override
     public void onSlashCommand(SlashCommandInteractionEvent event) throws CommandException
     {
-        net.dv8tion.jda.api.entities.User user = event.getOption("gracz") != null
-                ? event.getOption("gracz").getAsUser()
+        User user = event.getOption(PLAYER_PARAM) != null
+                ? event.getOption(PLAYER_PARAM).getAsUser()
                 : event.getUser();
 
         var stats = userStatsService.getUserStats(user.getId());
@@ -70,11 +69,8 @@ public class ProfileCommand implements SlashCommand
                 .addField(FIELD_APPRAISALS, String.valueOf(stats.getAppraisalsCount()), false)
                 .addField(FIELD_REPRIMANDS, String.valueOf(stats.getReprimandsCount()), false)
                 .addField(FIELD_SPECIAL_AWARDS, String.valueOf(stats.getSpecialAwardCount()), false)
-                .setColor(Color.BLUE);
+                .setColor(Color.RED);
 
-        event.replyEmbeds(embedBuilder.build()).queue(
-                success -> {},
-                failure -> event.getChannel().sendMessage("Wystąpił problem podczas wysyłania odpowiedzi.").queue() // Logowanie błędu
-        );
+        event.replyEmbeds(embedBuilder.build()).queue();
     }
 }

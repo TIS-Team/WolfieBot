@@ -9,7 +9,7 @@ import java.io.IOException;
 
 @Service
 public class UserStatsService {
-
+    private static final UserStats DEFAULT_STATS = new UserStats("NaN", "NaN", 0, 0, 0,0 ,0 ,0);
     private static final String USER_STATS_FILE = "src/main/resources/data/user-data.json";
     private final ObjectMapper objectMapper;
 
@@ -28,6 +28,6 @@ public class UserStatsService {
         } catch (IOException e) {
             throw new RuntimeException("Failed to load user stats", e);
         }
-        return new UserStats("Unknown", userId, 0, 0, 0,0 ,0 ,0); // Default stats (just display)
+        return DEFAULT_STATS; // Default stats (just display)
     }
 }
