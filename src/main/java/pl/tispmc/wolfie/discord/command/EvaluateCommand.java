@@ -20,9 +20,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
+
 @Component
 @RequiredArgsConstructor
-public class SummaryCommand implements SlashCommand
+public class EvaluateCommand implements SlashCommand
 {
     public static final String MM_PARAM = "missionmaker";
     public static final String GM_PARAM = "gamemaster";
@@ -60,10 +62,8 @@ public class SummaryCommand implements SlashCommand
     {
         ReplyCallbackAction replyCallbackAction = event.deferReply();
 
-        //TODO: 1. Utworzyć obiekt Evaluation dla podanych graczy (i mission makera * opcjonalnie * i game mastera?)
-        //TODO: 2. Zwróć link do strony ocenenia z odpowiednim identyfiaktorem
         String playersString = event.getOption(USER_PARAM, OptionMapping::getAsString);
-        List<User> playerUsers = Optional.ofNullable(playersString)
+        List<User> playerUsers = ofNullable(playersString)
                 .map(string -> string.split(" "))
                 .map(strings -> Arrays.stream(strings)
                         .map(mention -> mapMentionToUser(event.getGuild(), mention))
@@ -71,12 +71,12 @@ public class SummaryCommand implements SlashCommand
                 .orElse(List.of());
 
         String missionMakerString = event.getOption(MM_PARAM, OptionMapping::getAsString);
-        User missionMakerUser = Optional.ofNullable(missionMakerString)
+        User missionMakerUser = ofNullable(missionMakerString)
                 .map(mention -> mapMentionToUser(event.getGuild(), mention))
                 .orElse(null);
 
         String gameMasterString = event.getOption(GM_PARAM, OptionMapping::getAsString);
-        List<User> gameMasterUsers = Optional.ofNullable(gameMasterString)
+        List<User> gameMasterUsers = ofNullable(gameMasterString)
                 .map(string -> string.split(" "))
                 .map(strings -> Arrays.stream(strings)
                         .map(mention -> mapMentionToUser(event.getGuild(), mention))
@@ -85,12 +85,12 @@ public class SummaryCommand implements SlashCommand
 
         Evaluation evaluation = userEvaluationService.generateEvaluation(playerUsers, missionMakerUser, gameMasterUsers);
 
-        replyCallbackAction.setContent(prepareEvaluationUrl(evaluation)).queue();
+        replyCallbackAction.setContent(prepareEvaluationUrl(evaluation)).setEphemeral(true).queue();
     }
 
     private User mapMentionToUser(Guild guild, String mention)
     {
-        return Optional.ofNullable(mention)
+        return ofNullable(mention)
                 .map(mentionString -> mentionString.substring(2, mentionString.length() - 1))
                 .map(guild::getMemberById)
                 .map(Member::getUser)
