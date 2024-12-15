@@ -10,18 +10,18 @@
     <script defer type="module" src="/js/evaluation.mjs"></script>
 </head>
 <body>
-<header>
-    <div class="misssionData">
+<h1>Ocena użytkowników</h1>
+<form action="/evaluate/${SESSION_ID}/submit" method="post">
+    <div class="title">
+        <div class="misssionData">
         <label for="missionTitle">Tytuł misji:</label>
         <input type="text" id="missionTitle" name="missionTitle" required>
-    </div>
-    <h1>Ocena użytkowników</h1>
-    <div class="missionHosts">
-        <!--GM & MM-->
-    </div>
-</header>
+        </div>
+        <div class="missionHosts">
+            <!--GM & MM-->
+        </div>
 
-<form action="/evaluate/${SESSION_ID}/submit" method="post">
+    </div>
     <div class="bottom-section">
     <div class="users-container">
         <!--USERS-->

@@ -35,7 +35,7 @@ public class Actions {
             ),
             "Innowacyjność", List.of(
                     new Action("Innowacyjne podejście do problemów", 8),
-                    new Action("Spektakularne osiągnięcia w walce", 35),
+                    new Action("Spektakularne osiągnięcia w walce", 15),
                     new Action("Spektakularna porażka", -40)
             ),
             "Zasady", List.of(
