@@ -35,7 +35,10 @@ public class UserDataFileRepository implements UserDataRepository
         try
         {
             Files.createDirectories(USER_DATA_FILE_PATH.getParent());
-            Files.write(USER_DATA_FILE_PATH, objectMapper.writeValueAsBytes(List.of()));
+            if (Files.notExists(USER_DATA_FILE_PATH))
+            {
+                Files.write(USER_DATA_FILE_PATH, objectMapper.writeValueAsBytes(List.of()));
+            }
 
             final List<UserData> userDataList = objectMapper.readValue(USER_DATA_FILE_PATH.toFile(), new TypeReference<>() {});
             cache.putAll(userDataList.stream().collect(Collectors.toMap(userdata -> UserId.of(userdata.getUserId()), userdata -> userdata)));

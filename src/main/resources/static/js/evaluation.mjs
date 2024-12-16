@@ -165,6 +165,32 @@ function renderActions(actions) {
                 input.value = actionItem.name;
 
                 const label = document.createElement('label');
+
+                // const user1 =
+                // {
+                //     "user_id": "21321312312",
+                //     "actions": [
+                //         "MAIN_OBJECTIVE",
+                //         "KILLING_FRIENDS"
+                //     ]
+                // };
+                //
+                // const user2 =
+                //     {
+                //         "user_id": "21321312312",
+                //         "actions": [
+                //             "MAIN_OBJECTIVE",
+                //             "KILLING_FRIENDS"
+                //         ]
+                //     };
+                //
+                // const response = {
+                //     "users": [
+                //         user1,
+                //         user2
+                //     ]
+                // };
+
                 label.innerHTML = ` ${actionItem.name} <span>${actionItem.value}XP</span>`;
                 label.prepend(input);
 

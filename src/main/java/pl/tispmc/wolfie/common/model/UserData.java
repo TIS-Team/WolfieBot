@@ -2,10 +2,12 @@ package pl.tispmc.wolfie.common.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Value
+@Getter
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class UserData
 {
