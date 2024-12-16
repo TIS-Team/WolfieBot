@@ -21,7 +21,6 @@ public class Evaluation
         private long id;
         private String name;
         private String avatarUrl;
-        private int level;
         private int exp;
     }
 }

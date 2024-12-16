@@ -1,16 +1,20 @@
 package pl.tispmc.wolfie.common.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pl.tispmc.wolfie.common.mapper.EvaluationUserMapper;
 import pl.tispmc.wolfie.common.model.Evaluation;
 import pl.tispmc.wolfie.common.model.EvaluationId;
 import pl.tispmc.wolfie.common.model.User;
+import pl.tispmc.wolfie.common.model.UserData;
+import pl.tispmc.wolfie.common.model.UserId;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -22,6 +26,7 @@ public class UserEvaluationService
     private static final Map<EvaluationId, Evaluation> EVALUATIONS = new HashMap<>();
     private static final ConcurrentLinkedQueue<EvaluationId> RESERVED_EVALUATION_IDS = new ConcurrentLinkedQueue<>();
 
+    private final UserDataService userDataService;
     private final EvaluationUserMapper evaluationUserMapper;
 
     @Scheduled(initialDelay = 5, fixedRate = 30, timeUnit = TimeUnit.SECONDS)
@@ -32,12 +37,25 @@ public class UserEvaluationService
 
     public Evaluation generateEvaluation(List<User> players, User missionMaker, List<User> gameMasters)
     {
-        UUID uuid = UUID.randomUUID();
+        UUID uuid = generateEvaluationId();
         final Evaluation evaluation = new Evaluation();
         evaluation.setId(uuid);
-        evaluation.setPlayers(players.stream().map(evaluationUserMapper::map).toList());
-        evaluation.setMissionMaker(evaluationUserMapper.map(missionMaker));
-        evaluation.setGameMasters(gameMasters.stream().map(evaluationUserMapper::map).toList());
+
+        Map<UserId, UserData> userDataMap = userDataService.findAll();
+
+        final List<Evaluation.EvaluationUser> evaluationPlayers = players.stream()
+                .map(user -> asEvaluatonUser(user, userDataMap))
+                .toList();
+        evaluation.setPlayers(evaluationPlayers);
+
+        evaluation.setMissionMaker(Optional.ofNullable(missionMaker)
+                .map(user -> asEvaluatonUser(user, userDataMap))
+                .orElse(null));
+
+        final List<Evaluation.EvaluationUser> evaluationGameMasters = gameMasters.stream()
+                .map(user -> asEvaluatonUser(user, userDataMap))
+                .toList();
+        evaluation.setGameMasters(evaluationGameMasters);
 
 
         EvaluationId evaluationId = EvaluationId.of(uuid);
@@ -61,5 +79,20 @@ public class UserEvaluationService
         }
         RESERVED_EVALUATION_IDS.add(evaluationId);
         return uuid;
+    }
+
+    private Evaluation.EvaluationUser asEvaluatonUser(User user, Map<UserId, UserData> userDataMap)
+    {
+        return Optional.ofNullable(user)
+                .map(u -> UserWithUserData.of(user, userDataMap.get(UserId.of(u.getId()))))
+                .map(u -> this.evaluationUserMapper.map(u.getUser(), u.getUserData()))
+                .orElse(null);
+    }
+
+    @Value(staticConstructor = "of")
+    private static class UserWithUserData
+    {
+        User user;
+        UserData userData;
     }
 }

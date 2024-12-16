@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserDataFileRepository implements UserDataRepository
 {
-    private static final String USER_DATA_FILE = "user_data.json";
+    private static final String USER_DATA_FILE = "user-data.json";
     private static final Path USER_DATA_FILE_PATH = Paths.get(".").resolve("data").resolve(USER_DATA_FILE);
 
     private static final Map<UserId, UserData> cache = new HashMap<>();
@@ -54,9 +54,9 @@ public class UserDataFileRepository implements UserDataRepository
     }
 
     @Override
-    public List<UserData> findAll()
+    public Map<UserId, UserData> findAll()
     {
-        return cache.values().stream().toList();
+        return Map.copyOf(cache);
     }
 
     @Override

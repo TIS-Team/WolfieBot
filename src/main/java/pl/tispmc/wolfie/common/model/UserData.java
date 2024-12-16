@@ -1,20 +1,20 @@
 package pl.tispmc.wolfie.common.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Builder;
+import lombok.Value;
 
-@Data
-@NoArgsConstructor
+@Value
 @AllArgsConstructor
+@Builder
 public class UserData
 {
-    private String name;
-    private long userId;
-    private int exp;
-    private int level;
-    private int appraisalsCount;
-    private int reprimandsCount;
-    private int specialAwardCount;
-    private int missionsPlayed;
+    String name;
+    long userId;
+    int exp;
+    int level;
+    int appraisalsCount;
+    int reprimandsCount;
+    int specialAwardCount;
+    int missionsPlayed;
 }

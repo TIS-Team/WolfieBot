@@ -2,11 +2,13 @@ package pl.tispmc.wolfie.common.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import pl.tispmc.wolfie.common.model.UserId;
 import pl.tispmc.wolfie.common.repository.UserDataRepository;
 import pl.tispmc.wolfie.common.model.UserData;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @AllArgsConstructor
@@ -14,7 +16,7 @@ public class UserDataService
 {
     private final UserDataRepository userDataRepository;
 
-    public Collection<UserData> findAll()
+    public Map<UserId, UserData> findAll()
     {
         return this.userDataRepository.findAll();
     }

@@ -3,8 +3,8 @@ package pl.tispmc.wolfie.web.rest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import pl.tispmc.wolfie.common.dto.RankDto;
 import pl.tispmc.wolfie.common.model.Rank;
+import pl.tispmc.wolfie.common.dto.RankDto;
 
 import java.util.Arrays;
 import java.util.List;
