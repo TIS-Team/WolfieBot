@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.tispmc.wolfie.common.dto.ActionDto;
-import pl.tispmc.wolfie.common.model.Actions;
+import pl.tispmc.wolfie.common.model.Action;
 
 import java.util.List;
 import java.util.Map;
@@ -17,11 +17,11 @@ public class ActionsRestController {
 
     @GetMapping
     public Map<String, List<ActionDto>> getCategorizedActions() {
-        return Actions.CATEGORIZED_ACTIONS.entrySet().stream()
+        return Action.CATEGORIZED_ACTIONS.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> e.getValue().stream()
-                                .map(a -> new ActionDto(a.name(), a.value()))
+                        entry -> entry.getValue().stream()
+                                .map(action -> new ActionDto(action.name(), action.getDisplayName(), action.getValue()))
                                 .collect(Collectors.toList())
                 ));
     }
