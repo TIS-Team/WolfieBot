@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ocena uczestników misji</title>
 
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_forward_ios" />
     <link rel="stylesheet" href="/css/evaluation.css">
     <script defer type="module" src="/js/environment.mjs"></script>
     <script defer type="module" src="/js/evaluation.mjs"></script>
+    <script defer type="module" src="/js/sidebar.mjs"></script>
+
 </head>
 <body>
 <header>
@@ -23,6 +26,16 @@
 
 <form action="/evaluate/${SESSION_ID}/submit" method="post">
     <div class="bottom-section">
+        <div class="sbwrapper">
+            <button class="sidebar-button" onclick="this.classList.toggle('active'); document.querySelector('.sbwrapper').classList.toggle('active');"><span class="material-symbols-outlined">
+arrow_forward_ios
+</span></button>
+            <div class="sidebar">
+                <!--SIDEBAR-->
+            </div>
+
+        </div>
+
     <div class="users-container">
         <!--USERS-->
     </div>
