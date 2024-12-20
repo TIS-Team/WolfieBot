@@ -33,9 +33,6 @@ public class UserDataService
 
     public void save(List<UserData> userDataList)
     {
-        for (UserData userData : userDataList)
-        {
-            this.userDataRepository.save(userData);
-        }
+        this.userDataRepository.saveAll(userDataList);
     }
 }

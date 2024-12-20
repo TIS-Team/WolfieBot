@@ -3,7 +3,7 @@ package pl.tispmc.wolfie.common.repository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.model.UserId;
@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Repository
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserDataFileRepository implements UserDataRepository
 {
     private static final String USER_DATA_FILE = "user-data.json";
@@ -53,7 +53,17 @@ public class UserDataFileRepository implements UserDataRepository
     public void save(UserData userData)
     {
         cache.put(UserId.of(userData.getUserId()), userData);
-        CompletableFuture.runAsync(this::saveCacheToFile);
+        scheduleSaveCacheToFile();
+    }
+
+    @Override
+    public void saveAll(List<UserData> userDataList)
+    {
+        for (UserData userData : userDataList)
+        {
+            cache.put(UserId.of(userData.getUserId()), userData);
+        }
+        scheduleSaveCacheToFile();
     }
 
     @Override
@@ -68,11 +78,16 @@ public class UserDataFileRepository implements UserDataRepository
         return cache.get(UserId.of(userId));
     }
 
+    private void scheduleSaveCacheToFile()
+    {
+        CompletableFuture.runAsync(this::saveCacheToFile);
+    }
+
     private void saveCacheToFile()
     {
         try
         {
-            objectMapper.writeValue(USER_DATA_FILE_PATH.toFile(), this.cache.values());
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(USER_DATA_FILE_PATH.toFile(), cache.values());
         }
         catch (IOException e)
         {

@@ -1,4 +1,5 @@
 import {API_URL} from './environment.mjs';
+import {getEvaluationIdFromUrl} from "./utils.mjs";
 
 export async function getEvaluationData(evaluationId) {
     const url = API_URL + `/evaluation/${evaluationId}`;
@@ -59,7 +60,7 @@ export async function getActionsData() {
 
 export async function sendEvaluationData(data) {
     const evaluationId = getEvaluationIdFromUrl();
-    const url = `${API_URL}/evaluation/${evaluationId}/submit`;
+    const url = `${API_URL}/evaluation/${evaluationId}`;
     try {
         const response = await fetch(url, {
             method: 'POST',

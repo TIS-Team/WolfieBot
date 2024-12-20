@@ -15,16 +15,33 @@
 	<description>Leveling and exp counting bot for tispmc</description>
 	<url/>
 	<licenses>
-		<license/>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
+		</license>
 	</licenses>
 	<developers>
-		<developer/>
+		<developer>
+			<id>Aquerr</id>
+			<name>Bartłomiej Stępień</name>
+			<url>https://github.com/Aquerr</url>
+			<roles>
+				<role>Lead Developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>Brancuuuu</id>
+			<name>Brancu</name>
+			<url>https://github.com/Brancuuuu</url>
+			<roles>
+				<role>Lead Developer</role>
+			</roles>
+		</developer>
 	</developers>
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection>scm:svn:https://github.com/Aquerr/WolfieBot.git</connection>
+		<developerConnection>scm:svn:https://github.com/Aquerr/WolfieBot.git</developerConnection>
+		<url>https://github.com/Aquerr/WolfieBot</url>
 	</scm>
 	<properties>
 		<java.version>21</java.version>

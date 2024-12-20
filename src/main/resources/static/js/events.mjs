@@ -12,11 +12,11 @@ export function setupFormSubmitListener(passedRanks, passedActionsMap) {
     const form = document.querySelector('form');
     if (!form) return;
 
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function (e) {
         e.preventDefault();
         const payload = preparePayload();
         console.log("Payload:", JSON.stringify(payload, null, 2));
-//        sendEvaluationData(payload);
+        await sendEvaluationData(payload);
     });
 
     form.addEventListener('change', function(e) {
