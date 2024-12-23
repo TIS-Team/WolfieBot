@@ -1,21 +1,22 @@
 package pl.tispmc.wolfie.common.config;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 @Slf4j
-@Component
-public class DefaultConfigGenerator implements CommandLineRunner
+@Configuration(proxyBeanMethods = false)
+public class DefaultConfigGenerator
 {
-    @Override
-    public void run(String... args) throws Exception
+    @PostConstruct
+    public void postConstruct() throws IOException
     {
         Path configFilePath = Paths.get(".").resolve("config").resolve("application.properties");
 
