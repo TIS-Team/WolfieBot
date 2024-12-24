@@ -1,0 +1,9 @@
+version: '3'
+services:
+  wolfie:
+    image: aquerr/wolfie:latest
+    ports:
+      - "8087:8087"
+    volumes:
+      - ./config:/opt/app/config
+      - ./data:/opt/app/data
