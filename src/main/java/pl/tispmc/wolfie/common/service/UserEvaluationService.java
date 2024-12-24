@@ -3,8 +3,10 @@ package pl.tispmc.wolfie.common.service;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import pl.tispmc.wolfie.common.event.model.UpdateUserRolesEvent;
 import pl.tispmc.wolfie.common.exception.EvaluationNotFoundException;
 import pl.tispmc.wolfie.common.mapper.EvaluationUserMapper;
 import pl.tispmc.wolfie.common.model.Action;
@@ -39,6 +41,8 @@ public class UserEvaluationService
 
     private final UserDataService userDataService;
     private final EvaluationUserMapper evaluationUserMapper;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Scheduled(initialDelay = 5, fixedRate = 30, timeUnit = TimeUnit.SECONDS)
     public void clearForgottenEvaluations()
@@ -84,6 +88,8 @@ public class UserEvaluationService
         this.userDataService.save(updatedUserDatas);
         log.info("Evaluation with id " + evaluationId + " has been completed!");
         clearEvaluation(evaluationId);
+
+        eventPublisher.publishEvent(new UpdateUserRolesEvent(this));
     }
 
     public Evaluation generateEvaluation(List<User> players, User missionMaker, List<User> gameMasters)
