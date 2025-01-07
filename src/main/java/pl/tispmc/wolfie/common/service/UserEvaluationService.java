@@ -89,7 +89,7 @@ public class UserEvaluationService
         log.info("Evaluation with id " + evaluationId + " has been completed!");
         clearEvaluation(evaluationId);
 
-        eventPublisher.publishEvent(new UpdateUserRolesEvent(this));
+        eventPublisher.publishEvent(new UpdateUserRolesEvent(this, evaluationUserIds));
     }
 
     public Evaluation generateEvaluation(List<User> players, User missionMaker, List<User> gameMasters)
@@ -113,6 +113,7 @@ public class UserEvaluationService
                 .map(user -> asEvaluationUser(user, userDataMap))
                 .toList());
 
+        evaluation.setCreatedDate(LocalDateTime.now());
         EvaluationId evaluationId = EvaluationId.of(uuid);
         RESERVED_EVALUATION_IDS.remove(evaluationId);
         EVALUATIONS.put(evaluationId, evaluation);
