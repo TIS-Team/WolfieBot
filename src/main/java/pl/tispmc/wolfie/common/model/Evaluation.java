@@ -8,7 +8,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Data
@@ -28,6 +31,12 @@ public class Evaluation
         return Stream.of(players, gameMasters, List.of(missionMaker))
                 .flatMap(Collection::stream)
                 .toList();
+    }
+
+    public Map<Long, EvaluationUser> getAllEvaluationUsersAsMap()
+    {
+        return getAllEvaluationUsers().stream()
+                .collect(Collectors.toMap(EvaluationUser::getId, Function.identity()));
     }
 
     @Data

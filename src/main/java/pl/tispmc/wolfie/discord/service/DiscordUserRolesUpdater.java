@@ -30,12 +30,12 @@ public class DiscordUserRolesUpdater
 {
     private final UserDataService userDataService;
     private final WolfieBot wolfieBot;
-    private final ConcurrentLinkedQueue<List<Long>> userUpdateQueue = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<Set<Long>> userUpdateQueue = new ConcurrentLinkedQueue<>();
 
     @Value("${guild-id}")
     private long guildId;
 
-    public void scheduleRolesUpdate(List<Long> userIdsToUpdate)
+    public void scheduleRolesUpdate(Set<Long> userIdsToUpdate)
     {
         this.userUpdateQueue.offer(userIdsToUpdate);
     }
@@ -56,7 +56,7 @@ public class DiscordUserRolesUpdater
         }
     }
 
-    private void handleUserRolesUpdate(List<Long> userIdsToUpdate)
+    private void handleUserRolesUpdate(Set<Long> userIdsToUpdate)
     {
         final Map<UserId, UserData> userDataMap = userDataService.findAll();
 

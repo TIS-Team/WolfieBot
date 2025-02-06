@@ -11,5 +11,5 @@ public class SubmittedUser
 {
     @JsonProperty("user_id")
     private Long userId;
-    private EnumSet<Action> actions;
+    private EnumSet<Action> actions = EnumSet.noneOf(Action.class);
 }

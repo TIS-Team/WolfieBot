@@ -65,7 +65,7 @@ public class EvaluateCommand implements SlashCommand
         ReplyCallbackAction replyCallbackAction = event.deferReply();
 
         if (!hasGameMasterRole(event.getMember()))
-            throw new CommandException("You don't have a required role to use this command!");
+            throw new CommandException("Brak wymaganej roli do użycia tej komendy.");
 
         String playersString = event.getOption(USER_PARAM, OptionMapping::getAsString);
         List<User> playerUsers = ofNullable(playersString)

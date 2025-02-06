@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import pl.tispmc.wolfie.common.dto.SubmittedUser;
+import pl.tispmc.wolfie.common.event.model.DisplayExpChangeEvent;
 import pl.tispmc.wolfie.common.event.model.UpdateUserRolesEvent;
 import pl.tispmc.wolfie.common.exception.EvaluationNotFoundException;
 import pl.tispmc.wolfie.common.mapper.EvaluationUserMapper;
@@ -15,11 +17,14 @@ import pl.tispmc.wolfie.common.model.EvaluationId;
 import pl.tispmc.wolfie.common.model.EvaluationSubmission;
 import pl.tispmc.wolfie.common.model.User;
 import pl.tispmc.wolfie.common.model.UserData;
+import pl.tispmc.wolfie.common.model.UserExpChangeDiscordMessageParams;
 import pl.tispmc.wolfie.common.model.UserId;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -62,34 +67,66 @@ public class UserEvaluationService
 
     public void submitEvaluation(UUID evaluationId, EvaluationSubmission evaluationSubmission)
     {
-        log.info("Evaluation with id " + evaluationId + " has been submitted!");
+        log.info("Evaluation with id {} has been submitted!", evaluationId);
         Evaluation evaluation = findEvaluation(evaluationId);
         if (evaluation == null){
-            log.warn("Evaluation with id " + evaluationId + " not found");
+            log.warn("Evaluation with id {} not found", evaluationId);
             throw new EvaluationNotFoundException("Evaluation with id " + evaluationId + " not found");
         }
 
-        List<Long> evaluationUserIds = evaluation.getAllEvaluationUsers().stream()
-                .map(Evaluation.EvaluationUser::getId)
-                .toList();
-
-        List<UserData> existingUserDatas = userDataService.findAll().entrySet()
-                .stream()
-                .filter(entry -> evaluationUserIds.contains(entry.getKey().getId()))
-                .map(Map.Entry::getValue)
-                .toList();
-
-        Map<UserId, Integer> expUserChange = calculateExpChangePerUser(evaluationSubmission);
-
+        Map<UserId, SubmittedUser> submittedUsers = evaluationSubmission.getUsers().stream()
+                .collect(Collectors.toMap(user -> UserId.of(user.getUserId()), user -> user));
+        Map<UserId, Integer> userExpChanges = calculateExpChangePerUser(submittedUsers);
+        Map<Long, Evaluation.EvaluationUser> evaluationUsers = evaluation.getAllEvaluationUsersAsMap();
+        List<UserData> existingUserDatas = getUserDatas(evaluationUsers.keySet());
         List<UserData> updatedUserDatas = existingUserDatas.stream()
-                .map(userData -> userData.toBuilder().exp(userData.getExp() + expUserChange.getOrDefault(UserId.of(userData.getUserId()), 0)).build())
+                .map(userData -> updateUserData(userData, userExpChanges, submittedUsers))
+                .toList();
+
+        List<UserExpChangeDiscordMessageParams> userExpChangeDisplayData = updatedUserDatas.stream()
+                .map(userData -> UserExpChangeDiscordMessageParams.of(
+                        userData.getUserId(),
+                        evaluationUsers.get(userData.getUserId()).getAvatarUrl(),
+                        userExpChanges.get(UserId.of(userData.getUserId())),
+                        userData.getExp(),
+                        userData.getMissionsPlayed(),
+                        submittedUsers.get(UserId.of(userData.getUserId())).getActions()
+                        ))
                 .toList();
 
         this.userDataService.save(updatedUserDatas);
-        log.info("Evaluation with id " + evaluationId + " has been completed!");
+        log.info("Evaluation with id {} has been completed!", evaluationId);
         clearEvaluation(evaluationId);
 
-        eventPublisher.publishEvent(new UpdateUserRolesEvent(this, evaluationUserIds));
+        eventPublisher.publishEvent(new DisplayExpChangeEvent(this, userExpChangeDisplayData));
+        eventPublisher.publishEvent(new UpdateUserRolesEvent(this, evaluationUsers.keySet()));
+    }
+
+    private List<UserData> getUserDatas(Set<Long> userIds)
+    {
+        return userDataService.findAll().entrySet().stream()
+                .filter(entry -> userIds.contains(entry.getKey().getId()))
+                .map(Map.Entry::getValue)
+                .toList();
+    }
+
+    private UserData updateUserData(UserData userData, Map<UserId, Integer> userExpChanges, Map<UserId, SubmittedUser> submittedUsers)
+    {
+        int newAppraisals = (int)submittedUsers.get(UserId.of(userData.getUserId())).getActions().stream()
+                .map(Action::getValue)
+                .filter(value -> value > 0)
+                .count();
+        int newReprimands = (int)submittedUsers.get(UserId.of(userData.getUserId())).getActions().stream()
+                .map(Action::getValue)
+                .filter(value -> value < 0)
+                .count();
+
+        return userData.toBuilder()
+                .exp(userData.getExp() + userExpChanges.getOrDefault(UserId.of(userData.getUserId()), 0))
+                .appraisalsCount(userData.getAppraisalsCount() + newAppraisals)
+                .reprimandsCount(userData.getReprimandsCount() + newReprimands)
+                .missionsPlayed(userData.getMissionsPlayed() + 1)
+                .build();
     }
 
     public Evaluation generateEvaluation(List<User> players, User missionMaker, List<User> gameMasters)
@@ -134,7 +171,7 @@ public class UserEvaluationService
     private void clearEvaluation(UUID evaluationId)
     {
         EVALUATIONS.remove(EvaluationId.of(evaluationId));
-        log.info("Evaluation with id " + evaluationId + " has been cleared!");
+        log.info("Evaluation with id {} has been cleared!", evaluationId);
     }
 
     private UUID generateEvaluationId()
@@ -157,14 +194,18 @@ public class UserEvaluationService
                 .orElse(null);
     }
 
-    private Map<UserId, Integer> calculateExpChangePerUser(EvaluationSubmission evaluationSubmission)
+    private Map<UserId, Integer> calculateExpChangePerUser(Map<UserId, SubmittedUser> submittedUsers)
     {
-        return evaluationSubmission.getUsers().stream().collect(Collectors.toMap(
-                submittedUser -> UserId.of(submittedUser.getUserId()),
-                submittedUser -> submittedUser.getActions().stream()
-                        .map(Action::getValue)
-                        .reduce(0, Integer::sum))
-        );
+        return submittedUsers.values().stream()
+                .collect(Collectors.toMap(userExpChange -> UserId.of(userExpChange.getUserId()), this::calculateExpChangePerUser));
+    }
+
+
+    private Integer calculateExpChangePerUser(SubmittedUser submittedUser)
+    {
+        return submittedUser.getActions().stream()
+                .map(Action::getValue)
+                .reduce(0, Integer::sum);
     }
 
     public void deleteEvaluation(UUID evaluationId)
