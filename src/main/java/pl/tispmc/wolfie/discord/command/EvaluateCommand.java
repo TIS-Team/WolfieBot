@@ -35,6 +35,8 @@ public class EvaluateCommand implements SlashCommand
 
     @Value("${front-end-url}")
     private String frontEndUrl;
+    @Value("${game-master-role-id:}")
+    private String gameMasterRoleId;
 
     @Override
     public SlashCommandData getSlashCommandData()
@@ -62,6 +64,9 @@ public class EvaluateCommand implements SlashCommand
     {
         ReplyCallbackAction replyCallbackAction = event.deferReply();
 
+        if (!hasGameMasterRole(event.getMember()))
+            throw new CommandException("You don't have a required role to use this command!");
+
         String playersString = event.getOption(USER_PARAM, OptionMapping::getAsString);
         List<User> playerUsers = ofNullable(playersString)
                 .map(string -> string.split(" "))
@@ -86,6 +91,15 @@ public class EvaluateCommand implements SlashCommand
         Evaluation evaluation = userEvaluationService.generateEvaluation(playerUsers, missionMakerUser, gameMasterUsers);
 
         replyCallbackAction.setContent(prepareEvaluationUrl(evaluation)).setEphemeral(true).queue();
+    }
+
+    private boolean hasGameMasterRole(Member member)
+    {
+        return Optional.ofNullable(member)
+                .map(Member::getRoles)
+                .map(roles -> roles.stream()
+                        .anyMatch(role -> role.getId().equals(gameMasterRoleId)))
+                .orElse(false);
     }
 
     private User mapMentionToUser(Guild guild, String mention)
