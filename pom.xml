@@ -5,14 +5,14 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.0</version>
+		<version>3.4.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>pl.tispmc</groupId>
 	<artifactId>wolfie</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Wolfie</name>
-	<description>Leveling and exp counting bot for tispmc</description>
+	<description>Leveling and exp counting bot for TIS Arma group</description>
 	<url/>
 	<licenses>
 		<license>
