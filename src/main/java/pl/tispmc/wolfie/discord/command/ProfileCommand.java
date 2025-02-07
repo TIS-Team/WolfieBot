@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.springframework.stereotype.Component;
+import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
 import pl.tispmc.wolfie.common.service.UserDataService;
 
@@ -58,6 +59,11 @@ public class ProfileCommand implements SlashCommand
                 : event.getUser();
 
         var stats = userDataService.find(user.getIdLong());
+        if (stats == null)
+        {
+            userDataService.save(createNewUserData(user));
+            stats = userDataService.find(user.getIdLong());
+        }
 
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle(TITLE)
@@ -72,5 +78,13 @@ public class ProfileCommand implements SlashCommand
                 .setColor(Color.RED);
 
         event.replyEmbeds(embedBuilder.build()).queue();
+    }
+
+    private UserData createNewUserData(User user)
+    {
+        return UserData.builder()
+                .userId(user.getIdLong())
+                .name(user.getName())
+                .build();
     }
 }

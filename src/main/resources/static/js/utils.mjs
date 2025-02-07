@@ -20,8 +20,10 @@ export function preparePayload() {
             "actions": checkedActions
         });
     });
+    const missionName = document.getElementById("mission-name").value;
 
     return {
+        "missionName": missionName,
         "users": usersData
     };
 }

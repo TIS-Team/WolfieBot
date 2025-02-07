@@ -7,7 +7,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pl.tispmc.wolfie.common.dto.SubmittedUser;
-import pl.tispmc.wolfie.common.event.model.DisplayExpChangeEvent;
 import pl.tispmc.wolfie.common.event.model.UpdateUserRolesEvent;
 import pl.tispmc.wolfie.common.exception.EvaluationNotFoundException;
 import pl.tispmc.wolfie.common.mapper.EvaluationUserMapper;
@@ -15,15 +14,16 @@ import pl.tispmc.wolfie.common.model.Action;
 import pl.tispmc.wolfie.common.model.Evaluation;
 import pl.tispmc.wolfie.common.model.EvaluationId;
 import pl.tispmc.wolfie.common.model.EvaluationSubmission;
+import pl.tispmc.wolfie.common.model.EvaluationSummary;
 import pl.tispmc.wolfie.common.model.User;
 import pl.tispmc.wolfie.common.model.UserData;
-import pl.tispmc.wolfie.common.model.UserExpChangeDiscordMessageParams;
 import pl.tispmc.wolfie.common.model.UserId;
+import pl.tispmc.wolfie.discord.service.EvaluationSummaryMessagePublisher;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,6 +46,7 @@ public class UserEvaluationService
 
     private final UserDataService userDataService;
     private final EvaluationUserMapper evaluationUserMapper;
+    private final EvaluationSummaryMessagePublisher evaluationSummaryMessagePublisher;
 
     private final ApplicationEventPublisher eventPublisher;
 
@@ -79,27 +80,57 @@ public class UserEvaluationService
         Map<UserId, Integer> userExpChanges = calculateExpChangePerUser(submittedUsers);
         Map<Long, Evaluation.EvaluationUser> evaluationUsers = evaluation.getAllEvaluationUsersAsMap();
         List<UserData> existingUserDatas = getUserDatas(evaluationUsers.keySet());
-        List<UserData> updatedUserDatas = existingUserDatas.stream()
+
+        Map<UserId, UserData> updatedUserDatas = existingUserDatas.stream()
                 .map(userData -> updateUserData(userData, userExpChanges, submittedUsers))
-                .toList();
+                .collect(Collectors.toMap(data -> UserId.of(data.getUserId()), userData -> userData));
 
-        List<UserExpChangeDiscordMessageParams> userExpChangeDisplayData = updatedUserDatas.stream()
-                .map(userData -> UserExpChangeDiscordMessageParams.of(
-                        userData.getUserId(),
-                        evaluationUsers.get(userData.getUserId()).getAvatarUrl(),
-                        userExpChanges.get(UserId.of(userData.getUserId())),
-                        userData.getExp(),
-                        userData.getMissionsPlayed(),
-                        submittedUsers.get(UserId.of(userData.getUserId())).getActions()
-                        ))
-                .toList();
-
-        this.userDataService.save(updatedUserDatas);
+        this.userDataService.save(updatedUserDatas.values());
         log.info("Evaluation with id {} has been completed!", evaluationId);
         clearEvaluation(evaluationId);
 
-        eventPublisher.publishEvent(new DisplayExpChangeEvent(this, userExpChangeDisplayData));
+        EvaluationSummary evaluationSummary = prepareEvaluationSummary(
+                evaluationSubmission.getMissionName(),
+                submittedUsers,
+                evaluationUsers,
+                evaluation.getMissionMaker(),
+                updatedUserDatas,
+                userExpChanges
+        );
+
+        evaluationSummaryMessagePublisher.publish(evaluationSummary);
         eventPublisher.publishEvent(new UpdateUserRolesEvent(this, evaluationUsers.keySet()));
+    }
+
+    private static EvaluationSummary prepareEvaluationSummary(String missionName,
+                                                       Map<UserId, SubmittedUser> submittedUsers,
+                                                       Map<Long, Evaluation.EvaluationUser> evaluationUsers,
+                                                       Evaluation.EvaluationUser missionMaker,
+                                                       Map<UserId, UserData> updatedUserDatas,
+                                                       Map<UserId, Integer> expChanges)
+    {
+        return EvaluationSummary.builder()
+                .missionName(missionName)
+                .missionMaker(EvaluationSummary.SummaryPlayer.builder()
+                        .id(missionMaker.getId())
+                        .name(missionMaker.getName())
+                        .avatarUrl(missionMaker.getAvatarUrl())
+                        .exp(Optional.ofNullable(updatedUserDatas.get(UserId.of(missionMaker.getId()))).map(UserData::getExp).orElse(0))
+                        .expChange(expChanges.get(UserId.of(missionMaker.getId())))
+                        .actions(submittedUsers.get(UserId.of(missionMaker.getId())).getActions())
+                        .build())
+                .players(updatedUserDatas.values().stream()
+                        .map(userData -> EvaluationSummary.SummaryPlayer.builder()
+                                .id(userData.getUserId())
+                                .name(userData.getName())
+                                .avatarUrl(evaluationUsers.get(userData.getUserId()).getAvatarUrl())
+                                .expChange(expChanges.get(UserId.of(userData.getUserId())))
+                                .exp(updatedUserDatas.get(UserId.of(userData.getUserId())).getExp())
+                                .actions(submittedUsers.get(UserId.of(userData.getUserId())).getActions())
+                                .missionsPlayed(updatedUserDatas.get(UserId.of(missionMaker.getId())).getMissionsPlayed())
+                                .build())
+                        .toList())
+                .build();
     }
 
     private List<UserData> getUserDatas(Set<Long> userIds)
@@ -191,7 +222,17 @@ public class UserEvaluationService
         return ofNullable(user)
                 .map(u -> UserWithUserData.of(user, userDataMap.get(UserId.of(u.getId()))))
                 .map(u -> this.evaluationUserMapper.map(u.getUser(), u.getUserData()))
-                .orElse(null);
+                .orElse(createNewEvaluationUser(user));
+    }
+
+    private Evaluation.EvaluationUser createNewEvaluationUser(User user)
+    {
+        return Evaluation.EvaluationUser.builder()
+                .id(user.getId())
+                .avatarUrl(user.getAvatarUrl())
+                .name(user.getName())
+                .exp(0)
+                .build();
     }
 
     private Map<UserId, Integer> calculateExpChangePerUser(Map<UserId, SubmittedUser> submittedUsers)

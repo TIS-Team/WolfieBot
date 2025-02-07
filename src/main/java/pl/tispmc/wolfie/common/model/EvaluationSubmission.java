@@ -9,5 +9,6 @@ import java.util.List;
 @Data
 public class EvaluationSubmission
 {
+    private String missionName;
     private List<SubmittedUser> users = new ArrayList<>();
 }

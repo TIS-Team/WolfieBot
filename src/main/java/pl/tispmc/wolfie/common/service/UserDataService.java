@@ -7,7 +7,6 @@ import pl.tispmc.wolfie.common.repository.UserDataRepository;
 import pl.tispmc.wolfie.common.model.UserData;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -31,7 +30,7 @@ public class UserDataService
         this.userDataRepository.save(userData);
     }
 
-    public void save(List<UserData> userDataList)
+    public void save(Collection<UserData> userDataList)
     {
         this.userDataRepository.saveAll(userDataList);
     }

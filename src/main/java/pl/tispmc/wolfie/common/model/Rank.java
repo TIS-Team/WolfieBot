@@ -15,7 +15,6 @@ public enum Rank {
     MAJOR(1266327793575133255L, "Major", 6800),
     GENERAL(1266327837426843669L, "General", 10000);
 
-
     private final long id;
     private final String name;
     private final int exp;
@@ -26,4 +25,7 @@ public enum Rank {
         this.exp = exp;
     }
 
+    public Rank next() {
+        return values()[(this.ordinal() + 1) % values().length];
+    }
 }

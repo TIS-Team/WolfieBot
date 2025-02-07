@@ -7,3 +7,4 @@ services:
     volumes:
       - ./config:/opt/app/config
       - ./data:/opt/app/data
+      - ./logs:/opt/app/logs

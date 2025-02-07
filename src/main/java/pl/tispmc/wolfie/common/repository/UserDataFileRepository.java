@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,7 @@ public class UserDataFileRepository implements UserDataRepository
     }
 
     @Override
-    public void saveAll(List<UserData> userDataList)
+    public void saveAll(Collection<UserData> userDataList)
     {
         for (UserData userData : userDataList)
         {
