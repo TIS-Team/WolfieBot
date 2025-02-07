@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
@@ -77,7 +78,8 @@ public class UserEvaluationService
         Map<UserId, SubmittedUser> submittedUsers = evaluationSubmission.getUsers().stream()
                 .collect(Collectors.toMap(user -> UserId.of(user.getUserId()), user -> user));
         Map<UserId, Integer> userExpChanges = calculateExpChangePerUser(submittedUsers);
-        Map<Long, Evaluation.EvaluationUser> evaluationUsers = evaluation.getAllEvaluationUsersAsMap();
+        Map<Long, Evaluation.EvaluationUser> evaluationUsers = evaluation.getPlayers().stream()
+                .collect(Collectors.toMap(Evaluation.EvaluationUser::getId, Function.identity()));
         List<UserData> existingUserDatas = getUserDatas(evaluationUsers.keySet());
 
         Map<UserId, UserData> updatedUserDatas = existingUserDatas.stream()
