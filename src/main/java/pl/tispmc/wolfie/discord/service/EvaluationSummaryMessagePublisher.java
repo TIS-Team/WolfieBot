@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import pl.tispmc.wolfie.common.model.Action;
 import pl.tispmc.wolfie.common.model.EvaluationSummary;
@@ -31,7 +30,6 @@ public class EvaluationSummaryMessagePublisher
     @Value("${summary-channel-id}")
     private long summaryChannelId;
 
-    @Async
     public void publish(EvaluationSummary evaluationSummary)
     {
         TextChannel textChannel = this.wolfieBot.getJda().getGuildById(guildId).getTextChannelById(summaryChannelId);

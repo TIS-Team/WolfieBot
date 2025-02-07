@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pl.tispmc.wolfie.common.dto.SubmittedUser;
+import pl.tispmc.wolfie.common.event.model.EvaluationSummaryEvent;
 import pl.tispmc.wolfie.common.event.model.UpdateUserRolesEvent;
 import pl.tispmc.wolfie.common.exception.EvaluationNotFoundException;
 import pl.tispmc.wolfie.common.mapper.EvaluationUserMapper;
@@ -18,7 +19,6 @@ import pl.tispmc.wolfie.common.model.EvaluationSummary;
 import pl.tispmc.wolfie.common.model.User;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.model.UserId;
-import pl.tispmc.wolfie.discord.service.EvaluationSummaryMessagePublisher;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -46,7 +46,6 @@ public class UserEvaluationService
 
     private final UserDataService userDataService;
     private final EvaluationUserMapper evaluationUserMapper;
-    private final EvaluationSummaryMessagePublisher evaluationSummaryMessagePublisher;
 
     private final ApplicationEventPublisher eventPublisher;
 
@@ -98,7 +97,7 @@ public class UserEvaluationService
                 userExpChanges
         );
 
-        evaluationSummaryMessagePublisher.publish(evaluationSummary);
+        eventPublisher.publishEvent(new EvaluationSummaryEvent(this, evaluationSummary));
         eventPublisher.publishEvent(new UpdateUserRolesEvent(this, evaluationUsers.keySet()));
     }
 
