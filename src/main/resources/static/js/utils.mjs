@@ -20,7 +20,7 @@ export function preparePayload() {
             "actions": checkedActions
         });
     });
-    const missionName = document.getElementById("mission-name").value;
+    const missionName = document.getElementById("missionTitle").value;
 
     return {
         "missionName": missionName,
