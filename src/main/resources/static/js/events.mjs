@@ -15,6 +15,12 @@ export function setupFormSubmitListener(passedRanks, passedActionsMap) {
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
         const payload = preparePayload();
+        if (!payload.missionName)
+        {
+            alert("Mission name is required!");
+            return;
+        }
+
         console.log("Payload:", JSON.stringify(payload, null, 2));
         await sendEvaluationData(payload);
     });

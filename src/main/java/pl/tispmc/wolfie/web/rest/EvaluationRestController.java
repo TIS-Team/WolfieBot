@@ -1,6 +1,11 @@
 package pl.tispmc.wolfie.web.rest;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Builder;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,6 +21,8 @@ import pl.tispmc.wolfie.common.model.EvaluationSubmission;
 import pl.tispmc.wolfie.common.service.UserEvaluationService;
 import pl.tispmc.wolfie.web.model.RestErrorResponse;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -26,12 +33,12 @@ public class EvaluationRestController
     private final UserEvaluationService userEvaluationService;
 
     @GetMapping("/{evaluationId}")
-    public ResponseEntity<Evaluation> getEvaluation(@PathVariable("evaluationId") UUID evaluationId)
+    public ResponseEntity<EvaluationResponse> getEvaluation(@PathVariable("evaluationId") UUID evaluationId)
     {
         Evaluation evaluation = userEvaluationService.findEvaluation(evaluationId);
         if (evaluation == null)
             return ResponseEntity.notFound().build();
-        else return ResponseEntity.ok(evaluation);
+        else return ResponseEntity.ok(toResponse(evaluation));
     }
 
     @PostMapping("/{evaluationId}")
@@ -50,5 +57,50 @@ public class EvaluationRestController
     public ResponseEntity<?> onEvaluationNotFound(EvaluationNotFoundException exception)
     {
         return ResponseEntity.badRequest().body(RestErrorResponse.of(exception.getMessage()));
+    }
+
+    private EvaluationResponse toResponse(Evaluation evaluation)
+    {
+        return EvaluationResponse.builder()
+                .id(evaluation.getId())
+                .missionMaker(toEvaluationResponseUser(evaluation.getMissionMaker()))
+                .players(evaluation.getPlayers().stream().map(this::toEvaluationResponseUser).toList())
+                .gameMasters(evaluation.getGameMasters().stream().map(this::toEvaluationResponseUser).toList())
+                .createdDate(evaluation.getCreatedDate())
+                .build();
+    }
+
+    private EvaluationResponse.EvaluationResponseUser toEvaluationResponseUser(Evaluation.EvaluationUser evaluationUser)
+    {
+        return EvaluationResponse.EvaluationResponseUser.builder()
+                .id(String.valueOf(evaluationUser.getId()))
+                .name(evaluationUser.getName())
+                .avatarUrl(evaluationUser.getAvatarUrl())
+                .exp(evaluationUser.getExp())
+                .build();
+    }
+
+    @Builder
+    @Value
+    public static class EvaluationResponse
+    {
+        UUID id;
+        List<EvaluationResponseUser> players;
+        EvaluationResponseUser missionMaker;
+        List<EvaluationResponseUser> gameMasters;
+
+        @JsonFormat(shape = JsonFormat.Shape.STRING)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+        LocalDateTime createdDate;
+
+        @Data
+        @Builder
+        public static class EvaluationResponseUser
+        {
+            private String id;
+            private String name;
+            private String avatarUrl;
+            private int exp;
+        }
     }
 }

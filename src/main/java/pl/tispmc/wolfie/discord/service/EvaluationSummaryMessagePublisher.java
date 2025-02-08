@@ -11,11 +11,11 @@ import pl.tispmc.wolfie.common.model.EvaluationSummary;
 import pl.tispmc.wolfie.common.model.Rank;
 import pl.tispmc.wolfie.discord.WolfieBot;
 
+import java.awt.*;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
@@ -52,46 +52,37 @@ public class EvaluationSummaryMessagePublisher
         Rank rank = calculatePlayerLevel(player.getExp());
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setColor(Color.GREEN);
+        embedBuilder.setThumbnail(player.getAvatarUrl());
         embedBuilder.setTitle(":bar_chart: Podsumowanie: " + player.getName());
         embedBuilder.addField(":chart_with_upwards_trend: Zmiana EXP", String.valueOf(player.getExpChange()), true);
         embedBuilder.addField(":bar_chart: Nowy poziom", rank.getName(), true);
         embedBuilder.addField(":crossed_swords: Misje", String.valueOf(player.getMissionsPlayed()), true);
         embedBuilder.addField(":star: Całkowity EXP", String.valueOf(player.getExp()), true);
         embedBuilder.addField(":medal: Postęp do następnego poziomu", generateProgressBarToNextLevel(rank, player.getExp()), false);
-        embedBuilder.appendDescription(buildAppraisalsAndReprimands(player));
+        embedBuilder.addField(":thumbsup: Pochwały", buildActionsString(player, true), false);
+        embedBuilder.addField(":thumbsdown: Nagany", buildActionsString(player, false), false);
         embedBuilder.addField(":bar_chart: EXP do następnego poziomu", String.valueOf(rank.next().getExp() - player.getExp()), false);
         return embedBuilder.build();
     }
 
-    private String buildAppraisalsAndReprimands(EvaluationSummary.SummaryPlayer player)
+    private String buildActionsString(EvaluationSummary.SummaryPlayer player, boolean positive)
     {
-        List<Action> appraisals = player.getActions().stream()
-                .filter(action -> action.getValue() > 0)
-                .toList();
-        List<Action> reprimands = player.getActions().stream()
-                .filter(action -> action.getValue() < 0)
+        List<Action> actions = player.getActions().stream()
+                .filter(action -> positive ? action.getValue() > 0 : action.getValue() < 0)
                 .toList();
 
-
-        Function<List<Action>, String> actionsListToString = (actions -> {
-            StringBuilder actionsWithExp = new StringBuilder();
-            for (Action action : appraisals)
-            {
-                actionsWithExp.append(action.getDisplayName())
-                        .append(" ")
-                        .append("(")
-                        .append(action.getValue())
-                        .append(")");
-            }
-            return actionsWithExp.toString();
-        });
-
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(":thumbsup: *Pochwały*");
-        stringBuilder.append(actionsListToString.apply(appraisals));
-        stringBuilder.append(":thumbsdown: Nagany");
-        stringBuilder.append(actionsListToString.apply(reprimands));
-        return stringBuilder.toString();
+        StringBuilder actionsWithExp = new StringBuilder();
+        for (Action action : actions)
+        {
+            actionsWithExp.append(action.getDisplayName())
+                    .append(" ")
+                    .append("(")
+                    .append(action.getValue())
+                    .append(")")
+                    .append("\n");
+        }
+        return actionsWithExp.toString();
     }
 
     private String generateProgressBarToNextLevel(Rank rank, int playerExp)

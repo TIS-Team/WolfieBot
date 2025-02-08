@@ -22,8 +22,6 @@ public class Evaluation
     private EvaluationUser missionMaker;
     private List<EvaluationUser> gameMasters;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime createdDate;
 
     public List<EvaluationUser> getAllEvaluationUsers()

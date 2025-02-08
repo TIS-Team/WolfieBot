@@ -10,6 +10,6 @@ import java.util.EnumSet;
 public class SubmittedUser
 {
     @JsonProperty("user_id")
-    private Long userId;
+    private String userId;
     private EnumSet<Action> actions = EnumSet.noneOf(Action.class);
 }
