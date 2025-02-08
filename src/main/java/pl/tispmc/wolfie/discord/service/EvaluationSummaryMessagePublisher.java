@@ -77,8 +77,13 @@ public class EvaluationSummaryMessagePublisher
         {
             actionsWithExp.append(action.getDisplayName())
                     .append(" ")
-                    .append("(")
-                    .append(action.getValue())
+                    .append("(");
+
+            if (positive) {
+                actionsWithExp.append("+");
+            }
+            actionsWithExp.append(action.getValue())
+                    .append(" EXP")
                     .append(")")
                     .append("\n");
         }
