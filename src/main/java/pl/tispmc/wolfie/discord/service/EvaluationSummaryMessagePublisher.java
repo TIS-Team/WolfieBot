@@ -141,7 +141,7 @@ public class EvaluationSummaryMessagePublisher
         embedBuilder.addField(":thumbsdown: Liczba nagan", String.valueOf(totalReprimands), true);
 
         embedBuilder.addField(":star2: Gracze z pochwałami", playersWithAppraisals.stream().map(EvaluationSummary.SummaryPlayer::getName).collect(Collectors.joining(", ")), false);
-        embedBuilder.addField(":star2: Gracze z pochwałami", playersWithReprimands.stream().map(EvaluationSummary.SummaryPlayer::getName).collect(Collectors.joining(", ")), false);
+        embedBuilder.addField(":warning: Gracze z naganami", playersWithReprimands.stream().map(EvaluationSummary.SummaryPlayer::getName).collect(Collectors.joining(", ")), false);
 
         embedBuilder.setTimestamp(Instant.now());
 
