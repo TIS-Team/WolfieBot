@@ -73,7 +73,6 @@ public class DiscordUserRolesUpdater
                 .filter(member -> doesNotHaveCalculatedRole(member, newRanks.get(UserId.of(member.getIdLong()))))
                 .toList();
 
-        //4. If not, remove all ranks and apply new one.
         log.info("Updating user roles: {}", newRanks);
         Map<Long, Role> discordRoles = asDiscordRoles(Arrays.stream(Rank.values()).toList());
         for (final Member member : membersToUpdate)
