@@ -47,7 +47,7 @@ public class EvaluationRestController
         userEvaluationService.submitEvaluation(evaluationId, evaluationSubmission);
     }
 
-    @DeleteMapping("{evaluationId}")
+    @DeleteMapping("/{evaluationId}")
     public void deleteEvaluation(@PathVariable("evaluationId") UUID evaluationId)
     {
         userEvaluationService.deleteEvaluation(evaluationId);
