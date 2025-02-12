@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
@@ -17,6 +16,7 @@ import pl.tispmc.wolfie.common.model.Rank;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.service.RankService;
 import pl.tispmc.wolfie.common.service.UserDataService;
+import pl.tispmc.wolfie.discord.mapper.DiscordRoleMapper;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -85,7 +83,7 @@ public class RoleChangeListener extends ListenerAdapter
         userData = userData.toBuilder().exp(rank.getExp()).build();
         userDataService.save(userData);
 
-        Map<Long, Role> discordRoles = asDiscordRoles(guild, Arrays.stream(Rank.values()).toList());
+        Map<Long, Role> discordRoles = DiscordRoleMapper.map(guild, Arrays.stream(Rank.values()).toList());
 
         List<Role> rolesToRemove = discordRoles.values().stream().filter(role -> role.getIdLong() != rank.getId()).toList();
 
@@ -104,16 +102,5 @@ public class RoleChangeListener extends ListenerAdapter
                 .userId(user.getIdLong())
                 .name(user.getUser().getName())
                 .build();
-    }
-
-    private Map<Long, Role> asDiscordRoles(Guild guild, List<Rank> ranks)
-    {
-        Set<Long> rankIds = ranks.stream()
-                .map(Rank::getId)
-                .collect(Collectors.toSet());
-
-        return guild.getRoles().stream()
-                .filter(role -> rankIds.contains(role.getIdLong()))
-                .collect(Collectors.toMap(ISnowflake::getIdLong, role -> role));
     }
 }

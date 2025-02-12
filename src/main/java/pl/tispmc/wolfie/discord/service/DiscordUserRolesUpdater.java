@@ -2,7 +2,6 @@ package pl.tispmc.wolfie.discord.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +12,7 @@ import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.model.UserId;
 import pl.tispmc.wolfie.common.service.UserDataService;
 import pl.tispmc.wolfie.discord.WolfieBot;
+import pl.tispmc.wolfie.discord.mapper.DiscordRoleMapper;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -70,11 +70,10 @@ public class DiscordUserRolesUpdater
 
         final List<Member> membersToUpdate = this.wolfieBot.getJda().getGuildById(guildId).getMembers().stream()
                 .filter(member -> newRanks.containsKey(UserId.of(member.getIdLong())))
-                .filter(member -> doesNotHaveCalculatedRole(member, newRanks.get(UserId.of(member.getIdLong()))))
                 .toList();
 
         log.info("Updating user roles: {}", newRanks);
-        Map<Long, Role> discordRoles = asDiscordRoles(Arrays.stream(Rank.values()).toList());
+        Map<Long, Role> discordRoles = DiscordRoleMapper.map(this.wolfieBot.getJda().getGuildById(guildId), Arrays.stream(Rank.values()).toList());
         for (final Member member : membersToUpdate)
         {
             Role roleToAdd = discordRoles.get(newRanks.get(UserId.of(member.getIdLong())).getId());
@@ -88,27 +87,11 @@ public class DiscordUserRolesUpdater
         }
     }
 
-    private boolean doesNotHaveCalculatedRole(Member member, Rank rank)
-    {
-        return member.getRoles().stream().noneMatch(role -> role.getIdLong() == rank.getId());
-    }
-
     private Rank calculateUserRank(UserData userData)
     {
         return Arrays.stream(Rank.values())
                 .filter(rank -> userData.getExp() >= rank.getExp())
                 .max(Comparator.comparing(Rank::getExp))
                 .orElseThrow();
-    }
-
-    private Map<Long, Role> asDiscordRoles(List<Rank> ranks)
-    {
-        Set<Long> rankIds = ranks.stream()
-                .map(Rank::getId)
-                .collect(Collectors.toSet());
-
-        return this.wolfieBot.getJda().getGuildById(guildId).getRoles().stream()
-                .filter(role -> rankIds.contains(role.getIdLong()))
-                .collect(Collectors.toMap(ISnowflake::getIdLong, role -> role));
     }
 }

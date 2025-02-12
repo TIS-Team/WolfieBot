@@ -20,7 +20,10 @@ import pl.tispmc.wolfie.common.model.User;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.model.UserId;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,20 +52,37 @@ public class UserEvaluationService
 
     private final ApplicationEventPublisher eventPublisher;
 
+    @org.springframework.beans.factory.annotation.Value("${evaluation.expiration-time}")
+    private Duration evaluationExpirationTime;
+
     @Scheduled(initialDelay = 5, fixedRate = 30, timeUnit = TimeUnit.SECONDS)
     public void clearForgottenEvaluations()
     {
         if (generationInProgress.get())
             return;
 
-        RESERVED_EVALUATION_IDS.clear();
+        removeOldEvaluations();
+    }
 
+    private void removeOldEvaluations()
+    {
+        RESERVED_EVALUATION_IDS.clear();
         LocalDateTime now = LocalDateTime.now();
 
-        boolean hasRemovedOldEvaluations = EVALUATIONS.entrySet().removeIf(entry -> entry.getValue().getCreatedDate().isBefore(now.minusDays(1)));
-        if (hasRemovedOldEvaluations) {
-            log.info("Removed old evaluations.");
+        List<UUID> evaluationsToRemove = new LinkedList<>();
+        for (Evaluation evaluation : EVALUATIONS.values())
+        {
+            if (evaluation.getCreatedDate().isBefore(now.minus(evaluationExpirationTime)))
+            {
+                evaluationsToRemove.add(evaluation.getId());
+            }
         }
+
+        if (evaluationsToRemove.isEmpty())
+            return;
+
+        EVALUATIONS.values().removeIf(evaluation -> evaluationsToRemove.contains(evaluation.getId()));
+        log.info("Removed old evaluations: {}", evaluationsToRemove);
     }
 
     public void submitEvaluation(UUID evaluationId, EvaluationSubmission evaluationSubmission)
