@@ -2,7 +2,7 @@ version: '3'
 services:
   wolfie:
     image: aquerr/wolfie:latest
-    user: "wolfie:wolfie"
+    user: wolfie
     ports:
       - "8087:8087"
     volumes:
