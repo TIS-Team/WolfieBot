@@ -14,8 +14,11 @@ COPY target/wolfie-0.0.1-SNAPSHOT.jar ./wolfie.jar
 RUN groupadd wolfie  \
     && useradd --system -g wolfie wolfie
 
-RUN chmod -R 755 /opt/app
-RUN chown -R wolfie:wolfie /opt/app
+RUN mkdir /opt/app/config  \
+    && mkdir /opt/app/data  \
+    && mkdir /opt/app/logs  \
+    && chown -R wolfie:wolfie /opt/app \
+    && chmod -R 755 /opt/app
 
 USER wolfie
 
