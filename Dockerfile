@@ -11,8 +11,8 @@ WORKDIR /opt/app
 
 COPY target/wolfie-0.0.1-SNAPSHOT.jar ./wolfie.jar
 
-RUN groupadd --gid 10001 wolfie  \
-    && useradd --system --uid 10001 -g wolfie wolfie
+RUN groupadd wolfie  \
+    && useradd --system -g wolfie wolfie
 
 RUN chmod -R 755 /opt/app
 RUN chown -R wolfie:wolfie /opt/app
