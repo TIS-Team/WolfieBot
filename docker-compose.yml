@@ -1,8 +1,8 @@
 version: '3'
 services:
   wolfie:
+    container_name: wolfie-bot
     image: aquerr/wolfie:latest
-    user: wolfie
     ports:
       - "8087:8087"
     volumes:

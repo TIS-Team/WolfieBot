@@ -9,14 +9,15 @@ LABEL version="${VERSION}-${COMMMIT_ID}"
 
 WORKDIR /opt/app
 
-RUN groupadd -g 10001 wolfie  \
-    && useradd -u 10001 -g wolfie wolfie  \
-    && chown -R wolfie:wolfie /opt/app
-
 COPY target/wolfie-0.0.1-SNAPSHOT.jar ./wolfie.jar
+
+RUN groupadd --gid 10001 wolfie  \
+    && useradd --system --uid 10001 -g wolfie wolfie
+
+RUN chmod -R 755 /opt/app
 RUN chown -R wolfie:wolfie /opt/app
 
-USER wolfie:wolfie
+USER wolfie
 
 EXPOSE 8087
 
