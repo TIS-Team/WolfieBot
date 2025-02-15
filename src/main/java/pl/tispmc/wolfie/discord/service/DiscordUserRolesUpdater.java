@@ -32,7 +32,7 @@ public class DiscordUserRolesUpdater
     private final WolfieBot wolfieBot;
     private final ConcurrentLinkedQueue<Set<Long>> userUpdateQueue = new ConcurrentLinkedQueue<>();
 
-    @Value("${guild-id}")
+    @Value("${bot.discord.guild-id}")
     private long guildId;
 
     public void scheduleRolesUpdate(Set<Long> userIdsToUpdate)

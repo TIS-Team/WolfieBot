@@ -24,10 +24,10 @@ public class EvaluationSummaryMessagePublisher
 {
     private final WolfieBot wolfieBot;
 
-    @Value("${guild-id}")
+    @Value("${bot.discord.guild-id}")
     private long guildId;
 
-    @Value("${summary-channel-id}")
+    @Value("${bot.channels.summary.id}")
     private long summaryChannelId;
 
     public void publish(EvaluationSummary evaluationSummary)

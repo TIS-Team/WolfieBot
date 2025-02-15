@@ -51,7 +51,7 @@ public class UserEvaluationService
 
     private final ApplicationEventPublisher eventPublisher;
 
-    @org.springframework.beans.factory.annotation.Value("${evaluation.expiration-time}")
+    @org.springframework.beans.factory.annotation.Value("${bot.evaluation.expiration-time}")
     private Duration evaluationExpirationTime;
 
     @Scheduled(initialDelay = 5, fixedRate = 30, timeUnit = TimeUnit.SECONDS)

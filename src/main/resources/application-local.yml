@@ -1,0 +1,3 @@
+bot:
+  front-end:
+    url: http://localhost:${server.port}

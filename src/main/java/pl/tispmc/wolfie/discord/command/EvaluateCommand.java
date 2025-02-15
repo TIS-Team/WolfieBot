@@ -15,10 +15,10 @@ import pl.tispmc.wolfie.common.model.Evaluation;
 import pl.tispmc.wolfie.common.model.User;
 import pl.tispmc.wolfie.common.service.UserEvaluationService;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
+import pl.tispmc.wolfie.discord.command.validation.SlashCommandPrerequisites;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 
@@ -32,11 +32,10 @@ public class EvaluateCommand implements SlashCommand
 
     private final UserMapper userMapper;
     private final UserEvaluationService userEvaluationService;
+    private final SlashCommandPrerequisites prerequisites;
 
-    @Value("${front-end-url}")
+    @Value("${bot.front-end.url}")
     private String frontEndUrl;
-    @Value("${game-master-role-id:}")
-    private String gameMasterRoleId;
 
     @Override
     public SlashCommandData getSlashCommandData()
@@ -64,7 +63,7 @@ public class EvaluateCommand implements SlashCommand
     {
         ReplyCallbackAction replyCallbackAction = event.deferReply();
 
-        if (!hasGameMasterRole(event.getMember()))
+        if (!prerequisites.hasGameMasterRole(event.getMember()))
             throw new CommandException("Brak wymaganej roli do użycia tej komendy.");
 
         String playersString = event.getOption(USER_PARAM, OptionMapping::getAsString);
@@ -91,15 +90,6 @@ public class EvaluateCommand implements SlashCommand
         Evaluation evaluation = userEvaluationService.generateEvaluation(playerUsers, missionMakerUser, gameMasterUsers);
 
         replyCallbackAction.setContent(prepareEvaluationUrl(evaluation)).setEphemeral(true).queue();
-    }
-
-    private boolean hasGameMasterRole(Member member)
-    {
-        return Optional.ofNullable(member)
-                .map(Member::getRoles)
-                .map(roles -> roles.stream()
-                        .anyMatch(role -> role.getId().equals(gameMasterRoleId)))
-                .orElse(false);
     }
 
     private User mapMentionToUser(Guild guild, String mention)

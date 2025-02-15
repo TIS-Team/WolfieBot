@@ -1,0 +1,17 @@
+# Wolfie configuration file
+bot:
+  discord:
+    token:
+    guild-id:
+  front-end:
+    url:
+  evaluation:
+    expiration-time:
+  roles:
+    game-master:
+      id:
+  channels:
+    summary:
+      id:
+    rank-change:
+      id:

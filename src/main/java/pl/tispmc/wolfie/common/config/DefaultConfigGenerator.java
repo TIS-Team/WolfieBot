@@ -18,12 +18,12 @@ public class DefaultConfigGenerator
     @PostConstruct
     public void postConstruct() throws IOException
     {
-        Path configFilePath = Paths.get(".").resolve("config").resolve("application.properties");
+        Path configFilePath = Paths.get(".").resolve("config").resolve("application.yml");
 
         if (Files.exists(configFilePath))
             return;
         log.info("Creating default config file in: {}", configFilePath);
         Files.createDirectories(configFilePath.getParent());
-        Files.write(configFilePath, new ClassPathResource("default-application.properties").getContentAsByteArray(), StandardOpenOption.CREATE);
+        Files.write(configFilePath, new ClassPathResource("default-application.yml").getContentAsByteArray(), StandardOpenOption.CREATE);
     }
 }

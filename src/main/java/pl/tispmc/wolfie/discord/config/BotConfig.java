@@ -10,6 +10,6 @@ import org.springframework.context.annotation.DependsOn;
 @DependsOn("defaultConfigGenerator")
 public class BotConfig {
 
-    @Value("${bot-token}")
+    @Value("${bot.discord.token}")
     private String token;
 }
