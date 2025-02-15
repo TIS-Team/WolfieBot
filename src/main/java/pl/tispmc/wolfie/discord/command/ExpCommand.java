@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -22,7 +23,7 @@ import java.util.Set;
 
 @RequiredArgsConstructor
 @Component
-public class AddExpCommand implements SlashCommand
+public class ExpCommand implements SlashCommand
 {
     private static final String MEMBER_PARAM = "member";
     private static final String EXP_PARAM = "exp";
@@ -35,8 +36,9 @@ public class AddExpCommand implements SlashCommand
     public SlashCommandData getSlashCommandData()
     {
         return SlashCommand.super.getSlashCommandData()
-                .addOption(OptionType.USER, MEMBER_PARAM, "Wybierz gracza", true, true)
-                .addOption(OptionType.INTEGER, EXP_PARAM, "Podaj wartość", true);
+                .addSubcommands(new SubcommandData("add", "Add exp to user")
+                        .addOption(OptionType.USER, MEMBER_PARAM, "Wybierz gracza", true)
+                        .addOption(OptionType.INTEGER, EXP_PARAM, "Podaj wartość", true));
     }
 
     @Override
