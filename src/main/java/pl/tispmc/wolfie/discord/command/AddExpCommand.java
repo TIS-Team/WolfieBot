@@ -23,10 +23,12 @@ import java.util.Set;
 
 @RequiredArgsConstructor
 @Component
-public class ExpCommand implements SlashCommand
+public class AddExpCommand implements SlashCommand
 {
     private static final String MEMBER_PARAM = "member";
     private static final String EXP_PARAM = "exp";
+
+    private static final String SUBCOMMAND_EXP = "add";
 
     private final SlashCommandPrerequisites prerequisites;
     private final UserDataService userDataService;
@@ -36,7 +38,7 @@ public class ExpCommand implements SlashCommand
     public SlashCommandData getSlashCommandData()
     {
         return SlashCommand.super.getSlashCommandData()
-                .addSubcommands(new SubcommandData("add", "Add exp to user")
+                .addSubcommands(new SubcommandData(SUBCOMMAND_EXP, "Add exp to user")
                         .addOption(OptionType.USER, MEMBER_PARAM, "Wybierz gracza", true)
                         .addOption(OptionType.INTEGER, EXP_PARAM, "Podaj wartość", true));
     }
@@ -56,6 +58,14 @@ public class ExpCommand implements SlashCommand
     @Override
     public void onSlashCommand(SlashCommandInteractionEvent event) throws CommandException
     {
+        if (event.getSubcommandName().equals(SUBCOMMAND_EXP))
+        {
+            handleAddExp(event);
+        }
+    }
+
+    private void handleAddExp(SlashCommandInteractionEvent event)
+    {
         ReplyCallbackAction replyCallbackAction = event.deferReply();
         if (!prerequisites.hasGameMasterRole(event.getMember()))
             throw new CommandException("Brak wymaganej roli do użycia tej komendy.");
@@ -74,9 +84,9 @@ public class ExpCommand implements SlashCommand
 
         applicationEventPublisher.publishEvent(new UpdateUserRolesEvent(this, Set.of(user.getIdLong())));
         replyCallbackAction.setEmbeds(new EmbedBuilder()
-                        .setColor(Color.GREEN)
-                        .setDescription("Zaktualizowano exp dla " + user.getEffectiveName())
-                .build());
+                .setColor(Color.RED)
+                .setDescription("Zaktualizowano exp dla " + user.getEffectiveName())
+                .build()).queue();
     }
 
     private UserData createNewUserData(User user)
