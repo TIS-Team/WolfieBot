@@ -57,11 +57,12 @@ public class ProfileCommand implements SlashCommand {
         embedBuilder.addField(":star: Całkowity EXP", String.valueOf(stats.getExp()), true);
         embedBuilder.addField(":bar_chart: Poziom", rank.getName(), true);
         embedBuilder.addField(":crossed_swords: Misje", String.valueOf(stats.getMissionsPlayed()), true);
-        embedBuilder.addField(":thumbsup: Pochwały", String.valueOf(stats.getAppraisalsCount()), false);
-        embedBuilder.addField(":thumbsdown: Nagany", String.valueOf(stats.getReprimandsCount()), false);
-        embedBuilder.addField(":trophy: Nagrody Specjalne", String.valueOf(stats.getSpecialAwardCount()), false);
         embedBuilder.addField(":medal: Postęp do następnego poziomu", generateProgressBarToNextLevel(rank, stats.getExp()), false);
         embedBuilder.addField(":bar_chart: EXP do następnego poziomu", String.valueOf(rank.next().getExp() - stats.getExp()), false);
+        embedBuilder.addField(":thumbsup: Pochwały", String.valueOf(stats.getAppraisalsCount()), true);
+        embedBuilder.addField(":thumbsdown: Nagany", String.valueOf(stats.getReprimandsCount()), true);
+        embedBuilder.addField(":trophy: Nagrody Specjalne", String.valueOf(stats.getSpecialAwardCount()), true);
+
         event.replyEmbeds(embedBuilder.build()).queue();
     }
 
