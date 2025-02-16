@@ -1,6 +1,38 @@
 import {API_URL} from './environment.mjs';
 import {getEvaluationIdFromUrl} from "./utils.mjs";
 
+export async function cancelEvaluationApi(evaluationId) {
+    const url = `${API_URL}/evaluation/${evaluationId}`;
+    const resp = await fetch(url, { method: 'DELETE' });
+    if (!resp.ok) {
+        throw new Error(`Nie udało się usunąć oceny, status: ${resp.status}`);
+    }
+}
+export function preparePayload() {
+    const usersData = [];
+    const userCards = document.querySelectorAll('.player-card');
+
+    userCards.forEach(card => {
+        const userIdInput = card.querySelector('input[name="userId"]');
+        if (!userIdInput) return;
+
+        const userId = userIdInput.value;
+        const checkedActions = Array.from(card.querySelectorAll('input[name="actions"]:checked'))
+            .map(input => input.value);
+
+        usersData.push({
+            "user_id": userId,
+            "actions": checkedActions
+        });
+    });
+    const missionName = document.getElementById("missionTitle").value;
+
+    return {
+        "missionName": missionName,
+        "users": usersData
+    };
+}
+
 export async function getEvaluationData(evaluationId) {
     const url = API_URL + `/evaluation/${evaluationId}`;
     try {
@@ -43,20 +75,6 @@ export async function getActionsData() {
         return null;
     }
 }
-
-
-/**
- * Sends evaluation data to the server for submission.
- *
- * This function retrieves the evaluation ID from the URL and constructs the
- * submission endpoint URL. It sends the provided data as a JSON payload to the
- * server using a POST request. If the request is successful, it handles the
- * success case (e.g., showing a notification or redirecting). If the request
- * fails, it logs the error.
- *
- * @param {Object} data - The evaluation data to be submitted.
- */
-
 
 export async function sendEvaluationData(data) {
     const evaluationId = getEvaluationIdFromUrl();
