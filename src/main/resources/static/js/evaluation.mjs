@@ -187,7 +187,7 @@ function showFinalSummary() {
                             <strong>${name}</strong>
                             <p class="xp-change">
                                 <span>Zmiana expa:</span>
-                                <div><span>z ${initialXp} na ${currentXp}</span>
+                                <div><span> ${initialXp}XP → ${currentXp}XP</span>
                                 <span class="${diff >= 0 ? 'xp-positive' : 'xp-negative'}">
                                     (${diff >= 0 ? '+' : ''}${diff})
                                 </span></div>
