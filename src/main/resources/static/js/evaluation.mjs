@@ -149,7 +149,7 @@ export function preparePayload() {
 
 function showFinalSummary() {
     const form = document.querySelector('form');
-    const header = document.querySelector('header');  // Add this line
+    const header = document.querySelector('header');
     if (form) {
         form.style.display = 'none';
     }
@@ -171,21 +171,27 @@ function showFinalSummary() {
                 const initialXp = parseInt(card.dataset.initialXp, 10);
                 const currentXp = parseInt(card.dataset.currentXp, 10);
                 const diff = currentXp - initialXp;
+                const avatarUrl = card.dataset.avatarUrl;
 
                 const li = document.createElement('li');
+                li.classList.add('summary-item'); // Apply a class for external styling
+
                 li.innerHTML = `
+                    <img src="${avatarUrl}" alt="${name}'s avatar" class="avatar">
                     <strong>${name}</strong>
                     – otrzymane XP:
-                    <span style="color:${diff >= 0 ? 'green' : 'red'};">
+                    <span class="${diff >= 0 ? 'xp-positive' : 'xp-negative'}">
                         ${diff >= 0 ? '+' : ''}${diff}
                     </span>
                     (z ${initialXp} na ${currentXp})
                 `;
+
                 xpList.appendChild(li);
             });
         }
     }
 }
+
 
 async function cancelEvaluation() {
     if (!confirm("Czy na pewno chcesz przerwać ocenianie?")) {
