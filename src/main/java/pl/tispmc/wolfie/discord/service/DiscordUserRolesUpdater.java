@@ -2,14 +2,18 @@ package pl.tispmc.wolfie.discord.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import pl.tispmc.wolfie.common.event.model.RankChangedEvent;
 import pl.tispmc.wolfie.common.model.Rank;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.model.UserId;
+import pl.tispmc.wolfie.common.service.RankService;
 import pl.tispmc.wolfie.common.service.UserDataService;
 import pl.tispmc.wolfie.discord.WolfieBot;
 import pl.tispmc.wolfie.discord.mapper.DiscordRoleMapper;
@@ -28,9 +32,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DiscordUserRolesUpdater
 {
+    private final ApplicationEventPublisher applicationEventPublisher;
     private final UserDataService userDataService;
     private final WolfieBot wolfieBot;
     private final ConcurrentLinkedQueue<Set<Long>> userUpdateQueue = new ConcurrentLinkedQueue<>();
+    private final RankService rankService;
 
     @Value("${bot.discord.guild-id}")
     private long guildId;
@@ -73,18 +79,46 @@ public class DiscordUserRolesUpdater
                 .toList();
 
         log.info("Updating user roles: {}", newRanks);
-        Map<Long, Role> discordRoles = DiscordRoleMapper.map(this.wolfieBot.getJda().getGuildById(guildId), Arrays.stream(Rank.values()).toList());
+
+        Guild guild = this.wolfieBot.getJda().getGuildById(guildId);
+        Map<Long, Role> discordRoles = DiscordRoleMapper.map(guild, rankService.getSupportedRanks());
+
         for (final Member member : membersToUpdate)
         {
-            Role roleToAdd = discordRoles.get(newRanks.get(UserId.of(member.getIdLong())).getId());
+            Rank newRank = newRanks.get(UserId.of(member.getIdLong()));
+            Role roleToAdd = discordRoles.get(newRank.getId());
+
+            List<Role> currentRoles = guild.getMemberById(member.getIdLong()).getRoles().stream()
+                    .filter(role -> discordRoles.containsKey(role.getIdLong()))
+                    .toList();
+
             List<Role> rolesToRemove = discordRoles.values().stream().filter(role -> role.getIdLong() != roleToAdd.getIdLong()).toList();
 
-            this.wolfieBot.getJda().getGuildById(guildId).modifyMemberRoles(
-                    member,
-                    List.of(roleToAdd),
-                    rolesToRemove
-            ).queue();
+            if (currentRoles.stream().noneMatch(role -> role.getIdLong() == roleToAdd.getIdLong()))
+            {
+                guild.modifyMemberRoles(
+                        member,
+                        List.of(roleToAdd),
+                        rolesToRemove
+                ).queue();
+
+                publishRankChangedEvent(member.getEffectiveName(), rolesToRemove.stream()
+                                .findFirst()
+                                .map(role -> rankService.getSupportedRanks().get(role.getIdLong()))
+                                .orElse(null),
+                        newRank);
+            }
         }
+    }
+
+    private void publishRankChangedEvent(String username, Rank oldRank, Rank newRank)
+    {
+        applicationEventPublisher.publishEvent(new RankChangedEvent(
+                this,
+                username,
+                oldRank,
+                newRank
+        ));
     }
 
     private Rank calculateUserRank(UserData userData)

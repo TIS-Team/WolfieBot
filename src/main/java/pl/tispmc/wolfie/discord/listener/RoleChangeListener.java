@@ -11,14 +11,15 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import pl.tispmc.wolfie.common.event.model.RankChangedEvent;
 import pl.tispmc.wolfie.common.model.Rank;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.service.RankService;
 import pl.tispmc.wolfie.common.service.UserDataService;
 import pl.tispmc.wolfie.discord.mapper.DiscordRoleMapper;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ public class RoleChangeListener extends ListenerAdapter
 {
     private final RankService rankService;
     private final UserDataService userDataService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     public void onGuildMemberRoleAdd(@NotNull GuildMemberRoleAddEvent event)
@@ -63,7 +65,7 @@ public class RoleChangeListener extends ListenerAdapter
                 event.getUser().getName()
         );
 
-        handleRankChange(event.getGuild(), event.getMember(), highestRank);
+        handleRankChange(event.getGuild(), supportedRanks, event.getMember(), highestRank);
     }
 
     private Rank toRank(Map<Long, Rank> supportedRanks, Role role)
@@ -76,24 +78,41 @@ public class RoleChangeListener extends ListenerAdapter
         return event.getMember().getUser().isBot();
     }
 
-    private void handleRankChange(Guild guild, Member member, Rank rank)
+    private void handleRankChange(Guild guild, Map<Long, Rank> supportedRanks, Member member, Rank rank)
     {
         UserData userData = Optional.ofNullable(userDataService.find(member.getIdLong()))
                         .orElse(createNewUserData(member));
         userData = userData.toBuilder().exp(rank.getExp()).build();
         userDataService.save(userData);
 
-        Map<Long, Role> discordRoles = DiscordRoleMapper.map(guild, Arrays.stream(Rank.values()).toList());
+        Map<Long, Role> discordRoles = DiscordRoleMapper.map(guild, supportedRanks);
 
         List<Role> rolesToRemove = discordRoles.values().stream().filter(role -> role.getIdLong() != rank.getId()).toList();
 
-        Role roleToAdd = discordRoles.get(rank.getId());
-
         guild.modifyMemberRoles(
                 member,
-                List.of(roleToAdd),
+                List.of(),
                 rolesToRemove
         ).queue();
+
+        publishRankChangedEvent(
+                member.getEffectiveName(),
+                rolesToRemove.stream()
+                        .findFirst()
+                        .map(role -> rankService.getSupportedRanks().get(role.getIdLong()))
+                        .orElse(null),
+                rank
+        );
+    }
+
+    private void publishRankChangedEvent(String username, Rank oldRank, Rank newRank)
+    {
+        applicationEventPublisher.publishEvent(new RankChangedEvent(
+                this,
+                username,
+                oldRank,
+                newRank
+        ));
     }
 
     private UserData createNewUserData(Member user)
