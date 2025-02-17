@@ -18,6 +18,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             getActionsData()
         ]);
 
+        if (!evaluationData) {
+                    showEvaluationNotFound();
+                    return;
+        }
+
         ranks = fetchedRanks;
 
         if (actions) {
@@ -57,9 +62,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         setupFormSubmitListener();
 
     } catch (error) {
-        console.error('Error processing data:', error);
-    }
-});
+              console.error('Error processing data:', error);
+              if (error.status === 404) {
+                  showEvaluationNotFound();
+              }
+          }
+      });
+
 
 export function setupFormSubmitListener() {
     const form = document.querySelector('form');
@@ -140,8 +149,12 @@ export function preparePayload() {
 
 function showFinalSummary() {
     const form = document.querySelector('form');
+    const header = document.querySelector('header');  // Add this line
     if (form) {
         form.style.display = 'none';
+    }
+    if (header) {  // Add this block
+        header.style.display = 'none';
     }
 
     const summaryContainer = document.getElementById('finalSummaryContainer');
@@ -187,8 +200,12 @@ async function cancelEvaluation() {
         }
 
         const form = document.querySelector('form');
+        const header = document.querySelector('header');  // Add this line
         if (form) {
             form.style.display = 'none';
+        }
+        if (header) {  // Add this block
+            header.style.display = 'none';
         }
 
         const cancelledContainer = document.getElementById('cancelledContainer');
@@ -198,6 +215,24 @@ async function cancelEvaluation() {
     } catch (err) {
         console.error("Błąd anulowania oceniania:", err);
         alert("Wystąpił błąd przy anulowaniu oceniania.");
+    }
+}
+
+function showEvaluationNotFound() {
+    const form = document.querySelector('form');
+    const header = document.querySelector('header');
+    if (form) form.style.display = 'none';
+    if (header) header.style.display = 'none';
+
+    // Create and append error message if it doesn't exist
+    if (!document.getElementById('evaluationNotFound')) {
+        const errorContainer = document.createElement('div');
+        errorContainer.id = 'evaluationNotFound';
+        errorContainer.innerHTML = `
+            <h1>Sesja oceny nie istnieje</h1>
+            <p>Wybrana sesja oceny nie istnieje lub została zakończona.</p>
+        `;
+        document.body.appendChild(errorContainer);
     }
 }
 

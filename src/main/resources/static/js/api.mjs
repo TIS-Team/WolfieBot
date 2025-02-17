@@ -5,13 +5,17 @@ export async function getEvaluationData(evaluationId) {
     const url = API_URL + `/evaluation/${evaluationId}`;
     try {
         const response = await fetch(url);
+        if (response.status === 404) {
+            return null;
+        }
         if (!response.ok) {
             throw new Error(`Response status: ${response.status}`);
         }
         return await response.json();
     } catch (error) {
         console.error(error.message);
-        return null;
+        error.status = error.status || 500;
+        throw error;
     }
 }
 
