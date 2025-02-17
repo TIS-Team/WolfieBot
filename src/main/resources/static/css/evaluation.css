@@ -8,7 +8,7 @@
     --aswg-input-bg-color: #2d333b;
 }
 
-#evaluationNotFound,#finalSummaryContainer{
+#evaluationNotFound,#finalSummaryContainer,#cancelledContainer{
     height:100%;
     display:flex;
     padding-top:var(--padding);
