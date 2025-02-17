@@ -1,7 +1,5 @@
-import {API_URL} from './environment.mjs';
-import {getEvaluationIdFromUrl} from "./utils.mjs";
-
-
+import { API_URL } from './environment.mjs';
+import { getEvaluationIdFromUrl } from "./utils.mjs";
 
 export async function getEvaluationData(evaluationId) {
     const url = API_URL + `/evaluation/${evaluationId}`;
@@ -29,7 +27,6 @@ export async function getRanksData() {
         console.error(error.message);
         return null;
     }
-
 }
 
 export async function getActionsData() {
@@ -60,5 +57,6 @@ export async function sendEvaluationData(data) {
         }
     } catch (error) {
         console.error(error);
+        throw error;
     }
 }

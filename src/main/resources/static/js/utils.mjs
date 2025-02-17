@@ -3,8 +3,6 @@ export function getEvaluationIdFromUrl() {
     return pathName.split("/").pop();
 }
 
-
-
 export function calculatePercentageWithinRange(value, min, max) {
     if (max === null) {
         return 100;
@@ -14,7 +12,6 @@ export function calculatePercentageWithinRange(value, min, max) {
     const relative = (value - min) / range;
     return Math.max(0, Math.min(100, relative * 100));
 }
-
 
 export function calculatePlayerXpForUser(playerCard, actionsMap) {
     const initialXp = parseInt(playerCard.dataset.initialXp, 10);
@@ -30,3 +27,8 @@ export function calculatePlayerXpForUser(playerCard, actionsMap) {
     return initialXp + addedXp;
 }
 
+export function updatePlayerXP(playerCard, actionsMap) {
+    const newXp = calculatePlayerXpForUser(playerCard, actionsMap);
+    playerCard.dataset.currentXp = newXp;
+    return newXp;
+}
