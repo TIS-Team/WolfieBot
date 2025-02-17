@@ -1,5 +1,5 @@
 // evaluation.mjs
-import { getEvaluationData, getRanksData, getActionsData, sendEvaluationData, preparePayload } from './api.mjs';
+import { getEvaluationData, getRanksData, getActionsData, sendEvaluationData } from './api.mjs';
 import { renderMissionHosts, renderPlayers, renderRanks, renderActions, updatePlayerProgress } from './dom.mjs';
 import { getEvaluationIdFromUrl } from './utils.mjs';
 import { findPlayerRank } from './ranks.mjs';
