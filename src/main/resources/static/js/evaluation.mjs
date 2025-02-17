@@ -83,12 +83,8 @@ export function setupFormSubmitListener() {
         }
 
         try {
-            const response = await sendEvaluationData(payload);
-            if (response && response.ok) {  // Check if response exists and is ok
-                showFinalSummary();
-            } else {
-                throw new Error("Failed to submit evaluation");
-            }
+            await sendEvaluationData(payload);
+            showFinalSummary();
         } catch (error) {
             console.error("Błąd wysyłania oceny:", error);
             alert("Wystąpił błąd przy kończeniu oceniania.");
@@ -153,7 +149,7 @@ export function preparePayload() {
 
 function showFinalSummary() {
     const form = document.querySelector('form');
-    const header = document.querySelector('header');
+    const header = document.querySelector('header');  // Add this line
     if (form) {
         form.style.display = 'none';
     }
@@ -164,84 +160,30 @@ function showFinalSummary() {
     const summaryContainer = document.getElementById('finalSummaryContainer');
     if (summaryContainer) {
         summaryContainer.style.display = 'block';
-        summaryContainer.innerHTML = '<h1>Zakończono ocenianie</h1>';
 
-        const cardsContainer = document.createElement('div');
-        cardsContainer.className = 'users-container'; // Reuse existing container class
+        const xpList = document.getElementById('xpSummaryList');
+        if (xpList) {
+            xpList.innerHTML = '';
 
-        const playerCards = document.querySelectorAll('.player-card');
-        playerCards.forEach(originalCard => {
-            const name = originalCard.dataset.name;
-            const avatarUrl = originalCard.dataset.avatarUrl;
-            const initialXp = parseInt(originalCard.dataset.initialXp, 10);
-            const currentXp = parseInt(originalCard.dataset.currentXp, 10);
-            const diff = currentXp - initialXp;
+            const playerCards = document.querySelectorAll('.player-card');
+            playerCards.forEach(card => {
+                const name = card.dataset.name;
+                const initialXp = parseInt(card.dataset.initialXp, 10);
+                const currentXp = parseInt(card.dataset.currentXp, 10);
+                const diff = currentXp - initialXp;
 
-            // Find ranks for both initial and current XP
-            const initialRank = findPlayerRank(ranks, initialXp).currentRank;
-            const currentRank = findPlayerRank(ranks, currentXp).currentRank;
-            const nextRank = findPlayerRank(ranks, currentXp).nextRank;
-
-            // Calculate progress percentage for the exp bar
-            const percentage = calculatePercentageWithinRange(
-                currentXp,
-                currentRank.exp,
-                nextRank ? nextRank.exp : null
-            );
-
-            const summaryCard = document.createElement('div');
-            summaryCard.className = 'player-card';
-            summaryCard.innerHTML = `
-                <div class="user-info">
-                    <div class="avatar-container">
-                        <img src="${avatarUrl}" alt="${name}" class="avatar">
-                    </div>
-                    <div class="user-details">
-                        <h3>${name}</h3>
-                        <div class="rank-info">
-                            ${initialRank.name !== currentRank.name ?
-                                `<span class="previous-rank">${initialRank.name}</span> → ` :
-                                ''
-                            }
-                            <span class="current-rank">${currentRank.name}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="exp-section">
-                    <div class="exp-bar">
-                        <div class="exp-bar-fill" style="width: ${percentage}%"></div>
-                    </div>
-                    <div class="exp-info">
-                        <span class="current-exp">${currentXp} XP</span>
-                        <span class="exp-change ${diff >= 0 ? 'positive' : 'negative'}">
-                            ${diff >= 0 ? '+' : ''}${diff} XP
-                        </span>
-                        ${nextRank ? `<span class="next-rank">→ ${nextRank.name}: ${nextRank.exp} XP</span>` : ''}
-                    </div>
-                </div>
-
-                <div class="actions-summary">
-                    <h4>Wykonane akcje:</h4>
-                    <ul>
-                        ${Array.from(originalCard.querySelectorAll('input[name="actions"]:checked'))
-                            .map(input => {
-                                const actionValue = actionsMap[input.value].value;
-                                return `<li>
-                                    ${input.value}
-                                    <span class="action-value">(+${actionValue} XP)</span>
-                                </li>`;
-                            })
-                            .join('')
-                        }
-                    </ul>
-                </div>
-            `;
-
-            cardsContainer.appendChild(summaryCard);
-        });
-
-        summaryContainer.appendChild(cardsContainer);
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <strong>${name}</strong>
+                    – otrzymane XP:
+                    <span style="color:${diff >= 0 ? 'green' : 'red'};">
+                        ${diff >= 0 ? '+' : ''}${diff}
+                    </span>
+                    (z ${initialXp} na ${currentXp})
+                `;
+                xpList.appendChild(li);
+            });
+        }
     }
 }
 
