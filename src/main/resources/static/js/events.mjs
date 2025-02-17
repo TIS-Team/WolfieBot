@@ -1,6 +1,8 @@
-import { preparePayload, calculatePlayerXpForUser } from './utils.mjs';
+import { calculatePlayerXpForUser } from './utils.mjs';
 import { updatePlayerProgress, updateSidebar } from './dom.mjs';
 import {sendEvaluationData} from './api.mjs';
+import {preparePayload} from './evalutaion.mjs';
+
 let ranks = [];
 let actionsMap = {};
 const selectedActionsMap = {};

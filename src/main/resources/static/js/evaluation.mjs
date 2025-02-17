@@ -5,14 +5,32 @@ import { getEvaluationIdFromUrl } from './utils.mjs';
 import { findPlayerRank } from './ranks.mjs';
 import { API_URL } from './environment.mjs';
 
-import { cancelEvaluationApi } from './api.mjs';
 
-async function cancelEvaluation() {
-    await cancelEvaluationApi(evaluationId);
+
+export function preparePayload() {
+    const usersData = [];
+    const userCards = document.querySelectorAll('.player-card');
+
+    userCards.forEach(card => {
+        const userIdInput = card.querySelector('input[name="userId"]');
+        if (!userIdInput) return;
+
+        const userId = userIdInput.value;
+        const checkedActions = Array.from(card.querySelectorAll('input[name="actions"]:checked'))
+            .map(input => input.value);
+
+        usersData.push({
+            "user_id": userId,
+            "actions": checkedActions
+        });
+    });
+    const missionName = document.getElementById("missionTitle").value;
+
+    return {
+        "missionName": missionName,
+        "users": usersData
+    };
 }
-window.cancelEvaluation = cancelEvaluation;
-
-
 
 document.addEventListener("DOMContentLoaded", async () => {
     const evaluationId = getEvaluationIdFromUrl();
