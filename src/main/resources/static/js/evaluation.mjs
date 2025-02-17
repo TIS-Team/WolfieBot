@@ -177,14 +177,24 @@ function showFinalSummary() {
                 li.classList.add('summary-item'); // Apply a class for external styling
 
                 li.innerHTML = `
-                    <img src="${avatarUrl}" alt="${name}'s avatar" class="avatar">
-                    <strong>${name}</strong>
-                    – otrzymane XP:
-                    <span class="${diff >= 0 ? 'xp-positive' : 'xp-negative'}">
-                        ${diff >= 0 ? '+' : ''}${diff}
-                    </span>
-                    (z ${initialXp} na ${currentXp})
+                    <div class="container">
+                        <img
+                            src="${avatarUrl}"
+                            alt="${name}'s avatar"
+                            class="avatar"
+                        >
+                        <div class="info">
+                            <strong>${name}</strong>
+                            <p class="xp-change">
+                                Zmiana expa: z ${initialXp} na ${currentXp}
+                                <span class="${diff >= 0 ? 'xp-positive' : 'xp-negative'}">
+                                    (${diff >= 0 ? '+' : ''}${diff})
+                                </span>
+                            </p>
+                        </div>
+                    </div>
                 `;
+
 
                 xpList.appendChild(li);
             });
