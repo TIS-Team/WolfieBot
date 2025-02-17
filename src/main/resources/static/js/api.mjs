@@ -56,11 +56,14 @@ export async function sendEvaluationData(data) {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)
         });
+
         if (!response.ok) {
             throw new Error(`Failed to send data: ${response.status}`);
         }
+
+        return response; // Return the response object
     } catch (error) {
-        console.error(error);
+        console.error("Error sending evaluation data:", error);
         throw error;
     }
 }

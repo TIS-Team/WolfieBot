@@ -83,8 +83,12 @@ export function setupFormSubmitListener() {
         }
 
         try {
-            await sendEvaluationData(payload);
-            showFinalSummary();
+            const response = await sendEvaluationData(payload);
+            if (response && response.ok) {  // Check if response exists and is ok
+                showFinalSummary();
+            } else {
+                throw new Error("Failed to submit evaluation");
+            }
         } catch (error) {
             console.error("Błąd wysyłania oceny:", error);
             alert("Wystąpił błąd przy kończeniu oceniania.");
