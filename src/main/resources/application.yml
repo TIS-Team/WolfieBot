@@ -32,3 +32,6 @@ logging:
       max-file-size: 5MB
       total-size-cap: 50MB
       max-history: 10
+  structured:
+    format:
+      file: ecs
