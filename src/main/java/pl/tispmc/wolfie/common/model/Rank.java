@@ -2,6 +2,11 @@ package pl.tispmc.wolfie.common.model;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @Getter
 public enum Rank {
     RECRUIT(1265660921829785685L, "Rekrut", 0),
@@ -15,6 +20,9 @@ public enum Rank {
     MAJOR(1266327793575133255L, "Major", 6800),
     GENERAL(1266327837426843669L, "General", 10000);
 
+    private static final Map<Long, Rank> RANK_MAP = Arrays.stream(Rank.values())
+            .collect(Collectors.toUnmodifiableMap(Rank::getId, Function.identity()));
+
     private final long id;
     private final String name;
     private final int exp;
@@ -27,5 +35,10 @@ public enum Rank {
 
     public Rank next() {
         return values()[(this.ordinal() + 1) % values().length];
+    }
+
+    public static Map<Long, Rank> getRankMap()
+    {
+        return RANK_MAP;
     }
 }

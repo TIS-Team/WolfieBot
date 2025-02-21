@@ -78,16 +78,19 @@ public class RoleChangeListener extends ListenerAdapter
         return event.getMember().getUser().isBot();
     }
 
-    private void handleRankChange(Guild guild, Map<Long, Rank> supportedRanks, Member member, Rank rank)
+    private void handleRankChange(Guild guild, Map<Long, Rank> supportedRanks, Member member, Rank newRank)
     {
         UserData userData = Optional.ofNullable(userDataService.find(member.getIdLong()))
                         .orElse(createNewUserData(member));
-        userData = userData.toBuilder().exp(rank.getExp()).build();
+        userData = userData.toBuilder().exp(newRank.getExp()).build();
         userDataService.save(userData);
 
         Map<Long, Role> discordRoles = DiscordRoleMapper.map(guild, supportedRanks);
 
-        List<Role> rolesToRemove = discordRoles.values().stream().filter(role -> role.getIdLong() != rank.getId()).toList();
+        List<Role> rolesToRemove = member.getRoles().stream()
+                .filter(role -> discordRoles.containsKey(role.getIdLong()))
+                .filter(role -> role.getIdLong() != newRank.getId())
+                .toList();
 
         guild.modifyMemberRoles(
                 member,
@@ -97,11 +100,10 @@ public class RoleChangeListener extends ListenerAdapter
 
         publishRankChangedEvent(
                 member.getEffectiveName(),
-                rolesToRemove.stream()
-                        .findFirst()
-                        .map(role -> rankService.getSupportedRanks().get(role.getIdLong()))
+                rolesToRemove.stream().max(Comparator.naturalOrder())
+                        .map(role -> supportedRanks.get(role.getIdLong()))
                         .orElse(null),
-                rank
+                newRank
         );
     }
 

@@ -1,5 +1,6 @@
 package pl.tispmc.wolfie.discord.service;
 
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +10,7 @@ import pl.tispmc.wolfie.discord.WolfieBot;
 
 import java.awt.*;
 import java.time.Instant;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -23,13 +25,13 @@ public class RankChangedMessagePublisher
     private long rankChangeChannelId;
 
 
-    public void publish(String username, Rank oldRank, Rank newRank)
+    public void publish(String username, @Nullable Rank oldRank, Rank newRank)
     {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setColor(Color.RED);
         embedBuilder.setTitle("Aktualizacja rangi");
         embedBuilder.addField(":bust_in_silhouette: Gracz", username, true);
-        embedBuilder.addField(":small_red_triangle_down: Poprzednia ranga", oldRank.getName(), true);
+        embedBuilder.addField(":small_red_triangle_down: Poprzednia ranga", Optional.ofNullable(oldRank).map(Rank::getName).orElse("Brak"), true);
         embedBuilder.addField(":small_red_triangle: Nowa ranga", newRank.getName(), true);
         embedBuilder.setTimestamp(Instant.now());
 

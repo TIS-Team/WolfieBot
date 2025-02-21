@@ -1,13 +1,17 @@
 package pl.tispmc.wolfie.common.event.model;
 
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.springframework.context.ApplicationEvent;
 import pl.tispmc.wolfie.common.model.Rank;
 
+@Value
+@EqualsAndHashCode(callSuper = false)
 public class RankChangedEvent extends ApplicationEvent
 {
-    private String userName;
-    private Rank oldRank;
-    private Rank newRank;
+    String userName;
+    Rank oldRank;
+    Rank newRank;
 
     public RankChangedEvent(Object source, String userName, Rank oldRank, Rank newRank)
     {

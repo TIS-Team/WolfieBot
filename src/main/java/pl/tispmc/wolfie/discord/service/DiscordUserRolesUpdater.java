@@ -81,7 +81,8 @@ public class DiscordUserRolesUpdater
         log.info("Updating user roles: {}", newRanks);
 
         Guild guild = this.wolfieBot.getJda().getGuildById(guildId);
-        Map<Long, Role> discordRoles = DiscordRoleMapper.map(guild, rankService.getSupportedRanks());
+        Map<Long, Rank> supportedRanks = rankService.getSupportedRanks();
+        Map<Long, Role> discordRoles = DiscordRoleMapper.map(guild, supportedRanks);
 
         for (final Member member : membersToUpdate)
         {
@@ -92,7 +93,11 @@ public class DiscordUserRolesUpdater
                     .filter(role -> discordRoles.containsKey(role.getIdLong()))
                     .toList();
 
-            List<Role> rolesToRemove = discordRoles.values().stream().filter(role -> role.getIdLong() != roleToAdd.getIdLong()).toList();
+            List<Role> rolesToRemove = member.getRoles().stream()
+                    .filter(role -> discordRoles.containsKey(role.getIdLong()))
+                    .filter(role -> role.getIdLong() != newRank.getId())
+                    .toList();
+
 
             if (currentRoles.stream().noneMatch(role -> role.getIdLong() == roleToAdd.getIdLong()))
             {
@@ -104,7 +109,7 @@ public class DiscordUserRolesUpdater
 
                 publishRankChangedEvent(member.getEffectiveName(), rolesToRemove.stream()
                                 .findFirst()
-                                .map(role -> rankService.getSupportedRanks().get(role.getIdLong()))
+                                .map(role -> supportedRanks.get(role.getIdLong()))
                                 .orElse(null),
                         newRank);
             }
