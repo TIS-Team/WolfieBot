@@ -52,9 +52,19 @@ public class EvaluationSummaryMessagePublisher
         Rank rank = calculatePlayerLevel(player.getExp());
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setColor(Color.GREEN);
+
+        int expChange = player.getExpChange();
+        if (expChange > 0) {
+            embedBuilder.setColor(Color.GREEN);
+        } else if (expChange < 0) {
+            embedBuilder.setColor(Color.RED);
+        } else {
+            embedBuilder.setColor(Color.ORANGE);
+        }
+
         embedBuilder.setThumbnail(player.getAvatarUrl());
         embedBuilder.setTitle(":bar_chart: Podsumowanie: " + player.getName());
+
         embedBuilder.addField(":chart_with_upwards_trend: Zmiana EXP", String.valueOf(player.getExpChange()), true);
         embedBuilder.addField(":bar_chart: Nowy poziom", rank.getName(), true);
         embedBuilder.addField(":crossed_swords: Misje", String.valueOf(player.getMissionsPlayed()), true);
@@ -62,7 +72,9 @@ public class EvaluationSummaryMessagePublisher
         embedBuilder.addField(":medal: Postęp do następnego poziomu", generateProgressBarToNextLevel(rank, player.getExp()), false);
         embedBuilder.addField(":thumbsup: Pochwały", buildActionsString(player, true), false);
         embedBuilder.addField(":thumbsdown: Nagany", buildActionsString(player, false), false);
-        embedBuilder.addField(":bar_chart: EXP do następnego poziomu", String.valueOf(rank.next().getExp() - player.getExp()), false);
+        embedBuilder.addField(":bar_chart: EXP do następnego poziomu",
+                String.valueOf(rank.next().getExp() - player.getExp()), false);
+
         return embedBuilder.build();
     }
 

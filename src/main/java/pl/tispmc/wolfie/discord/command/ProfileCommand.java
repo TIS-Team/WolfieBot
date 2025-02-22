@@ -13,6 +13,7 @@ import pl.tispmc.wolfie.common.service.UserDataService;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
 
 import java.awt.*;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -62,7 +63,7 @@ public class ProfileCommand implements SlashCommand {
         embedBuilder.addField(":thumbsup: Pochwały", String.valueOf(stats.getAppraisalsCount()), true);
         embedBuilder.addField(":thumbsdown: Nagany", String.valueOf(stats.getReprimandsCount()), true);
         embedBuilder.addField(":trophy: Nagrody Specjalne", String.valueOf(stats.getSpecialAwardCount()), true);
-
+        embedBuilder.setTimestamp(Instant.now());
         event.replyEmbeds(embedBuilder.build()).queue();
     }
 
