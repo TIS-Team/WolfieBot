@@ -28,7 +28,6 @@ public class RankChangedMessagePublisher
     {
         Rank oldRank = data.getOldRank();
         Rank newRank = data.getNewRank();
-        String avatarUrl = null;
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
@@ -47,7 +46,7 @@ public class RankChangedMessagePublisher
         String newRankName = (newRank.ordinal() + 1) + ". " + newRank.getName();
         embedBuilder.addField(":small_red_triangle_down: Poprzednia ranga", oldRankName, true);
         embedBuilder.addField(":small_red_triangle: Nowa ranga", newRankName, true);
-        embedBuilder.setThumbnail(avatarUrl);
+        embedBuilder.setThumbnail(data.getAvatarUrl());
         embedBuilder.setTimestamp(Instant.now());
 
         wolfieBot.getJda()
