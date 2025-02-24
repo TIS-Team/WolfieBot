@@ -100,6 +100,7 @@ public class RoleChangeListener extends ListenerAdapter
 
         publishRankChangedEvent(
                 member.getEffectiveName(),
+                member.getAvatarUrl(),
                 rolesToRemove.stream().max(Comparator.naturalOrder())
                         .map(role -> supportedRanks.get(role.getIdLong()))
                         .orElse(null),
@@ -107,13 +108,11 @@ public class RoleChangeListener extends ListenerAdapter
         );
     }
 
-    private void publishRankChangedEvent(String username, Rank oldRank, Rank newRank)
+    private void publishRankChangedEvent(String username, String avatarUrl, Rank oldRank, Rank newRank)
     {
         applicationEventPublisher.publishEvent(new RankChangedEvent(
                 this,
-                username,
-                oldRank,
-                newRank
+                new RankChangedEvent.RankChangedEventData(username, avatarUrl, oldRank, newRank)
         ));
     }
 

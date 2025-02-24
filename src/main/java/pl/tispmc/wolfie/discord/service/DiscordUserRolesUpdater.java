@@ -107,7 +107,10 @@ public class DiscordUserRolesUpdater
                         rolesToRemove
                 ).queue();
 
-                publishRankChangedEvent(member.getEffectiveName(), rolesToRemove.stream()
+                publishRankChangedEvent(
+                        member.getEffectiveName(),
+                        member.getAvatarUrl(),
+                        rolesToRemove.stream()
                                 .findFirst()
                                 .map(role -> supportedRanks.get(role.getIdLong()))
                                 .orElse(null),
@@ -116,13 +119,11 @@ public class DiscordUserRolesUpdater
         }
     }
 
-    private void publishRankChangedEvent(String username, Rank oldRank, Rank newRank)
+    private void publishRankChangedEvent(String username, String avatarUrl, Rank oldRank, Rank newRank)
     {
         applicationEventPublisher.publishEvent(new RankChangedEvent(
                 this,
-                username,
-                oldRank,
-                newRank
+                new RankChangedEvent.RankChangedEventData(username, avatarUrl, oldRank, newRank)
         ));
     }
 

@@ -9,30 +9,20 @@ import pl.tispmc.wolfie.common.model.Rank;
 @EqualsAndHashCode(callSuper = false)
 public class RankChangedEvent extends ApplicationEvent
 {
-    String userName;
-    Rank oldRank;
-    Rank newRank;
+    RankChangedEventData data;
 
-    public RankChangedEvent(Object source, String userName, Rank oldRank, Rank newRank)
+    public RankChangedEvent(Object source, RankChangedEventData data)
     {
         super(source);
-        this.userName = userName;
-        this.oldRank = oldRank;
-        this.newRank = newRank;
+        this.data = data;
     }
 
-    public Rank getNewRank()
+    @Value
+    public static class RankChangedEventData
     {
-        return newRank;
-    }
-
-    public Rank getOldRank()
-    {
-        return oldRank;
-    }
-
-    public String getUserName()
-    {
-        return userName;
+        String username;
+        String avatarUrl;
+        Rank oldRank;
+        Rank newRank;
     }
 }

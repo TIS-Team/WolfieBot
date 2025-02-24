@@ -1,11 +1,10 @@
 package pl.tispmc.wolfie.discord.service;
 
-import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import pl.tispmc.wolfie.common.event.model.RankChangedEvent;
 import pl.tispmc.wolfie.common.model.Rank;
 import pl.tispmc.wolfie.discord.WolfieBot;
 
@@ -25,19 +24,15 @@ public class RankChangedMessagePublisher
     @Value("${bot.channels.rank-change.id}")
     private long rankChangeChannelId;
 
-    public void publish(String username, @Nullable Rank oldRank, Rank newRank)
+    public void publish(RankChangedEvent.RankChangedEventData data)
     {
+        Rank oldRank = data.getOldRank();
+        Rank newRank = data.getNewRank();
         String avatarUrl = null;
-        User jdaUser = wolfieBot.getJda().getUsersByName(username, true)
-                .stream()
-                .findFirst()
-                .orElse(null);
-
-        if (jdaUser != null) {
-            avatarUrl = jdaUser.getEffectiveAvatarUrl();
-        }
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
+
+        embedBuilder.setColor(setupEmbedColor(oldRank, newRank));
 
         if (oldRank == null || newRank.ordinal() > oldRank.ordinal()) {
             embedBuilder.setColor(Color.GREEN);
@@ -45,17 +40,14 @@ public class RankChangedMessagePublisher
             embedBuilder.setColor(Color.RED);
         }
 
-        if (avatarUrl != null) {
-            embedBuilder.setThumbnail(avatarUrl);
-        }
-
-        embedBuilder.setTitle("Aktualizacja rangi: " + username);
+        embedBuilder.setTitle("Aktualizacja rangi: " + data.getUsername());
         String oldRankName = Optional.ofNullable(oldRank)
                 .map(r -> (r.ordinal() + 1) + ". " + r.getName())
                 .orElse("Brak");
         String newRankName = (newRank.ordinal() + 1) + ". " + newRank.getName();
         embedBuilder.addField(":small_red_triangle_down: Poprzednia ranga", oldRankName, true);
         embedBuilder.addField(":small_red_triangle: Nowa ranga", newRankName, true);
+        embedBuilder.setThumbnail(avatarUrl);
         embedBuilder.setTimestamp(Instant.now());
 
         wolfieBot.getJda()
@@ -63,5 +55,12 @@ public class RankChangedMessagePublisher
                 .getTextChannelById(rankChangeChannelId)
                 .sendMessageEmbeds(embedBuilder.build())
                 .queue();
+    }
+
+    private Color setupEmbedColor(Rank oldRank, Rank newRank)
+    {
+        return Optional.ofNullable(oldRank)
+                .map(oldrank -> newRank.ordinal() > oldRank.ordinal() ? Color.GREEN : Color.RED)
+                .orElse(Color.RED);
     }
 }

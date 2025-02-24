@@ -59,7 +59,7 @@ public class EvaluationSummaryMessagePublisher
         } else if (expChange < 0) {
             embedBuilder.setColor(Color.RED);
         } else {
-            embedBuilder.setColor(Color.ORANGE);
+            embedBuilder.setColor(Color.GRAY);
         }
 
         embedBuilder.setThumbnail(player.getAvatarUrl());
@@ -142,9 +142,9 @@ public class EvaluationSummaryMessagePublisher
         List<EvaluationSummary.SummaryPlayer> playersWithReprimands = evaluationSummary.getPlayers().stream()
                 .filter(summaryPlayer -> summaryPlayer.getActions().stream().anyMatch(action -> action.getValue() < 0))
                 .toList();
-        int totalAppraisals = (int) playersWithAppraisals.stream().map(player -> player.getActions().stream().filter(action -> action.getValue() > 0).toList())
+        int totalAppraisals = (int) playersWithAppraisals.stream().flatMap(player -> player.getActions().stream().filter(action -> action.getValue() > 0))
                 .count();
-        int totalReprimands = (int) playersWithReprimands.stream().map(player -> player.getActions().stream().filter(action -> action.getValue() < 0).toList())
+        int totalReprimands = (int) playersWithReprimands.stream().flatMap(player -> player.getActions().stream().filter(action -> action.getValue() < 0))
                 .count();
 
         EmbedBuilder embedBuilder = new EmbedBuilder();

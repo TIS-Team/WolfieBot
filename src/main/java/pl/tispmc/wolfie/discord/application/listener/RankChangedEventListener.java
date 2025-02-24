@@ -20,6 +20,6 @@ public class RankChangedEventListener
     public void onRankChange(RankChangedEvent event)
     {
         log.info("Rank changed event: {}", event);
-        rankChangedMessagePublisher.publish(event.getUserName(), event.getOldRank(), event.getNewRank());
+        rankChangedMessagePublisher.publish(event.getData());
     }
 }
