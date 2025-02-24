@@ -45,6 +45,7 @@ public class TopCommand implements SlashCommand
                 .addOption(OptionType.BOOLEAN, LEVEL_PARAM, "Sortuje ranking po poziomach", false);
     }
 
+
     @Override
     public List<String> getAliases()
     {
@@ -60,15 +61,11 @@ public class TopCommand implements SlashCommand
     @Override
     public void onSlashCommand(SlashCommandInteractionEvent event) throws CommandException
     {
-        // 1. Pobrać uzytkownikow
         Map<UserId, UserData> userDataMap = userDataService.findAll();
-        // 2. Posortowac uzytkownikow po EXP
-
-        List<UserData> sortedUsers = userDataMap.values().stream()
-                .sorted(Comparator.comparingInt(UserData::getExp).reversed()) // Sortowanie malejąco
-                .limit(10)
-                .toList();
-        String title = "🏆 Ranking TOP 10 - EXP";
+        List<UserData> sortedUsers;
+        String title;
+        String valueLabel;
+        String type;
 
         if (Boolean.TRUE.equals(getBooleanOption(event, LEVEL_PARAM))) {
             sortedUsers = userDataMap.values().stream()
@@ -76,37 +73,51 @@ public class TopCommand implements SlashCommand
                     .limit(10)
                     .toList();
             title = "🏆 Ranking TOP 10 - Poziom";
+            valueLabel = "Poziom: ";
+            type = "level";
         } else if (Boolean.TRUE.equals(getBooleanOption(event, MISSIONS_PARAM))) {
             sortedUsers = userDataMap.values().stream()
                     .sorted(Comparator.comparingInt(UserData::getMissionsPlayed).reversed())
                     .limit(10)
                     .toList();
             title = "🏆 Ranking TOP 10 - Misje";
+            valueLabel = "Misje: ";
+            type = "missions";
         } else if (Boolean.TRUE.equals(getBooleanOption(event, APPRAISAL_PARAM))) {
             sortedUsers = userDataMap.values().stream()
                     .sorted(Comparator.comparingInt(UserData::getAppraisalsCount).reversed())
                     .limit(10)
                     .toList();
             title = "🏆 Ranking TOP 10 - Pochwały";
+            valueLabel = "Pochwały: ";
+            type = "appraisals";
         } else if (Boolean.TRUE.equals(getBooleanOption(event, REPRIMAND_PARAM))) {
             sortedUsers = userDataMap.values().stream()
                     .sorted(Comparator.comparingInt(UserData::getReprimandsCount).reversed())
                     .limit(10)
                     .toList();
             title = "🏆 Ranking TOP 10 - Nagany";
+            valueLabel = "Nagany: ";
+            type = "reprimands";
+        } else {
+            sortedUsers = userDataMap.values().stream()
+                    .sorted(Comparator.comparingInt(UserData::getExp).reversed())
+                    .limit(10)
+                    .toList();
+            title = "🏆 Ranking TOP 10 - EXP";
+            valueLabel = "EXP: ";
+            type = "exp";
         }
 
-
-        // 3. Zbudowac embed message
         Guild guild = event.getGuild();
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setTitle(title);
-        embedBuilder.setColor(Color.RED);
+        EmbedBuilder embedBuilder = new EmbedBuilder()
+                .setTitle(title)
+                .setColor(Color.RED)
+                .setTimestamp(Instant.now());
+
         if (guild != null) {
             embedBuilder.setThumbnail(guild.getIconUrl());
         }
-        embedBuilder.setTimestamp(Instant.now());
-
         int rank = 1;
         for (UserData user : sortedUsers) {
             String icon = switch (rank) {
@@ -115,10 +126,19 @@ public class TopCommand implements SlashCommand
                 case 3 -> "🥉";
                 default -> "";
             };
-            embedBuilder.addField("#" + rank + " " + icon + " " + user.getName(), "EXP: " + user.getExp(), false);
+
+            int value = switch (type) {
+                case "level" -> user.getLevel();
+                case "missions" -> user.getMissionsPlayed();
+                case "appraisals" -> user.getAppraisalsCount();
+                case "reprimands" -> user.getReprimandsCount();
+                default -> user.getExp();
+            };
+
+            embedBuilder.addField("#" + rank + " " + icon + " " + user.getName(), valueLabel + value, false);
             rank++;
         }
-        // 4. Wyslac embed
+
         event.replyEmbeds(embedBuilder.build()).queue();
     }
 }
