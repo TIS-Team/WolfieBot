@@ -49,7 +49,7 @@ public class RankChangedMessagePublisher
             embedBuilder.setThumbnail(avatarUrl);
         }
 
-        embedBuilder.setTitle(":sparkles: Aktualizacja rangi – " + username);
+        embedBuilder.setTitle("Aktualizacja rangi: " + username);
         String oldRankName = Optional.ofNullable(oldRank)
                 .map(r -> (r.ordinal() + 1) + ". " + r.getName())
                 .orElse("Brak");
