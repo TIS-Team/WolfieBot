@@ -109,7 +109,7 @@ public class DiscordUserRolesUpdater
 
                 publishRankChangedEvent(
                         member.getEffectiveName(),
-                        member.getAvatarUrl(),
+                        member.getEffectiveAvatarUrl(),
                         rolesToRemove.stream()
                                 .findFirst()
                                 .map(role -> supportedRanks.get(role.getIdLong()))

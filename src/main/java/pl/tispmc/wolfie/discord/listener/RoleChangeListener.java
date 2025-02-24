@@ -100,7 +100,7 @@ public class RoleChangeListener extends ListenerAdapter
 
         publishRankChangedEvent(
                 member.getEffectiveName(),
-                member.getAvatarUrl(),
+                member.getEffectiveAvatarUrl(),
                 rolesToRemove.stream().max(Comparator.naturalOrder())
                         .map(role -> supportedRanks.get(role.getIdLong()))
                         .orElse(null),
