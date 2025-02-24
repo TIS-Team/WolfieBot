@@ -55,7 +55,7 @@ public class RankChangedMessagePublisher
                 .orElse("Brak");
         String newRankName = (newRank.ordinal() + 1) + ". " + newRank.getName();
         embedBuilder.addField(":small_red_triangle_down: Poprzednia ranga", oldRankName, true);
-        embedBuilder.addField(":small_red_triangle_up: Nowa ranga", newRankName, true);
+        embedBuilder.addField(":small_red_triangle: Nowa ranga", newRankName, true);
         embedBuilder.setTimestamp(Instant.now());
 
         wolfieBot.getJda()
