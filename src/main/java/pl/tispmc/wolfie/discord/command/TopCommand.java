@@ -135,7 +135,7 @@ public class TopCommand implements SlashCommand
                 default -> user.getExp();
             };
 
-            embedBuilder.addField("#" + rank + " " + icon + " " + user.getName(), valueLabel + value, false);
+            embedBuilder.addField("#" + rank + " " + icon + " " + user.getName(), valueLabel + "**" + value + "**", false);
             rank++;
         }
 
