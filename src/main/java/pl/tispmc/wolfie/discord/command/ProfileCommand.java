@@ -52,7 +52,7 @@ public class ProfileCommand implements SlashCommand {
         }
         Rank rank = calculatePlayerLevel(stats.getExp());
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setColor(Color.GREEN);
+        embedBuilder.setColor(Color.RED);
         embedBuilder.setThumbnail(user.getEffectiveAvatarUrl());
         embedBuilder.setTitle(" Profil gracza: " + user.getName());
         embedBuilder.addField(":star: Całkowity EXP", String.valueOf(stats.getExp()), true);
