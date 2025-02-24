@@ -64,4 +64,4 @@ public class RankChangedMessagePublisher
                 .sendMessageEmbeds(embedBuilder.build())
                 .queue();
     }
-}}
+}
