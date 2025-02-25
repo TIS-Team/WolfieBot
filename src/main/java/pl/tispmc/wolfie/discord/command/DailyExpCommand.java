@@ -72,14 +72,16 @@ public class DailyExpCommand implements SlashCommand
 
         MessageEmbed messageEmbed = new EmbedBuilder()
                 .setColor(Color.GREEN)
-                .setDescription(":sparkles: Zagarnięto daily exp: + '" + expReward + "' \n" +
+                .setTitle("Daily - " + member.getEffectiveName())
+                .setThumbnail(member.getEffectiveAvatarUrl())
+                .setDescription("Zagarnięto daily exp: `+" + expReward + "` \n" +
                         "\n" +
                         "Obecny streak: `" + dailyExpStreak + "`\n" +
-                        "Obecny bonus: `" + expStreakBonus + "%`")
+                        "Obecny bonus: `" + (expStreakBonus * 100) + "%`")
                 .setTimestamp(Instant.now())
                 .build();
 
-        event.deferReply().setEphemeral(true).addEmbeds(messageEmbed).queue();
+        event.deferReply().addEmbeds(messageEmbed).queue();
     }
 
     private double calculateExpStreakBonus(int dailyExpStreak)
