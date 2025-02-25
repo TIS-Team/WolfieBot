@@ -30,6 +30,7 @@ class DailyExpCommandTest
     private static final long MEMBER_ID = 1;
     private static final int MEMBER_BASE_EXP = 25;
     private static final int MEMBER_DAILY_STREAK = 1;
+    private static final int MEMBER_DAILY_STREAK_MAX_RECORD = 2;
 
     @Mock
     private UserDataService userDataService;
@@ -100,6 +101,7 @@ class DailyExpCommandTest
         UserData updatedUserData = userDataArgumentCaptor.getValue();
         assertThat(updatedUserData.getExp()).isGreaterThan(MEMBER_BASE_EXP);
         assertThat(updatedUserData.getExpClaims().getDailyExpStreak()).isEqualTo(MEMBER_DAILY_STREAK + 1);
+        assertThat(updatedUserData.getExpClaims().getDailyExpStreakMaxRecord()).isEqualTo(MEMBER_DAILY_STREAK_MAX_RECORD);
         assertThat(updatedUserData.getExpClaims().getLastDailyExpClaim()).hasDayOfMonth(LocalDateTime.now().getDayOfMonth());
     }
 
@@ -111,6 +113,7 @@ class DailyExpCommandTest
                 .expClaims(UserData.ExpClaims.builder()
                         .lastDailyExpClaim(lastDailyExpClaimDate)
                         .dailyExpStreak(MEMBER_DAILY_STREAK)
+                        .dailyExpStreakMaxRecord(MEMBER_DAILY_STREAK_MAX_RECORD)
                         .build())
                 .build();
     }
