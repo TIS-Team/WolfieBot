@@ -71,8 +71,8 @@ public class ProfileCommand implements SlashCommand {
 
         //brak lvlup
         if (nextRank.ordinal() > rank.ordinal()) {
-            embedBuilder.addField(":small_red_triangle: Następna ranga za:",
-                    String.format("``%s EXP do rangi %s``", nextRank.getExp() - stats.getExp(), nextRank.getName()),
+            embedBuilder.addField(":small_red_triangle: Następna ranga:",
+                    String.format("``%s EXP` do rangi %s`", nextRank.getExp() - stats.getExp(), nextRank.getName()),
                     false);
         } else {
             embedBuilder.addField("\uD83C\uDFC6 Awans niedostępny!", "Osiągnąłeś najwyższą możliwą rangę!", false);
@@ -86,7 +86,7 @@ public class ProfileCommand implements SlashCommand {
         //Streak
         embedBuilder.addField("\uD83D\uDD25 Streak", String.format("``%d`` dni", dailyExpStreak), true);
         embedBuilder.addField("✨ Bonus do EXP", String.format("``%.0f%%``", expStreakBonus * 100), true);
-        embedBuilder.addField("💯 Najdłuższy Streak", String.format("``%d`` dni", dailyExpStreakMaxRecord), true);
+        embedBuilder.addField("💯 Najdłuższy streak", String.format("``%d`` dni", dailyExpStreakMaxRecord), true);
 
         embedBuilder.setTimestamp(Instant.now());
         event.replyEmbeds(embedBuilder.build()).queue();

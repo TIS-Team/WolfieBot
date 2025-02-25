@@ -88,7 +88,7 @@ public class DailyExpCommand implements SlashCommand
                         "\n" +
                         "🔥Streak: `" + dailyExpStreak + "`\n" +
                         ":sparkles: Bonus: `" + (expStreakBonus * 100) + "%` \n" +
-                        "💯Max streak: `" + dailyExpStreakMaxRecord + "`")
+                        "💯Najwyższy streak: `" + dailyExpStreakMaxRecord + "`")
                 .setTimestamp(Instant.now())
                 .build();
 

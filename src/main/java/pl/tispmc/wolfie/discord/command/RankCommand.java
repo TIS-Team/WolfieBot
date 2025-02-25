@@ -113,7 +113,7 @@ public class RankCommand implements SlashCommand
                         + "\n"
                         + "🔥 Streak: **" + streakRank + " miejsce** | `" + targetUserData.getExpClaims().getDailyExpStreak() + "` dni\n"
                         + "\n"
-                        + "💯 Max Streak: **" + maxStreakRank + " miejsce** | `" + targetUserData.getExpClaims().getDailyExpStreakMaxRecord() + "` dni\n"
+                        + "💯 Najwyższy Streak: **" + maxStreakRank + " miejsce** | `" + targetUserData.getExpClaims().getDailyExpStreakMaxRecord() + "` dni\n"
                         + "\n"
                 );
 
