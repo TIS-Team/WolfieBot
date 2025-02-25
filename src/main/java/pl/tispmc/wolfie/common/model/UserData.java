@@ -24,7 +24,8 @@ public class UserData
     int specialAwardCount;
     int missionsPlayed;
 
-    ExpClaims expClaims;
+    @Builder.Default
+    ExpClaims expClaims = ExpClaims.builder().build();
 
     @Value
     @Builder(toBuilder = true)
