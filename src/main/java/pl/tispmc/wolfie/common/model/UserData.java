@@ -32,6 +32,7 @@ public class UserData
     public static class ExpClaims
     {
         int dailyExpStreak;
+        int dailyExpStreakMaxRecord;
         LocalDateTime lastDailyExpClaim;
     }
 }

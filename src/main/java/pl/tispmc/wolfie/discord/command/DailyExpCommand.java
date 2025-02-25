@@ -57,6 +57,11 @@ public class DailyExpCommand implements SlashCommand
 
         dailyExpStreak += 1;
 
+        int dailyExpStreakMaxRecord = userData.getExpClaims().getDailyExpStreak();
+        if (dailyExpStreak > dailyExpStreakMaxRecord) {
+            dailyExpStreakMaxRecord = dailyExpStreak;
+        }
+
         double expStreakBonus = calculateExpStreakBonus(dailyExpStreak);
         int expReward = calculateDailyExpReward(expStreakBonus);
 
@@ -64,6 +69,7 @@ public class DailyExpCommand implements SlashCommand
                 .exp(userData.getExp() + expReward)
                 .expClaims(userData.getExpClaims().toBuilder()
                         .dailyExpStreak(dailyExpStreak)
+                        .dailyExpStreakMaxRecord(dailyExpStreakMaxRecord)
                         .lastDailyExpClaim(LocalDateTime.now())
                         .build())
                 .build();
