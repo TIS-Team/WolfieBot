@@ -68,7 +68,7 @@ public class CommandManager
 //        log.error(messageSource.getMessage(ERROR_COMMAND_EXCEPTION, command.getAliases().get(0), exception.getMessage()));
         MessageEmbed messageEmbed = new EmbedBuilder()
                 .setColor(Color.RED)
-                .setDescription("Błąd: " + exception.getMessage())
+                .setTitle(exception.getMessage())
 //                .setDescription(messageSource.getMessage(ERROR_COMMAND_EXCEPTION, exception.getMessage()))
                 .build();
         interactionHook.editOriginalEmbeds(messageEmbed).queue();
@@ -81,6 +81,7 @@ public class CommandManager
         MessageEmbed messageEmbed = new EmbedBuilder()
                 .setColor(Color.RED)
                 .setDescription("Błąd: " + exception.getMessage())
+                .setFooter("<@272461089541718017> <@361224662912466944> ZAJMIJCIE SIĘ TYM!")
 //                .setDescription(messageSource.getMessage(ERROR_GENERAL, exception.getMessage()))
                 .build();
         interactionHook.editOriginalEmbeds(messageEmbed).queue();
