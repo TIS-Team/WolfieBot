@@ -63,14 +63,16 @@ public class ExpCommand implements SlashCommand
     @Override
     public void onSlashCommand(SlashCommandInteractionEvent event) throws CommandException
     {
-        if (event.getSubcommandName().equals(SUBCOMMAND_ADD))
-        {
-            handleAddExp(event);
-        }
-        else if (event.getSubcommandName().equals(SUBCOMMAND_SET))
-        {
-            handleSetExp(event);
-        }
+        throw new NullPointerException("NULL NULL NULL KABOOM!");
+
+//        if (event.getSubcommandName().equals(SUBCOMMAND_ADD))
+//        {
+//            handleAddExp(event);
+//        }
+//        else if (event.getSubcommandName().equals(SUBCOMMAND_SET))
+//        {
+//            handleSetExp(event);
+//        }
     }
 
     private void handleAddExp(SlashCommandInteractionEvent event)
