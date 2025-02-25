@@ -80,8 +80,8 @@ public class CommandManager
 //        log.error(messageSource.getMessage(ERROR_GENERAL, command.getAliases().get(0), exception.getMessage()), exception);
         MessageEmbed messageEmbed = new EmbedBuilder()
                 .setColor(Color.RED)
-                .setDescription("Błąd: " + exception.getMessage())
-                .setFooter("<@272461089541718017> <@361224662912466944> ZAJMIJCIE SIĘ TYM!")
+                .setDescription("Błąd: " + exception.getMessage() + "\n\n" +
+                        "<@272461089541718017> <@361224662912466944> ZAJMIJCIE SIĘ TYM!")
 //                .setDescription(messageSource.getMessage(ERROR_GENERAL, exception.getMessage()))
                 .build();
         interactionHook.editOriginalEmbeds(messageEmbed).queue();
