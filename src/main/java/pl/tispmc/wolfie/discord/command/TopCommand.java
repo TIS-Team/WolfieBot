@@ -116,7 +116,7 @@ public class TopCommand implements SlashCommand
             };
 
             int value = switch (selectedRankingBy) {
-                case LEVEL -> calculatePlayerRank(user.getExp()).ordinal();
+                case LEVEL -> Rank.getRankForExp(user.getExp()).ordinal();
                 case MISSIONS -> user.getMissionsPlayed();
                 case APPRAISALS -> user.getAppraisalsCount();
                 case REPRIMANDS -> user.getReprimandsCount();
@@ -138,7 +138,7 @@ public class TopCommand implements SlashCommand
     {
         return TopMessageParams.builder()
                 .sortedUsers(userData.stream()
-                        .sorted(Comparator.comparingInt((ToIntFunction<UserData>) value -> calculatePlayerRank(value.getExp()).getExp()).reversed())
+                        .sorted(Comparator.comparingInt((ToIntFunction<UserData>) value -> Rank.getRankForExp(value.getExp()).getExp()).reversed())
                         .toList())
                 .title("Ranking TOP 10 - **Poziom** :chart_with_upwards_trend:")
                 .valueLabel("Poziom: ")
@@ -208,13 +208,6 @@ public class TopCommand implements SlashCommand
                 .orElse(false))
                 .findFirst()
                 .orElse(RankingBy.EXP);
-    }
-
-    private static Rank calculatePlayerRank(int playerExp) {
-        return Arrays.stream(Rank.values())
-                .filter(rank -> playerExp >= rank.getExp())
-                .max(Comparator.comparing(Rank::getExp))
-                .orElse(Rank.RECRUIT);
     }
 
     @Builder

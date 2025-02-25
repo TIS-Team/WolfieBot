@@ -13,8 +13,6 @@ import pl.tispmc.wolfie.discord.WolfieBot;
 
 import java.awt.*;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,7 +47,7 @@ public class EvaluationSummaryMessagePublisher
 
     private MessageEmbed buildSummaryMessageForPlayer(EvaluationSummary.SummaryPlayer player)
     {
-        Rank rank = calculatePlayerLevel(player.getExp());
+        Rank rank = Rank.getRankForExp(player.getExp());
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
@@ -111,14 +109,6 @@ public class EvaluationSummaryMessagePublisher
             progressBar[i] = (bar >= i - 1) ? ":green_square:" : ":white_large_square:";
         }
         return String.join("", progressBar);
-    }
-
-    private Rank calculatePlayerLevel(int playerExp)
-    {
-        return Arrays.stream(Rank.values())
-                .filter(rank -> playerExp >= rank.getExp())
-                .max(Comparator.comparing(Rank::getExp))
-                .orElse(Rank.RECRUIT);
     }
 
     private void publishMissionSummary(TextChannel textChannel, EvaluationSummary evaluationSummary)

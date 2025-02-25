@@ -72,7 +72,7 @@ public class DiscordUserRolesUpdater
                 .toList();
 
         final Map<UserId, Rank> newRanks = userDataToUpdate.stream()
-                .collect(Collectors.toMap(userdata -> UserId.of(userdata.getUserId()), this::calculateUserRank));
+                .collect(Collectors.toMap(userdata -> UserId.of(userdata.getUserId()), userData -> Rank.getRankForExp(userData.getExp())));
 
         final List<Member> membersToUpdate = this.wolfieBot.getJda().getGuildById(guildId).getMembers().stream()
                 .filter(member -> newRanks.containsKey(UserId.of(member.getIdLong())))
@@ -125,13 +125,5 @@ public class DiscordUserRolesUpdater
                 this,
                 new RankChangedEvent.RankChangedEventData(username, avatarUrl, oldRank, newRank)
         ));
-    }
-
-    private Rank calculateUserRank(UserData userData)
-    {
-        return Arrays.stream(Rank.values())
-                .filter(rank -> userData.getExp() >= rank.getExp())
-                .max(Comparator.comparing(Rank::getExp))
-                .orElseThrow();
     }
 }

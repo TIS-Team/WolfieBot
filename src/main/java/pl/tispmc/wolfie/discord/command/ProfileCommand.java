@@ -14,8 +14,6 @@ import pl.tispmc.wolfie.discord.command.exception.CommandException;
 
 import java.awt.*;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 @Component
@@ -52,7 +50,7 @@ public class ProfileCommand implements SlashCommand {
             stats = userDataService.find(user.getIdLong());
         }
 
-        Rank rank = calculatePlayerLevel(stats.getExp());
+        Rank rank = Rank.getRankForExp(stats.getExp());
         Rank nextRank = rank.next();
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -82,13 +80,6 @@ public class ProfileCommand implements SlashCommand {
                 .userId(user.getIdLong())
                 .name(user.getName())
                 .build();
-    }
-
-    private Rank calculatePlayerLevel(int playerExp) {
-        return Arrays.stream(Rank.values())
-                .filter(rank -> playerExp >= rank.getExp())
-                .max(Comparator.comparing(Rank::getExp))
-                .orElse(Rank.RECRUIT);
     }
 
     private String generateProgressBarToNextLevel(Rank rank, int playerExp) {
