@@ -11,6 +11,8 @@ bot:
     game-master:
       id:
   channels:
+    commands:
+      id:
     summary:
       id:
     rank-change:
