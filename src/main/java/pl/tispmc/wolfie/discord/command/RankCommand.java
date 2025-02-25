@@ -2,7 +2,6 @@ package pl.tispmc.wolfie.discord.command;
 
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -21,7 +20,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component
@@ -83,7 +81,7 @@ public class RankCommand implements SlashCommand
         }
 
         int expRank = calculateRank(userDataMap.values(), targetUserData, UserData::getExp);
-        Rank userRank = calculatePlayerRank(targetUserData.getExp());
+        Rank userRank = calculatePlayerLevel(targetUserData.getExp());
         int rankPosition = calculateRank(userDataMap.values(), targetUserData, UserData::getExp);
         int missionsRank = calculateRank(userDataMap.values(), targetUserData, UserData::getMissionsPlayed);
         int appraisalsRank = calculateRank(userDataMap.values(), targetUserData, UserData::getAppraisalsCount);
@@ -91,7 +89,6 @@ public class RankCommand implements SlashCommand
         int specialAwardsRank = calculateRank(userDataMap.values(), targetUserData, UserData::getSpecialAwardCount);
 
         // embed
-        Guild guild = event.getGuild();
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle("\uD83D\uDCCA Pozycje w Rankingach - " + targetUserData.getName())
                 .setColor(Color.RED)
@@ -119,7 +116,7 @@ public class RankCommand implements SlashCommand
     }
 
 
-    private Rank calculatePlayerRank(int playerExp) {
+    private Rank calculatePlayerLevel(int playerExp) {
         return Arrays.stream(Rank.values())
                 .filter(rank -> playerExp >= rank.getExp())
                 .max(Comparator.comparing(Rank::getExp))
