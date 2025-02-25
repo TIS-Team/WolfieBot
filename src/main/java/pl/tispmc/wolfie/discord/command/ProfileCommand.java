@@ -72,7 +72,7 @@ public class ProfileCommand implements SlashCommand {
         //brak lvlup
         if (nextRank.ordinal() > rank.ordinal()) {
             embedBuilder.addField(":small_red_triangle: Następna ranga:",
-                    String.format("``%s EXP` do rangi %s`", nextRank.getExp() - stats.getExp(), nextRank.getName()),
+                    String.format("``%s EXP do rangi %s``", nextRank.getExp() - stats.getExp(), nextRank.getName()),
                     false);
         } else {
             embedBuilder.addField("\uD83C\uDFC6 Awans niedostępny!", "Osiągnąłeś najwyższą możliwą rangę!", false);
