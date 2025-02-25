@@ -103,7 +103,7 @@ public class TopCommand implements SlashCommand
             type = "reprimands";
         } else if (Boolean.TRUE.equals(getBooleanOption(event, REPRIMAND_PARAM))) {
             sortedUsers = userDataMap.values().stream()
-                    .sorted(Comparator.comparingInt(UserData::getExp).reversed())
+                    .sorted(Comparator.comparingInt(UserData::getSpecialAwardCount).reversed())
                     .limit(10)
                     .toList();
             title = "Ranking TOP 10 - **Nagrody specjalne** \uD83C\uDFC6";
@@ -116,7 +116,7 @@ public class TopCommand implements SlashCommand
                 .toList();
         title = "Ranking TOP 10 - EXP :sparkles:";
         valueLabel = "EXP: ";
-        type = "awards";
+        type = "exp";
     }
 
         Guild guild = event.getGuild();
