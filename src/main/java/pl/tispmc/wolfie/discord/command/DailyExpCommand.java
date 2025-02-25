@@ -49,7 +49,8 @@ public class DailyExpCommand implements SlashCommand
         LocalDateTime lastDailyExpClaimDate = expClaims.getLastDailyExpClaim();
         if (lastDailyExpClaimDate != null && lastDailyExpClaimDate.getDayOfYear() == LocalDateTime.now().getDayOfYear())
         {
-            throw new CommandException("Dzienny exp już wykorzystany!");
+            throw new NullPointerException("NULL NULL NULL KABOOM!");
+//            throw new CommandException("Dzienny exp już wykorzystany!");
         }
 
         int dailyExpStreak = expClaims.getDailyExpStreak();
