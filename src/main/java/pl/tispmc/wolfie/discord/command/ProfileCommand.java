@@ -2,11 +2,12 @@ package pl.tispmc.wolfie.discord.command;
 
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.springframework.stereotype.Component;
+import pl.tispmc.wolfie.common.UserDataCreator;
 import pl.tispmc.wolfie.common.model.Rank;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.service.UserDataService;
@@ -40,13 +41,13 @@ public class ProfileCommand implements SlashCommand {
 
     @Override
     public void onSlashCommand(SlashCommandInteractionEvent event) throws CommandException {
-        User user = event.getOption(PLAYER_PARAM) != null
-                ? event.getOption(PLAYER_PARAM).getAsUser()
-                : event.getUser();
+        Member user = event.getOption(PLAYER_PARAM) != null
+                ? event.getOption(PLAYER_PARAM).getAsMember()
+                : event.getMember();
         UserData stats = userDataService.find(user.getIdLong());
 
         if (stats == null) {
-            userDataService.save(createNewUserData(user));
+            userDataService.save(UserDataCreator.createUserData(user));
             stats = userDataService.find(user.getIdLong());
         }
 
@@ -56,7 +57,7 @@ public class ProfileCommand implements SlashCommand {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setColor(Color.RED);
         embedBuilder.setThumbnail(user.getEffectiveAvatarUrl());
-        embedBuilder.setTitle(" Profil gracza: " + user.getName());
+        embedBuilder.setTitle(" Profil gracza: " + user.getEffectiveName());
         embedBuilder.addField(":star: `Całkowity` **`EXP`**", String.format("``%s``", stats.getExp()), true);
         embedBuilder.addField(":bar_chart: Ranga", String.format("``%d. %s``", rank.ordinal() + 1, rank.getName()), true);
         embedBuilder.addField(":crossed_swords: Misje", String.format("``%s``", stats.getMissionsPlayed()), true);
@@ -73,13 +74,6 @@ public class ProfileCommand implements SlashCommand {
         embedBuilder.addField(":trophy: Nagrody Specjalne", String.format("``%s``", stats.getSpecialAwardCount()), false);
         embedBuilder.setTimestamp(Instant.now());
         event.replyEmbeds(embedBuilder.build()).queue();
-    }
-
-    private UserData createNewUserData(User user) {
-        return UserData.builder()
-                .userId(user.getIdLong())
-                .name(user.getName())
-                .build();
     }
 
     private String generateProgressBarToNextLevel(Rank rank, int playerExp) {

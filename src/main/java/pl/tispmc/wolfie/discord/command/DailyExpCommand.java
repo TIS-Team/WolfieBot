@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.stereotype.Component;
+import pl.tispmc.wolfie.common.UserDataCreator;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.service.UserDataService;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
@@ -42,7 +43,7 @@ public class DailyExpCommand implements SlashCommand
     public void onSlashCommand(SlashCommandInteractionEvent event) throws CommandException
     {
         Member member = event.getMember();
-        UserData userData = userDataService.find(member.getIdLong());
+        UserData userData = Optional.ofNullable(userDataService.find(member.getIdLong())).orElse(UserDataCreator.createUserData(member));
         UserData.ExpClaims expClaims = Optional.ofNullable(userData.getExpClaims()).orElse(UserData.ExpClaims.builder().build());
 
         LocalDateTime lastDailyExpClaimDate = expClaims.getLastDailyExpClaim();

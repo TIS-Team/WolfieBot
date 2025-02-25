@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import pl.tispmc.wolfie.common.UserDataCreator;
 import pl.tispmc.wolfie.common.event.model.RankChangedEvent;
 import pl.tispmc.wolfie.common.model.Rank;
 import pl.tispmc.wolfie.common.model.UserData;
@@ -81,7 +82,7 @@ public class RoleChangeListener extends ListenerAdapter
     private void handleRankChange(Guild guild, Map<Long, Rank> supportedRanks, Member member, Rank newRank)
     {
         UserData userData = Optional.ofNullable(userDataService.find(member.getIdLong()))
-                        .orElse(createNewUserData(member));
+                        .orElse(UserDataCreator.createUserData(member));
         userData = userData.toBuilder().exp(newRank.getExp()).build();
         userDataService.save(userData);
 
@@ -114,13 +115,5 @@ public class RoleChangeListener extends ListenerAdapter
                 this,
                 new RankChangedEvent.RankChangedEventData(username, avatarUrl, oldRank, newRank)
         ));
-    }
-
-    private UserData createNewUserData(Member user)
-    {
-        return UserData.builder()
-                .userId(user.getIdLong())
-                .name(user.getUser().getName())
-                .build();
     }
 }

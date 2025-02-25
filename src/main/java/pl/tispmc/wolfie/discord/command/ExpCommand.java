@@ -3,7 +3,6 @@ package pl.tispmc.wolfie.discord.command;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
@@ -11,6 +10,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import pl.tispmc.wolfie.common.UserDataCreator;
 import pl.tispmc.wolfie.common.event.model.UpdateUserRolesEvent;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.service.UserDataService;
@@ -85,7 +85,7 @@ public class ExpCommand implements SlashCommand
         UserData userData = userDataService.find(user.getIdLong());
         if (userData == null)
         {
-            userData = createNewUserData(user.getUser());
+            userData = UserDataCreator.createUserData(user);
         }
 
         UserData updatedUserData = userData.toBuilder().exp(userData.getExp() + exp).build();
@@ -110,7 +110,7 @@ public class ExpCommand implements SlashCommand
         UserData userData = userDataService.find(user.getIdLong());
         if (userData == null)
         {
-            userData = createNewUserData(user.getUser());
+            userData = UserDataCreator.createUserData(user);
         }
 
         UserData updatedUserData = userData.toBuilder().exp(exp).build();
@@ -121,13 +121,5 @@ public class ExpCommand implements SlashCommand
                 .setColor(Color.RED)
                 .setDescription("Zaktualizowano exp dla " + user.getEffectiveName())
                 .build()).queue();
-    }
-
-    private UserData createNewUserData(User user)
-    {
-        return UserData.builder()
-                .userId(user.getIdLong())
-                .name(user.getName())
-                .build();
     }
 }
