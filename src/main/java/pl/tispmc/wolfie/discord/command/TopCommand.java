@@ -40,7 +40,9 @@ public class TopCommand implements SlashCommand
         APPRAISALS("pochwały"),
         REPRIMANDS("nagany"),
         AWARDS("nagrody"),
-        EXP("exp");
+        EXP("exp"),
+        CURRENT_STREAK("streak"),
+        MAX_STREAK("maxstreak");
 
         private final String paramName;
 
@@ -63,7 +65,9 @@ public class TopCommand implements SlashCommand
             RankingBy.REPRIMANDS, TopCommand::rankByReprimands,
             RankingBy.MISSIONS, TopCommand::rankByMissions,
             RankingBy.EXP, TopCommand::rankByExp,
-            RankingBy.AWARDS, TopCommand::rankByAwards
+            RankingBy.AWARDS, TopCommand::rankByAwards,
+            RankingBy.CURRENT_STREAK, TopCommand::rankByCurrentStreak,
+            RankingBy.MAX_STREAK, TopCommand::rankByMaxStreak
     );
 
     private final UserDataService userDataService;
@@ -76,7 +80,9 @@ public class TopCommand implements SlashCommand
                 .addOption(OptionType.BOOLEAN, RankingBy.REPRIMANDS.getParamName(), "Sortuje ranking po liczbie nagan", false)
                 .addOption(OptionType.BOOLEAN, RankingBy.MISSIONS.getParamName(), "Sortuje ranking po zagranych misjach", false)
                 .addOption(OptionType.BOOLEAN, RankingBy.LEVEL.getParamName(), "Sortuje ranking po poziomach", false)
-                .addOption(OptionType.BOOLEAN, RankingBy.AWARDS.getParamName(), "Sortuje ranking po liczbie nagrod", false);
+                .addOption(OptionType.BOOLEAN, RankingBy.AWARDS.getParamName(), "Sortuje ranking po liczbie nagrod", false)
+                .addOption(OptionType.BOOLEAN, RankingBy.CURRENT_STREAK.getParamName(), "Sortuje ranking po aktualnym streaku", false)
+                .addOption(OptionType.BOOLEAN, RankingBy.MAX_STREAK.getParamName(), "Sortuje ranking po najwyższym streaku", false);
     }
 
 
@@ -121,6 +127,12 @@ public class TopCommand implements SlashCommand
                 case APPRAISALS -> user.getAppraisalsCount();
                 case REPRIMANDS -> user.getReprimandsCount();
                 case AWARDS -> user.getSpecialAwardCount();
+                case CURRENT_STREAK -> Optional.ofNullable(user.getExpClaims())
+                        .map(UserData.ExpClaims::getDailyExpStreak)
+                        .orElse(0);
+                case MAX_STREAK -> Optional.ofNullable(user.getExpClaims())
+                        .map(UserData.ExpClaims::getDailyExpStreakMaxRecord)
+                        .orElse(0);
                 default -> user.getExp();
             };
 
@@ -200,12 +212,40 @@ public class TopCommand implements SlashCommand
                 .build();
     }
 
+    private static TopMessageParams rankByCurrentStreak(List<UserData> userData)
+    {
+        return TopMessageParams.builder()
+                .sortedUsers(userData.stream()
+                        .sorted(Comparator.comparingInt((ToIntFunction<UserData>) value ->
+                                Optional.ofNullable(value.getExpClaims())
+                                        .map(UserData.ExpClaims::getDailyExpStreak)
+                                        .orElse(0)).reversed())
+                        .toList())
+                .title("Ranking TOP 10 - **Aktualny Streak** 🔥")
+                .valueLabel("Streak: ")
+                .build();
+    }
+
+    private static TopMessageParams rankByMaxStreak(List<UserData> userData)
+    {
+        return TopMessageParams.builder()
+                .sortedUsers(userData.stream()
+                        .sorted(Comparator.comparingInt((ToIntFunction<UserData>) value ->
+                                Optional.ofNullable(value.getExpClaims())
+                                        .map(UserData.ExpClaims::getDailyExpStreakMaxRecord)
+                                        .orElse(0)).reversed())
+                        .toList())
+                .title("Ranking TOP 10 - **Najwyższy Streak** 💯")
+                .valueLabel("Max Streak: ")
+                .build();
+    }
+
     private RankingBy getSelectedRankingBy(SlashCommandInteractionEvent event)
     {
         EnumSet<RankingBy> possibleRankings = EnumSet.allOf(RankingBy.class);
         return possibleRankings.stream().filter(possibleRanking -> Optional.ofNullable(event.getOption(possibleRanking.getParamName()))
-                .map(OptionMapping::getAsBoolean)
-                .orElse(false))
+                        .map(OptionMapping::getAsBoolean)
+                        .orElse(false))
                 .findFirst()
                 .orElse(RankingBy.EXP);
     }

@@ -16,6 +16,7 @@ import pl.tispmc.wolfie.discord.command.exception.CommandException;
 import java.awt.*;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -53,15 +54,22 @@ public class ProfileCommand implements SlashCommand {
 
         Rank rank = Rank.getRankForExp(stats.getExp());
         Rank nextRank = rank.next();
+        UserData.ExpClaims expClaims = Optional.ofNullable(stats.getExpClaims()).orElse(UserData.ExpClaims.builder().build());
+
+        int dailyExpStreak = expClaims.getDailyExpStreak();
+        int dailyExpStreakMaxRecord = expClaims.getDailyExpStreakMaxRecord();
+        double expStreakBonus = calculateExpStreakBonus(dailyExpStreak);
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setColor(Color.RED);
         embedBuilder.setThumbnail(user.getEffectiveAvatarUrl());
         embedBuilder.setTitle(" Profil gracza: " + user.getEffectiveName());
-        embedBuilder.addField(":star: `Całkowity` **`EXP`**", String.format("``%s``", stats.getExp()), true);
+        embedBuilder.addField(":star: Całkowity EXP", String.format("``%s``", stats.getExp()), true);
         embedBuilder.addField(":bar_chart: Ranga", String.format("``%d. %s``", rank.ordinal() + 1, rank.getName()), true);
         embedBuilder.addField(":crossed_swords: Misje", String.format("``%s``", stats.getMissionsPlayed()), true);
         embedBuilder.addField(":medal: Postęp do następnego poziomu", generateProgressBarToNextLevel(rank, stats.getExp()), false);
+
+        //brak lvlup
         if (nextRank.ordinal() > rank.ordinal()) {
             embedBuilder.addField(":small_red_triangle: Następna ranga za:",
                     String.format("``%s EXP do rangi %s``", nextRank.getExp() - stats.getExp(), nextRank.getName()),
@@ -69,11 +77,24 @@ public class ProfileCommand implements SlashCommand {
         } else {
             embedBuilder.addField("\uD83C\uDFC6 Awans niedostępny!", "Osiągnąłeś najwyższą możliwą rangę!", false);
         }
+
+        //Nagrody
         embedBuilder.addField(":thumbsup: Pochwały", String.format("``%s``", stats.getAppraisalsCount()), true);
         embedBuilder.addField(":thumbsdown: Nagany", String.format("``%s``", stats.getReprimandsCount()), true);
         embedBuilder.addField(":trophy: Nagrody Specjalne", String.format("``%s``", stats.getSpecialAwardCount()), false);
+
+        //Streak
+        embedBuilder.addField("\uD83D\uDD25 Streak", String.format("``%d`` dni", dailyExpStreak), true);
+        embedBuilder.addField("✨ Bonus do EXP", String.format("``%.0f%%``", expStreakBonus * 100), true);
+        embedBuilder.addField("💯 Najdłuższy Streak", String.format("``%d`` dni", dailyExpStreakMaxRecord), true);
+
         embedBuilder.setTimestamp(Instant.now());
         event.replyEmbeds(embedBuilder.build()).queue();
+    }
+
+    private double calculateExpStreakBonus(int dailyExpStreak) {
+        int streakBonus = Math.min(dailyExpStreak, 30);
+        return ((double) streakBonus / 100);
     }
 
     private String generateProgressBarToNextLevel(Rank rank, int playerExp) {

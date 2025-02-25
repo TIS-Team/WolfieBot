@@ -85,6 +85,9 @@ public class RankCommand implements SlashCommand
         int appraisalsRank = calculateRank(userDataMap.values(), targetUserData, UserData::getAppraisalsCount);
         int reprimandsRank = calculateRank(userDataMap.values(), targetUserData, UserData::getReprimandsCount);
         int specialAwardsRank = calculateRank(userDataMap.values(), targetUserData, UserData::getSpecialAwardCount);
+        int streakRank = calculateRank(userDataMap.values(), targetUserData, data -> data.getExpClaims().getDailyExpStreak());
+        int maxStreakRank = calculateRank(userDataMap.values(), targetUserData, data -> data.getExpClaims().getDailyExpStreakMaxRecord());
+
 
         // embed
         EmbedBuilder embedBuilder = new EmbedBuilder()
@@ -96,7 +99,7 @@ public class RankCommand implements SlashCommand
                         + "**Liczba osób w rankingu:** `" + totalUsers + "`\n\n"
                         + "---\n"
                         + "\n"
-                        + "✨ EXP: **" + expRank + " miejsce** | `" + targetUserData.getExp() + "`\n"
+                        + ":star: EXP: **" + expRank + " miejsce** | `" + targetUserData.getExp() + "`\n"
                         + "\n"
                         + "📈 Poziom: **" + rankPosition + " miejsce** | `" + (userRank.ordinal() + 1) + ". " + userRank.getName() + "`\n"
                         + "\n"
@@ -107,6 +110,11 @@ public class RankCommand implements SlashCommand
                         + "👎 Nagany: **" + reprimandsRank + " miejsce** | `" + targetUserData.getReprimandsCount() + "`\n"
                         + "\n"
                         + "🏆 Nagrody Specjalne: **" + specialAwardsRank + " miejsce** | `" + targetUserData.getSpecialAwardCount() + "`\n"
+                        + "\n"
+                        + "🔥 Streak: **" + streakRank + " miejsce** | `" + targetUserData.getExpClaims().getDailyExpStreak() + "` dni\n"
+                        + "\n"
+                        + "💯 Max Streak: **" + maxStreakRank + " miejsce** | `" + targetUserData.getExpClaims().getDailyExpStreakMaxRecord() + "` dni\n"
+                        + "\n"
                 );
 
 
