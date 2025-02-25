@@ -14,6 +14,7 @@ import java.awt.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RequiredArgsConstructor
@@ -42,13 +43,15 @@ public class DailyExpCommand implements SlashCommand
     {
         Member member = event.getMember();
         UserData userData = userDataService.find(member.getIdLong());
-        LocalDateTime lastDailyExpClaimDate = userData.getExpClaims().getLastDailyExpClaim();
+        UserData.ExpClaims expClaims = Optional.ofNullable(userData.getExpClaims()).orElse(UserData.ExpClaims.builder().build());
+
+        LocalDateTime lastDailyExpClaimDate = expClaims.getLastDailyExpClaim();
         if (lastDailyExpClaimDate != null && lastDailyExpClaimDate.getDayOfYear() == LocalDateTime.now().getDayOfYear())
         {
             throw new CommandException("Dzienny exp już wykorzystany!");
         }
 
-        int dailyExpStreak = userData.getExpClaims().getDailyExpStreak();
+        int dailyExpStreak = expClaims.getDailyExpStreak();
         if (lastDailyExpClaimDate == null
                 || Math.abs(lastDailyExpClaimDate.getDayOfYear() - LocalDateTime.now().getDayOfYear()) > 1)
         {
@@ -57,7 +60,7 @@ public class DailyExpCommand implements SlashCommand
 
         dailyExpStreak += 1;
 
-        int dailyExpStreakMaxRecord = userData.getExpClaims().getDailyExpStreak();
+        int dailyExpStreakMaxRecord = expClaims.getDailyExpStreak();
         if (dailyExpStreak > dailyExpStreakMaxRecord) {
             dailyExpStreakMaxRecord = dailyExpStreak;
         }
@@ -67,7 +70,7 @@ public class DailyExpCommand implements SlashCommand
 
         UserData updatedUserData = userData.toBuilder()
                 .exp(userData.getExp() + expReward)
-                .expClaims(userData.getExpClaims().toBuilder()
+                .expClaims(expClaims.toBuilder()
                         .dailyExpStreak(dailyExpStreak)
                         .dailyExpStreakMaxRecord(dailyExpStreakMaxRecord)
                         .lastDailyExpClaim(LocalDateTime.now())
