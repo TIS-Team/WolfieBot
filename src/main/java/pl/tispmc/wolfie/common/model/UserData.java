@@ -16,7 +16,6 @@ public class UserData
     String name;
     long userId;
     int exp;
-    int level;
     int appraisalsCount;
     int reprimandsCount;
     int specialAwardCount;

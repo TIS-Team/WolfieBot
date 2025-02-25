@@ -1,6 +1,8 @@
 package pl.tispmc.wolfie.discord.command;
 
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -8,6 +10,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.springframework.stereotype.Component;
+import pl.tispmc.wolfie.common.model.Rank;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.model.UserId;
 import pl.tispmc.wolfie.common.service.UserDataService;
@@ -15,36 +18,65 @@ import pl.tispmc.wolfie.discord.command.exception.CommandException;
 
 import java.awt.*;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
+
+import static java.lang.String.format;
 
 @RequiredArgsConstructor
 @Component
 public class TopCommand implements SlashCommand
 {
+    private enum RankingBy
+    {
+        LEVEL("poziom"),
+        MISSIONS("misje"),
+        APPRAISALS("pochwały"),
+        REPRIMANDS("nagany"),
+        AWARDS("nagrody"),
+        EXP("exp");
 
-    private static final String LEVEL_PARAM = "poziom";
-    private static final String EXP_PARAM = "exp";
-    private static final String MISSIONS_PARAM = "misje";
-    private static final String APPRAISAL_PARAM = "pochwały";
-    private static final String REPRIMAND_PARAM = "nagany";
-    private static final String AWARDS_PARAM = "nagrody";
+        private final String paramName;
+
+        RankingBy(String paramName)
+        {
+            this.paramName = paramName;
+        }
+
+        public String getParamName()
+        {
+            return this.paramName;
+        }
+    }
+
+    private static final int ENTRIES_PER_PAGE = 10;
+
+    private static final Map<RankingBy, Function<List<UserData>, TopMessageParams>> SORTING_METHODS = Map.of(
+            RankingBy.LEVEL, TopCommand::rankByLevel,
+            RankingBy.APPRAISALS, TopCommand::rankByAppraisals,
+            RankingBy.REPRIMANDS, TopCommand::rankByReprimands,
+            RankingBy.MISSIONS, TopCommand::rankByMissions,
+            RankingBy.EXP, TopCommand::rankByExp,
+            RankingBy.AWARDS, TopCommand::rankByAwards
+    );
 
     private final UserDataService userDataService;
-    private boolean getBooleanOption(SlashCommandInteractionEvent event, String option) {
-        OptionMapping optionMapping = event.getOption(option);
-        return optionMapping != null && optionMapping.getAsBoolean();
-    }
+
     @Override
     public SlashCommandData getSlashCommandData(){
         return SlashCommand.super.getSlashCommandData()
-                .addOption(OptionType.BOOLEAN, EXP_PARAM, "Sortuje ranking po EXP", false)
-                .addOption(OptionType.BOOLEAN, APPRAISAL_PARAM, "Sortuje ranking po liczbie pochwał", false)
-                .addOption(OptionType.BOOLEAN, REPRIMAND_PARAM, "Sortuje ranking po liczbie nagan", false)
-                .addOption(OptionType.BOOLEAN, MISSIONS_PARAM, "Sortuje ranking po zagranych misjach", false)
-                .addOption(OptionType.BOOLEAN, LEVEL_PARAM, "Sortuje ranking po poziomach", false)
-                .addOption(OptionType.BOOLEAN, AWARDS_PARAM, "Sortuje ranking po liczbie nagrod", false);
+                .addOption(OptionType.BOOLEAN, RankingBy.EXP.getParamName(), "Sortuje ranking po EXP", false)
+                .addOption(OptionType.BOOLEAN, RankingBy.APPRAISALS.getParamName(), "Sortuje ranking po liczbie pochwał", false)
+                .addOption(OptionType.BOOLEAN, RankingBy.REPRIMANDS.getParamName(), "Sortuje ranking po liczbie nagan", false)
+                .addOption(OptionType.BOOLEAN, RankingBy.MISSIONS.getParamName(), "Sortuje ranking po zagranych misjach", false)
+                .addOption(OptionType.BOOLEAN, RankingBy.LEVEL.getParamName(), "Sortuje ranking po poziomach", false)
+                .addOption(OptionType.BOOLEAN, RankingBy.AWARDS.getParamName(), "Sortuje ranking po liczbie nagrod", false);
     }
 
 
@@ -64,72 +96,18 @@ public class TopCommand implements SlashCommand
     public void onSlashCommand(SlashCommandInteractionEvent event) throws CommandException
     {
         Map<UserId, UserData> userDataMap = userDataService.findAll();
-        List<UserData> sortedUsers;
-        String title;
-        String valueLabel;
-        String type;
-
-        if (Boolean.TRUE.equals(getBooleanOption(event, LEVEL_PARAM))) {
-            sortedUsers = userDataMap.values().stream()
-                    .sorted(Comparator.comparingInt(UserData::getLevel).reversed())
-                    .limit(10)
-                    .toList();
-            title = "Ranking TOP 10 - **Poziom** :chart_with_upwards_trend:";
-            valueLabel = "Poziom: ";
-            type = "level";
-        } else if (Boolean.TRUE.equals(getBooleanOption(event, MISSIONS_PARAM))) {
-            sortedUsers = userDataMap.values().stream()
-                    .sorted(Comparator.comparingInt(UserData::getMissionsPlayed).reversed())
-                    .limit(10)
-                    .toList();
-            title = "🏆 Ranking TOP 10 - **Misje** \uD83D\uDCE5";
-            valueLabel = "Misje: ";
-            type = "missions";
-        } else if (Boolean.TRUE.equals(getBooleanOption(event, APPRAISAL_PARAM))) {
-            sortedUsers = userDataMap.values().stream()
-                    .sorted(Comparator.comparingInt(UserData::getAppraisalsCount).reversed())
-                    .limit(10)
-                    .toList();
-            title = "Ranking TOP 10 - **Pochwały** :thumbsup:";
-            valueLabel = "Pochwały: ";
-            type = "appraisals";
-        } else if (Boolean.TRUE.equals(getBooleanOption(event, REPRIMAND_PARAM))) {
-            sortedUsers = userDataMap.values().stream()
-                    .sorted(Comparator.comparingInt(UserData::getReprimandsCount).reversed())
-                    .limit(10)
-                    .toList();
-            title = "Ranking TOP 10 - **Nagany** :thumbsdown:";
-            valueLabel = "Nagany: ";
-            type = "reprimands";
-        } else if (Boolean.TRUE.equals(getBooleanOption(event, AWARDS_PARAM))) {
-            sortedUsers = userDataMap.values().stream()
-                    .sorted(Comparator.comparingInt(UserData::getSpecialAwardCount).reversed())
-                    .limit(10)
-                    .toList();
-            title = "Ranking TOP 10 - **Nagrody specjalne** \uD83C\uDFC6";
-            valueLabel = "Nagrody: ";
-            type = "awards";
-        } else {
-        sortedUsers = userDataMap.values().stream()
-                .sorted(Comparator.comparingInt(UserData::getExp).reversed())
-                .limit(10)
-                .toList();
-        title = "Ranking TOP 10 - EXP :sparkles:";
-        valueLabel = "EXP: ";
-        type = "exp";
-    }
+        RankingBy selectedRankingBy = getSelectedRankingBy(event);
+        TopMessageParams topMessageParams = SORTING_METHODS.get(selectedRankingBy).apply(userDataMap.values().stream().toList());
 
         Guild guild = event.getGuild();
         EmbedBuilder embedBuilder = new EmbedBuilder()
-                .setTitle(title)
+                .setTitle(topMessageParams.getTitle())
                 .setColor(Color.RED)
-                .setTimestamp(Instant.now());
+                .setTimestamp(Instant.now())
+                .setThumbnail(guild.getIconUrl());
 
-        if (guild != null) {
-            embedBuilder.setThumbnail(guild.getIconUrl());
-        }
         int rank = 1;
-        for (UserData user : sortedUsers) {
+        for (UserData user : topMessageParams.getSortedUsers().stream().limit(ENTRIES_PER_PAGE).toList()) {
             String icon = switch (rank) {
                 case 1 -> "🥇";
                 case 2 -> "🥈";
@@ -137,19 +115,114 @@ public class TopCommand implements SlashCommand
                 default -> "";
             };
 
-            int value = switch (type) {
-                case "level" -> user.getLevel();
-                case "missions" -> user.getMissionsPlayed();
-                case "appraisals" -> user.getAppraisalsCount();
-                case "reprimands" -> user.getReprimandsCount();
-                case "awards" -> user.getSpecialAwardCount();
+            int value = switch (selectedRankingBy) {
+                case LEVEL -> calculatePlayerRank(user.getExp()).ordinal();
+                case MISSIONS -> user.getMissionsPlayed();
+                case APPRAISALS -> user.getAppraisalsCount();
+                case REPRIMANDS -> user.getReprimandsCount();
+                case AWARDS -> user.getSpecialAwardCount();
                 default -> user.getExp();
             };
 
-            embedBuilder.addField("#" + rank + " " + icon + " " + user.getName(), valueLabel + "`" + value + "`", false);
+            embedBuilder.addField(
+                    format("#%s %s %s", rank, icon, user.getName()),
+                    format("%s `%s`", topMessageParams.getValueLabel(), value),
+                    false);
             rank++;
         }
 
         event.replyEmbeds(embedBuilder.build()).queue();
+    }
+
+    private static TopMessageParams rankByLevel(List<UserData> userData)
+    {
+        return TopMessageParams.builder()
+                .sortedUsers(userData.stream()
+                        .sorted(Comparator.comparingInt((ToIntFunction<UserData>) value -> calculatePlayerRank(value.getExp()).getExp()).reversed())
+                        .toList())
+                .title("Ranking TOP 10 - **Poziom** :chart_with_upwards_trend:")
+                .valueLabel("Poziom: ")
+                .build();
+    }
+
+    private static TopMessageParams rankByAppraisals(List<UserData> userData)
+    {
+        return TopMessageParams.builder()
+                .sortedUsers(userData.stream()
+                        .sorted(Comparator.comparingInt(UserData::getAppraisalsCount).reversed())
+                        .toList())
+                .title("Ranking TOP 10 - **Pochwały** :thumbsup:")
+                .valueLabel("Pochwały: ")
+                .build();
+    }
+
+    private static TopMessageParams rankByReprimands(List<UserData> userData)
+    {
+        return TopMessageParams.builder()
+                .sortedUsers(userData.stream()
+                        .sorted(Comparator.comparingInt(UserData::getReprimandsCount).reversed())
+                        .toList())
+                .title("Ranking TOP 10 - **Nagany** :thumbsdown:")
+                .valueLabel("Nagany: ")
+                .build();
+    }
+
+    private static TopMessageParams rankByMissions(List<UserData> userData)
+    {
+        return TopMessageParams.builder()
+                .sortedUsers(userData.stream()
+                        .sorted(Comparator.comparingInt(UserData::getMissionsPlayed).reversed())
+                        .toList())
+                .title("🏆 Ranking TOP 10 - **Misje** \uD83D\uDCE5")
+                .valueLabel("Misje: ")
+                .build();
+    }
+
+    private static TopMessageParams rankByExp(List<UserData> userData)
+    {
+        return TopMessageParams.builder()
+                .sortedUsers(userData.stream()
+                        .sorted(Comparator.comparingInt(UserData::getExp).reversed())
+                        .toList())
+                .title("Ranking TOP 10 - EXP :sparkles:")
+                .valueLabel("EXP: ")
+                .build();
+    }
+
+    private static TopMessageParams rankByAwards(List<UserData> userData)
+    {
+        return TopMessageParams.builder()
+                .sortedUsers(userData.stream()
+                        .sorted(Comparator.comparingInt(UserData::getSpecialAwardCount).reversed())
+                        .toList())
+                .title("Ranking TOP 10 - **Nagrody specjalne** \uD83C\uDFC6")
+                .valueLabel("Nagrody: ")
+                .build();
+    }
+
+    private RankingBy getSelectedRankingBy(SlashCommandInteractionEvent event)
+    {
+        EnumSet<RankingBy> possibleRankings = EnumSet.allOf(RankingBy.class);
+        return possibleRankings.stream().filter(possibleRanking -> Optional.ofNullable(event.getOption(possibleRanking.getParamName()))
+                .map(OptionMapping::getAsBoolean)
+                .orElse(false))
+                .findFirst()
+                .orElse(RankingBy.EXP);
+    }
+
+    private static Rank calculatePlayerRank(int playerExp) {
+        return Arrays.stream(Rank.values())
+                .filter(rank -> playerExp >= rank.getExp())
+                .max(Comparator.comparing(Rank::getExp))
+                .orElse(Rank.RECRUIT);
+    }
+
+    @Builder
+    @Value
+    private static class TopMessageParams
+    {
+        String title;
+        String valueLabel;
+        List<UserData> sortedUsers;
     }
 }
