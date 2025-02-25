@@ -109,11 +109,11 @@ public class RankCommand implements SlashCommand
                         + "\n"
                         + "👎 Nagany: **" + reprimandsRank + " miejsce** | `" + targetUserData.getReprimandsCount() + "`\n"
                         + "\n"
-                        + "🏆 Nagrody Specjalne: **" + specialAwardsRank + " miejsce** | `" + targetUserData.getSpecialAwardCount() + "`\n"
+                        + "🏆 Nagrody specjalne: **" + specialAwardsRank + " miejsce** | `" + targetUserData.getSpecialAwardCount() + "`\n"
                         + "\n"
                         + "🔥 Streak: **" + streakRank + " miejsce** | `" + targetUserData.getExpClaims().getDailyExpStreak() + "` dni\n"
                         + "\n"
-                        + "💯 Najwyższy Streak: **" + maxStreakRank + " miejsce** | `" + targetUserData.getExpClaims().getDailyExpStreakMaxRecord() + "` dni\n"
+                        + "💯 Najdłuższy streak: **" + maxStreakRank + " miejsce** | `" + targetUserData.getExpClaims().getDailyExpStreakMaxRecord() + "` dni\n"
                         + "\n"
                 );
 
