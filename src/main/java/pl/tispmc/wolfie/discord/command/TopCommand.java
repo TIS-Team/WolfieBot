@@ -101,7 +101,7 @@ public class TopCommand implements SlashCommand
             title = "Ranking TOP 10 - **Nagany** :thumbsdown:";
             valueLabel = "Nagany: ";
             type = "reprimands";
-        } else if (Boolean.TRUE.equals(getBooleanOption(event, REPRIMAND_PARAM))) {
+        } else if (Boolean.TRUE.equals(getBooleanOption(event, AWARDS_PARAM))) {
             sortedUsers = userDataMap.values().stream()
                     .sorted(Comparator.comparingInt(UserData::getSpecialAwardCount).reversed())
                     .limit(10)
