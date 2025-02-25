@@ -20,12 +20,12 @@ public class SlashCommandEventListener extends ListenerAdapter
     private final CommandManager commandManager;
 
     @Value("${bot.channels.commands.id:0}")
-    private int commandsChannelId;
+    private String commandsChannelId;
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event)
     {
-        if (event.getChannel().getIdLong() != commandsChannelId)
+        if (!event.getChannel().getId().equals(commandsChannelId))
         {
             showWrongChannelMessage(event);
             return;
