@@ -29,6 +29,7 @@ public class TopCommand implements SlashCommand
     private static final String MISSIONS_PARAM = "misje";
     private static final String APPRAISAL_PARAM = "pochwały";
     private static final String REPRIMAND_PARAM = "nagany";
+    private static final String AWARDS_PARAM = "nagrody";
 
     private final UserDataService userDataService;
     private boolean getBooleanOption(SlashCommandInteractionEvent event, String option) {
@@ -42,7 +43,8 @@ public class TopCommand implements SlashCommand
                 .addOption(OptionType.BOOLEAN, APPRAISAL_PARAM, "Sortuje ranking po liczbie pochwał", false)
                 .addOption(OptionType.BOOLEAN, REPRIMAND_PARAM, "Sortuje ranking po liczbie nagan", false)
                 .addOption(OptionType.BOOLEAN, MISSIONS_PARAM, "Sortuje ranking po zagranych misjach", false)
-                .addOption(OptionType.BOOLEAN, LEVEL_PARAM, "Sortuje ranking po poziomach", false);
+                .addOption(OptionType.BOOLEAN, LEVEL_PARAM, "Sortuje ranking po poziomach", false)
+                .addOption(OptionType.BOOLEAN, AWARDS_PARAM, "Sortuje ranking po liczbie nagrod", false);
     }
 
 
@@ -72,7 +74,7 @@ public class TopCommand implements SlashCommand
                     .sorted(Comparator.comparingInt(UserData::getLevel).reversed())
                     .limit(10)
                     .toList();
-            title = "🏆 Ranking TOP 10 - Poziom";
+            title = "Ranking TOP 10 - **Poziom** :chart_with_upwards_trend:";
             valueLabel = "Poziom: ";
             type = "level";
         } else if (Boolean.TRUE.equals(getBooleanOption(event, MISSIONS_PARAM))) {
@@ -80,7 +82,7 @@ public class TopCommand implements SlashCommand
                     .sorted(Comparator.comparingInt(UserData::getMissionsPlayed).reversed())
                     .limit(10)
                     .toList();
-            title = "🏆 Ranking TOP 10 - Misje";
+            title = "🏆 Ranking TOP 10 - **Misje** \uD83D\uDCE5";
             valueLabel = "Misje: ";
             type = "missions";
         } else if (Boolean.TRUE.equals(getBooleanOption(event, APPRAISAL_PARAM))) {
@@ -88,7 +90,7 @@ public class TopCommand implements SlashCommand
                     .sorted(Comparator.comparingInt(UserData::getAppraisalsCount).reversed())
                     .limit(10)
                     .toList();
-            title = "🏆 Ranking TOP 10 - Pochwały";
+            title = "Ranking TOP 10 - **Pochwały** :thumbsup:";
             valueLabel = "Pochwały: ";
             type = "appraisals";
         } else if (Boolean.TRUE.equals(getBooleanOption(event, REPRIMAND_PARAM))) {
@@ -96,18 +98,26 @@ public class TopCommand implements SlashCommand
                     .sorted(Comparator.comparingInt(UserData::getReprimandsCount).reversed())
                     .limit(10)
                     .toList();
-            title = "🏆 Ranking TOP 10 - Nagany";
+            title = "Ranking TOP 10 - **Nagany** :thumbsdown:";
             valueLabel = "Nagany: ";
             type = "reprimands";
-        } else {
+        } else if (Boolean.TRUE.equals(getBooleanOption(event, REPRIMAND_PARAM))) {
             sortedUsers = userDataMap.values().stream()
                     .sorted(Comparator.comparingInt(UserData::getExp).reversed())
                     .limit(10)
                     .toList();
-            title = "🏆 Ranking TOP 10 - EXP";
-            valueLabel = "EXP: ";
-            type = "exp";
-        }
+            title = "Ranking TOP 10 - **Nagrody specjalne** \uD83C\uDFC6";
+            valueLabel = "Nagrody: ";
+            type = "awards";
+        } else {
+        sortedUsers = userDataMap.values().stream()
+                .sorted(Comparator.comparingInt(UserData::getExp).reversed())
+                .limit(10)
+                .toList();
+        title = "Ranking TOP 10 - EXP :sparkles:";
+        valueLabel = "EXP: ";
+        type = "awards";
+    }
 
         Guild guild = event.getGuild();
         EmbedBuilder embedBuilder = new EmbedBuilder()
@@ -121,7 +131,7 @@ public class TopCommand implements SlashCommand
         int rank = 1;
         for (UserData user : sortedUsers) {
             String icon = switch (rank) {
-                case 1 -> "🏆";
+                case 1 -> "🥇";
                 case 2 -> "🥈";
                 case 3 -> "🥉";
                 default -> "";
@@ -132,10 +142,11 @@ public class TopCommand implements SlashCommand
                 case "missions" -> user.getMissionsPlayed();
                 case "appraisals" -> user.getAppraisalsCount();
                 case "reprimands" -> user.getReprimandsCount();
+                case "awards" -> user.getSpecialAwardCount();
                 default -> user.getExp();
             };
 
-            embedBuilder.addField("#" + rank + " " + icon + " " + user.getName(), valueLabel + "**" + value + "**", false);
+            embedBuilder.addField("#" + rank + " " + icon + " " + user.getName(), valueLabel + "`" + value + "`", false);
             rank++;
         }
 

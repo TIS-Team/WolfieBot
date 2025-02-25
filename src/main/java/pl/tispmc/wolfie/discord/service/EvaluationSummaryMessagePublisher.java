@@ -102,27 +102,14 @@ public class EvaluationSummaryMessagePublisher
         return actionsWithExp.toString();
     }
 
-    private String generateProgressBarToNextLevel(Rank rank, int playerExp)
-    {
-        // 10 bars in total
+    private String generateProgressBarToNextLevel(Rank rank, int playerExp) {
         int nextLevelRequiredExp = rank.next().getExp();
-
         int numberOfBars = 10;
-        int bar = (int)(((double)playerExp / nextLevelRequiredExp) * 100 / numberOfBars - 1);
-
+        int bar = (int) (((double) playerExp / nextLevelRequiredExp) * 100 / numberOfBars - 1);
         String[] progressBar = new String[numberOfBars];
-        for (int i = 0; i < numberOfBars; i++)
-        {
-            if (bar >= i - 1)
-            {
-                progressBar[i] = ":green_square:";
-            }
-            else
-            {
-                progressBar[i] = ":white_large_square:";
-            }
+        for (int i = 0; i < numberOfBars; i++) {
+            progressBar[i] = (bar >= i - 1) ? ":green_square:" : ":white_large_square:";
         }
-
         return String.join("", progressBar);
     }
 

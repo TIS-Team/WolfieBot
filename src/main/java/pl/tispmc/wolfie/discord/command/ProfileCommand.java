@@ -46,23 +46,33 @@ public class ProfileCommand implements SlashCommand {
                 ? event.getOption(PLAYER_PARAM).getAsUser()
                 : event.getUser();
         UserData stats = userDataService.find(user.getIdLong());
+
         if (stats == null) {
             userDataService.save(createNewUserData(user));
             stats = userDataService.find(user.getIdLong());
         }
+
         Rank rank = calculatePlayerLevel(stats.getExp());
+        Rank nextRank = rank.next();
+
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setColor(Color.RED);
         embedBuilder.setThumbnail(user.getEffectiveAvatarUrl());
         embedBuilder.setTitle(" Profil gracza: " + user.getName());
-        embedBuilder.addField(":star: Całkowity EXP", String.valueOf(stats.getExp()), true);
-        embedBuilder.addField(":bar_chart: Poziom", rank.getName(), true);
-        embedBuilder.addField(":crossed_swords: Misje", String.valueOf(stats.getMissionsPlayed()), true);
+        embedBuilder.addField(":star: `Całkowity` **`EXP`**", String.format("``%s``", stats.getExp()), true);
+        embedBuilder.addField(":bar_chart: Ranga", String.format("``%d. %s``", rank.ordinal() + 1, rank.getName()), true);
+        embedBuilder.addField(":crossed_swords: Misje", String.format("``%s``", stats.getMissionsPlayed()), true);
         embedBuilder.addField(":medal: Postęp do następnego poziomu", generateProgressBarToNextLevel(rank, stats.getExp()), false);
-        embedBuilder.addField(":chart_with_upwards_trend: EXP do następnego poziomu", String.valueOf(rank.next().getExp() - stats.getExp()), false);
-        embedBuilder.addField(":thumbsup: Pochwały", String.valueOf(stats.getAppraisalsCount()), true);
-        embedBuilder.addField(":thumbsdown: Nagany", String.valueOf(stats.getReprimandsCount()), true);
-        embedBuilder.addField(":trophy: Nagrody Specjalne", String.valueOf(stats.getSpecialAwardCount()), true);
+        if (nextRank.ordinal() > rank.ordinal()) {
+            embedBuilder.addField(":small_red_triangle: Następna ranga za:",
+                    String.format("``%s EXP do rangi %s``", nextRank.getExp() - stats.getExp(), nextRank.getName()),
+                    false);
+        } else {
+            embedBuilder.addField("\uD83C\uDFC6 Awans niedostępny!", "Osiągnąłeś najwyższą możliwą rangę!", false);
+        }
+        embedBuilder.addField(":thumbsup: Pochwały", String.format("``%s``", stats.getAppraisalsCount()), true);
+        embedBuilder.addField(":thumbsdown: Nagany", String.format("``%s``", stats.getReprimandsCount()), true);
+        embedBuilder.addField(":trophy: Nagrody Specjalne", String.format("``%s``", stats.getSpecialAwardCount()), false);
         embedBuilder.setTimestamp(Instant.now());
         event.replyEmbeds(embedBuilder.build()).queue();
     }
@@ -87,11 +97,7 @@ public class ProfileCommand implements SlashCommand {
         int bar = (int) (((double) playerExp / nextLevelRequiredExp) * 100 / numberOfBars - 1);
         String[] progressBar = new String[numberOfBars];
         for (int i = 0; i < numberOfBars; i++) {
-            if (bar >= i - 1) {
-                progressBar[i] = ":green_square:";
-            } else {
-                progressBar[i] = ":white_large_square:";
-            }
+            progressBar[i] = (bar >= i - 1) ? ":green_square:" : ":white_large_square:";
         }
         return String.join("", progressBar);
     }
