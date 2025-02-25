@@ -45,7 +45,7 @@ public class SlashCommandEventListener extends ListenerAdapter
     {
         MessageEmbed embed = new EmbedBuilder()
                 .setColor(Color.RED)
-                .setTitle(":john_wick_angry: Nie ten kanał, zmykaj bo Cię ugryzzzę! :bob_ross_gun:")
+                .setTitle("<:john_wick_angry:1283761008862822431> Nie ten kanał, zmykaj bo Cię ugryzzzę! <:bob_ross_gun:1326597380996468847>")
                 .build();
 
         event.deferReply()
