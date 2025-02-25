@@ -90,7 +90,7 @@ public class RankCommand implements SlashCommand
 
         // embed
         EmbedBuilder embedBuilder = new EmbedBuilder()
-                .setTitle("\uD83D\uDCCA Pozycje w Rankingach - " + targetUserData.getName())
+                .setTitle("\uD83D\uDCCA Pozycje w rankingach - " + targetUserData.getName())
                 .setColor(Color.RED)
                 .setTimestamp(Instant.now())
                 .setThumbnail(targetUser.getEffectiveAvatarUrl())
