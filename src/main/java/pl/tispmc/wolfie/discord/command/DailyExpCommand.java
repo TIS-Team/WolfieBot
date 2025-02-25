@@ -61,7 +61,7 @@ public class DailyExpCommand implements SlashCommand
 
         dailyExpStreak += 1;
 
-        int dailyExpStreakMaxRecord = expClaims.getDailyExpStreak();
+        int dailyExpStreakMaxRecord = expClaims.getDailyExpStreakMaxRecord();
         if (dailyExpStreak > dailyExpStreakMaxRecord) {
             dailyExpStreakMaxRecord = dailyExpStreak;
         }
