@@ -94,7 +94,7 @@ public class ProfileCommand implements SlashCommand {
 
     private double calculateExpStreakBonus(int dailyExpStreak) {
         int streakBonus = Math.min(dailyExpStreak, 30);
-        return ((double) streakBonus / 100);
+        return ((double) streakBonus / 50);
     }
 
     private String generateProgressBarToNextLevel(Rank rank, int playerExp) {
