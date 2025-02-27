@@ -42,7 +42,7 @@ public class TopCommand implements SlashCommand
         AWARDS("nagrody"),
         EXP("exp"),
         CURRENT_STREAK("streak"),
-        MAX_STREAK("maxstreak");
+        MAX_STREAK("maxdaily");
 
         private final String paramName;
 
