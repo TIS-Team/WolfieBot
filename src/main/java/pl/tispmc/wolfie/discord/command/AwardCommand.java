@@ -34,6 +34,7 @@ public class AwardCommand implements SlashCommand {
     private static final String XP_AMOUNT_PARAM = "ilosc";
     private static final String REASON_PARAM = "powod";
     private static final String DATE_PARAM = "data";
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     //move to config later
     private static final String AWARD_CHANNEL_ID = "1344731110407405689";
@@ -75,11 +76,8 @@ public class AwardCommand implements SlashCommand {
         if (event.getOption(DATE_PARAM) != null) {
             String dateStr = event.getOption(DATE_PARAM).getAsString();
             try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                LocalDate customDate = LocalDate.parse(dateStr, formatter);
-
+                LocalDate customDate = LocalDate.parse(dateStr, DATE_FORMATTER);
                 awardedAt = customDate.atTime(12, 0);
-
                 awardTimestamp = awardedAt.atZone(ZoneId.systemDefault()).toInstant();
             } catch (DateTimeParseException e) {
                 throw new CommandException("Nieprawidłowy format daty. Użyj formatu: YYYY-MM-DD");
@@ -112,7 +110,7 @@ public class AwardCommand implements SlashCommand {
                 .setDescription("Przyznano nagrodę specjalną!")
                 .addField("Gracz", targetMember.getAsMention(), true)
                 .addField("EXP", "+" + xpAmount, true)
-                .setTimestamp(awardTimestamp) // Use custom date timestamp if provided
+                .setTimestamp(awardTimestamp)
                 .build();
 
         event.deferReply().setEphemeral(true).addEmbeds(messageEmbed).queue();
