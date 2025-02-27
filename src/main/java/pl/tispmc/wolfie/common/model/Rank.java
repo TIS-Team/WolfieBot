@@ -48,6 +48,6 @@ public enum Rank {
         return Arrays.stream(values())
                 .filter(rank -> exp >= rank.getExp())
                 .max(Comparator.comparing(Rank::getExp))
-                .orElseThrow();
+                .orElse(RECRUIT);
     }
 }
