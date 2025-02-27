@@ -86,9 +86,9 @@ public class DailyExpCommand implements SlashCommand
                 .setThumbnail(member.getEffectiveAvatarUrl())
                 .setDescription("Zagarnięto daily exp: `+" + expReward + "` \n" +
                         "\n" +
-                        "🔥 Streak: `" + dailyExpStreak + "`\n" +
-                        ":sparkles: Bonus: `" + String.format("%.0f", expStreakBonus * 100) + "%` \n" +
-                        "💯 Najdłuższy streak: `" + dailyExpStreakMaxRecord + "`")
+                        "🔥 Daily: `" + dailyExpStreak + "`\n" +
+                        ":sparkles: Bonus EXP: `" + String.format("%.0f", expStreakBonus * 100) + "%` \n" +
+                        "💯 Najdłuższe daily: `" + dailyExpStreakMaxRecord + "`")
                 .setTimestamp(Instant.now())
                 .build();
 

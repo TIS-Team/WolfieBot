@@ -86,9 +86,9 @@ public class ProfileCommand implements SlashCommand {
         embedBuilder.addField("", "", true);
 
         //Streak
-        embedBuilder.addField("\uD83D\uDD25 Streak", String.format("``%d`` dni", dailyExpStreak), true);
+        embedBuilder.addField("\uD83D\uDD25 Daily", String.format("``%d`` dni", dailyExpStreak), true);
         embedBuilder.addField("✨ Bonus do EXP", String.format("``%.0f%%``", expStreakBonus * 100), true);
-        embedBuilder.addField("💯 Najdłuższy streak", String.format("``%d`` dni", dailyExpStreakMaxRecord), true);
+        embedBuilder.addField("💯 Najdłuższe daily", String.format("``%d`` dni", dailyExpStreakMaxRecord), true);
 
         if (awards != null && !awards.isEmpty()) {
             StringBuilder awardsContent = new StringBuilder();

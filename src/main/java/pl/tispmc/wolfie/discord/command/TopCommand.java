@@ -221,8 +221,8 @@ public class TopCommand implements SlashCommand
                                         .map(UserData.ExpClaims::getDailyExpStreak)
                                         .orElse(0)).reversed())
                         .toList())
-                .title("Ranking TOP 10 - **Aktualny streak** 🔥")
-                .valueLabel("Streak: ")
+                .title("Ranking TOP 10 - **Aktualne daily** 🔥")
+                .valueLabel("Daily: ")
                 .build();
     }
 
@@ -235,8 +235,8 @@ public class TopCommand implements SlashCommand
                                         .map(UserData.ExpClaims::getDailyExpStreakMaxRecord)
                                         .orElse(0)).reversed())
                         .toList())
-                .title("Ranking TOP 10 - **Najdłuższy streak** 💯")
-                .valueLabel("Najdłuższy streak: ")
+                .title("Ranking TOP 10 - **Najdłuższe daily** 💯")
+                .valueLabel("Najdłuższe daily: ")
                 .build();
     }
 
