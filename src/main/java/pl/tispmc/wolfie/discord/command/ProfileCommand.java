@@ -83,6 +83,7 @@ public class ProfileCommand implements SlashCommand {
         //Nagrody
         embedBuilder.addField(":thumbsup: Pochwały", String.format("``%s``", stats.getAppraisalsCount()), true);
         embedBuilder.addField(":thumbsdown: Nagany", String.format("``%s``", stats.getReprimandsCount()), true);
+        embedBuilder.addField("", "", true);
 
         //Streak
         embedBuilder.addField("\uD83D\uDD25 Streak", String.format("``%d`` dni", dailyExpStreak), true);
