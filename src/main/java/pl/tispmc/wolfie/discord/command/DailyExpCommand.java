@@ -46,15 +46,18 @@ public class DailyExpCommand implements SlashCommand
         UserData userData = Optional.ofNullable(userDataService.find(member.getIdLong())).orElse(UserDataCreator.createUserData(member));
         UserData.ExpClaims expClaims = Optional.ofNullable(userData.getExpClaims()).orElse(UserData.ExpClaims.builder().build());
 
+        LocalDateTime now = LocalDateTime.now();
         LocalDateTime lastDailyExpClaimDate = expClaims.getLastDailyExpClaim();
-        if (lastDailyExpClaimDate != null && lastDailyExpClaimDate.getDayOfYear() == LocalDateTime.now().getDayOfYear())
+        if (lastDailyExpClaimDate != null &&
+                lastDailyExpClaimDate.toLocalDate().isEqual(now.toLocalDate()))
         {
             throw new CommandException("Dzienny exp już wykorzystany!");
         }
 
         int dailyExpStreak = expClaims.getDailyExpStreak();
-        if (lastDailyExpClaimDate == null
-                || Math.abs(lastDailyExpClaimDate.getDayOfYear() - LocalDateTime.now().getDayOfYear()) > 1)
+        if (lastDailyExpClaimDate == null ||
+                !lastDailyExpClaimDate.toLocalDate().plusDays(1).isEqual(now.toLocalDate()) &&
+                        !lastDailyExpClaimDate.toLocalDate().isEqual(now.toLocalDate()))
         {
             dailyExpStreak = 0;
         }
