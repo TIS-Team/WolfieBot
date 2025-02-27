@@ -1,0 +1,109 @@
+package pl.tispmc.wolfie.discord.command;
+
+import lombok.RequiredArgsConstructor;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
+import org.springframework.stereotype.Component;
+import pl.tispmc.wolfie.common.UserDataCreator;
+import pl.tispmc.wolfie.common.model.Award;
+import pl.tispmc.wolfie.common.model.UserData;
+import pl.tispmc.wolfie.common.service.UserDataService;
+import pl.tispmc.wolfie.discord.command.exception.CommandException;
+
+import java.awt.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@RequiredArgsConstructor
+@Component
+public class AwardCommand implements SlashCommand {
+    private static final String PLAYER_PARAM = "gracz";
+    private static final String XP_AMOUNT_PARAM = "ilosc";
+    private static final String REASON_PARAM = "powod";
+
+    //move to config later
+    private static final String AWARD_CHANNEL_ID = "1344731110407405689";
+
+    private final UserDataService userDataService;
+
+    @Override
+    public SlashCommandData getSlashCommandData() {
+        return SlashCommand.super.getSlashCommandData()
+                .addOption(OptionType.USER, PLAYER_PARAM, "Wybierz gracza", true)
+                .addOption(OptionType.INTEGER, XP_AMOUNT_PARAM, "Ilość przyznawanego EXP", true)
+                .addOption(OptionType.STRING, REASON_PARAM, "Powód przyznania nagrody", true);
+    }
+
+    @Override
+    public List<String> getAliases() {
+        return List.of("nagroda");
+    }
+
+    @Override
+    public String getDescription() {
+        return "Przyznaj graczowi nagrodę wraz z EXP";
+    }
+
+    @Override
+    public void onSlashCommand(SlashCommandInteractionEvent event) throws CommandException {
+
+        //change to role later
+        if (!event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+            throw new CommandException("Nie masz uprawnień do używania tej komendy!");
+        }
+
+        Member targetMember = event.getOption(PLAYER_PARAM).getAsMember();
+        int xpAmount = event.getOption(XP_AMOUNT_PARAM).getAsInt();
+        String reason = event.getOption(REASON_PARAM).getAsString();
+
+
+        UserData userData = Optional.ofNullable(userDataService.find(targetMember.getIdLong()))
+                .orElse(UserDataCreator.createUserData(targetMember));
+
+        Award newAward = Award.builder()
+                .reason(reason)
+                .awardedAt(LocalDateTime.now())
+                .build();
+
+        List<Award> awards = new ArrayList<>(Optional.ofNullable(userData.getAwards()).orElse(new ArrayList<>()));
+        awards.add(newAward);
+
+        UserData updatedUserData = userData.toBuilder()
+                .exp(userData.getExp() + xpAmount)
+                .awards(awards)
+                .specialAwardCount(userData.getSpecialAwardCount() + 1)
+                .build();
+
+        userDataService.save(updatedUserData);
+
+        MessageEmbed messageEmbed = new EmbedBuilder()
+                .setColor(Color.YELLOW)
+                .setTitle(reason)
+                .setThumbnail(targetMember.getEffectiveAvatarUrl())
+                .setDescription("Przyznano nagrodę specjalną!")
+                .addField("Gracz", targetMember.getAsMention(), true)
+                .addField("EXP", "+" + xpAmount, true)
+                .setTimestamp(Instant.now())
+                .build();
+
+        event.deferReply().setEphemeral(true).addEmbeds(messageEmbed).queue();
+
+        try {
+            TextChannel awardChannel = event.getGuild().getTextChannelById(AWARD_CHANNEL_ID);
+            if (awardChannel != null) {
+                awardChannel.sendMessageEmbeds(messageEmbed).queue();
+            }
+        } catch (Exception e) {
+            System.err.println("Nie udało się wysłać wiadomości na kanał nagród: " + e.getMessage());
+        }
+    }
+}

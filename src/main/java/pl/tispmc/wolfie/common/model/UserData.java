@@ -8,6 +8,8 @@ import lombok.ToString;
 import lombok.Value;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -26,6 +28,9 @@ public class UserData
 
     @Builder.Default
     ExpClaims expClaims = ExpClaims.builder().build();
+
+    @Builder.Default
+    List<Award> awards = new ArrayList<>();
 
     @Value
     @Builder(toBuilder = true)

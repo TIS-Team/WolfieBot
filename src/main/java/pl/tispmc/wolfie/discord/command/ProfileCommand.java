@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.springframework.stereotype.Component;
 import pl.tispmc.wolfie.common.UserDataCreator;
+import pl.tispmc.wolfie.common.model.Award;
 import pl.tispmc.wolfie.common.model.Rank;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.service.UserDataService;
@@ -15,6 +16,7 @@ import pl.tispmc.wolfie.discord.command.exception.CommandException;
 
 import java.awt.*;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,6 +57,7 @@ public class ProfileCommand implements SlashCommand {
         Rank rank = Rank.getRankForExp(stats.getExp());
         Rank nextRank = rank.next();
         UserData.ExpClaims expClaims = Optional.ofNullable(stats.getExpClaims()).orElse(UserData.ExpClaims.builder().build());
+        List<Award> awards = stats.getAwards();
 
         int dailyExpStreak = expClaims.getDailyExpStreak();
         int dailyExpStreakMaxRecord = expClaims.getDailyExpStreakMaxRecord();
@@ -67,10 +70,9 @@ public class ProfileCommand implements SlashCommand {
         embedBuilder.addField(":star: Całkowity EXP", String.format("``%s``", stats.getExp()), true);
         embedBuilder.addField(":bar_chart: Ranga", String.format("``%d. %s``", rank.ordinal() + 1, rank.getName()), true);
         embedBuilder.addField(":crossed_swords: Misje", String.format("``%s``", stats.getMissionsPlayed()), true);
-        embedBuilder.addField(":medal: Postęp do następnego poziomu", generateProgressBarToNextLevel(rank, stats.getExp()), false);
 
-        //brak lvlup
         if (nextRank.ordinal() > rank.ordinal()) {
+            embedBuilder.addField(":medal: Postęp do następnego poziomu", generateProgressBarToNextLevel(rank, stats.getExp()), false);
             embedBuilder.addField(":small_red_triangle: Następna ranga:",
                     String.format("``%s EXP do rangi %s``", nextRank.getExp() - stats.getExp(), nextRank.getName()),
                     false);
@@ -81,12 +83,25 @@ public class ProfileCommand implements SlashCommand {
         //Nagrody
         embedBuilder.addField(":thumbsup: Pochwały", String.format("``%s``", stats.getAppraisalsCount()), true);
         embedBuilder.addField(":thumbsdown: Nagany", String.format("``%s``", stats.getReprimandsCount()), true);
-        embedBuilder.addField(":trophy: Nagrody specjalne", String.format("``%s``", stats.getSpecialAwardCount()), false);
 
         //Streak
         embedBuilder.addField("\uD83D\uDD25 Streak", String.format("``%d`` dni", dailyExpStreak), true);
         embedBuilder.addField("✨ Bonus do EXP", String.format("``%.0f%%``", expStreakBonus * 100), true);
         embedBuilder.addField("💯 Najdłuższy streak", String.format("``%d`` dni", dailyExpStreakMaxRecord), true);
+
+        if (awards != null && !awards.isEmpty()) {
+            StringBuilder awardsContent = new StringBuilder();
+
+            for (Award award : awards) {
+                awardsContent.append("")
+                        .append(award.getReason())
+                        .append(" (")
+                        .append(award.getAwardedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
+                        .append(")\n");
+            }
+
+            embedBuilder.addField(":trophy: Wyróżnienia", awardsContent.toString(), false);
+        }
 
         embedBuilder.setTimestamp(Instant.now());
         event.replyEmbeds(embedBuilder.build()).queue();

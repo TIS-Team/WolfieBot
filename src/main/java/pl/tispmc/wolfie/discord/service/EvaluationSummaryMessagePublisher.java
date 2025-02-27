@@ -48,7 +48,7 @@ public class EvaluationSummaryMessagePublisher
     private MessageEmbed buildSummaryMessageForPlayer(EvaluationSummary.SummaryPlayer player)
     {
         Rank rank = Rank.getRankForExp(player.getExp());
-
+        Rank nextRank = rank.next();
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
         int expChange = player.getExpChange();
@@ -67,11 +67,18 @@ public class EvaluationSummaryMessagePublisher
         embedBuilder.addField(":bar_chart: Nowy poziom", rank.getName(), true);
         embedBuilder.addField(":crossed_swords: Misje", String.valueOf(player.getMissionsPlayed()), true);
         embedBuilder.addField(":star: Całkowity EXP", String.valueOf(player.getExp()), true);
-        embedBuilder.addField(":medal: Postęp do następnego poziomu", generateProgressBarToNextLevel(rank, player.getExp()), false);
+
+        if (nextRank.ordinal() > rank.ordinal()) {
+            embedBuilder.addField(":medal: Postęp do następnego poziomu", generateProgressBarToNextLevel(rank, player.getExp()), false);
+            embedBuilder.addField(":small_red_triangle: Następna ranga:",
+                    String.format("``%s EXP do rangi %s``", nextRank.getExp() - player.getExp(), nextRank.getName()),
+                    false);
+        } else {
+            embedBuilder.addField("\uD83C\uDFC6 Awans niedostępny!", "Osiągnąłeś najwyższą możliwą rangę!", false);
+        }
+
         embedBuilder.addField(":thumbsup: Pochwały", buildActionsString(player, true), false);
         embedBuilder.addField(":thumbsdown: Nagany", buildActionsString(player, false), false);
-        embedBuilder.addField(":bar_chart: EXP do następnego poziomu",
-                String.valueOf(rank.next().getExp() - player.getExp()), false);
 
         return embedBuilder.build();
     }
