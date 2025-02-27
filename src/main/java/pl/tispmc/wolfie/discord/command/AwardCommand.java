@@ -18,7 +18,11 @@ import pl.tispmc.wolfie.discord.command.exception.CommandException;
 
 import java.awt.*;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +33,7 @@ public class AwardCommand implements SlashCommand {
     private static final String PLAYER_PARAM = "gracz";
     private static final String XP_AMOUNT_PARAM = "ilosc";
     private static final String REASON_PARAM = "powod";
+    private static final String DATE_PARAM = "data";
 
     //move to config later
     private static final String AWARD_CHANNEL_ID = "1344731110407405689";
@@ -40,7 +45,8 @@ public class AwardCommand implements SlashCommand {
         return SlashCommand.super.getSlashCommandData()
                 .addOption(OptionType.USER, PLAYER_PARAM, "Wybierz gracza", true)
                 .addOption(OptionType.INTEGER, XP_AMOUNT_PARAM, "Ilość przyznawanego EXP", true)
-                .addOption(OptionType.STRING, REASON_PARAM, "Powód przyznania nagrody", true);
+                .addOption(OptionType.STRING, REASON_PARAM, "Powód przyznania nagrody", true)
+                .addOption(OptionType.STRING, DATE_PARAM, "Data przyznania nagrody (YYYY-MM-DD)", false);
     }
 
     @Override
@@ -55,8 +61,6 @@ public class AwardCommand implements SlashCommand {
 
     @Override
     public void onSlashCommand(SlashCommandInteractionEvent event) throws CommandException {
-
-        //change to role later
         if (!event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
             throw new CommandException("Nie masz uprawnień do używania tej komendy!");
         }
@@ -65,13 +69,29 @@ public class AwardCommand implements SlashCommand {
         int xpAmount = event.getOption(XP_AMOUNT_PARAM).getAsInt();
         String reason = event.getOption(REASON_PARAM).getAsString();
 
+        LocalDateTime awardedAt = LocalDateTime.now();
+        Instant awardTimestamp = Instant.now();
+
+        if (event.getOption(DATE_PARAM) != null) {
+            String dateStr = event.getOption(DATE_PARAM).getAsString();
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDate customDate = LocalDate.parse(dateStr, formatter);
+
+                awardedAt = customDate.atTime(12, 0);
+
+                awardTimestamp = awardedAt.atZone(ZoneId.systemDefault()).toInstant();
+            } catch (DateTimeParseException e) {
+                throw new CommandException("Nieprawidłowy format daty. Użyj formatu: YYYY-MM-DD");
+            }
+        }
 
         UserData userData = Optional.ofNullable(userDataService.find(targetMember.getIdLong()))
                 .orElse(UserDataCreator.createUserData(targetMember));
 
         Award newAward = Award.builder()
                 .reason(reason)
-                .awardedAt(LocalDateTime.now())
+                .awardedAt(awardedAt)
                 .build();
 
         List<Award> awards = new ArrayList<>(Optional.ofNullable(userData.getAwards()).orElse(new ArrayList<>()));
@@ -92,7 +112,7 @@ public class AwardCommand implements SlashCommand {
                 .setDescription("Przyznano nagrodę specjalną!")
                 .addField("Gracz", targetMember.getAsMention(), true)
                 .addField("EXP", "+" + xpAmount, true)
-                .setTimestamp(Instant.now())
+                .setTimestamp(awardTimestamp) // Use custom date timestamp if provided
                 .build();
 
         event.deferReply().setEphemeral(true).addEmbeds(messageEmbed).queue();
