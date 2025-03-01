@@ -64,7 +64,7 @@ public class CommandManager
 
     private void handleSlashCommandException(InteractionHook interactionHook, SlashCommand command, CommandException exception)
     {
-        log.error("Błąd: {}", command.getAliases().get(0), exception);
+        log.error("Błąd: {}", command.getAliases().getFirst(), exception);
 //        log.error(messageSource.getMessage(ERROR_COMMAND_EXCEPTION, command.getAliases().get(0), exception.getMessage()));
         MessageEmbed messageEmbed = new EmbedBuilder()
                 .setColor(Color.RED)
@@ -76,7 +76,7 @@ public class CommandManager
 
     private void handleSlashException(InteractionHook interactionHook, SlashCommand command, Exception exception)
     {
-        log.error("Błąd: {}", command.getAliases().get(0), exception);
+        log.error("Błąd: {}", command.getAliases().getFirst(), exception);
 //        log.error(messageSource.getMessage(ERROR_GENERAL, command.getAliases().get(0), exception.getMessage()), exception);
         MessageEmbed messageEmbed = new EmbedBuilder()
                 .setColor(Color.RED)

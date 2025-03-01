@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 import pl.tispmc.wolfie.common.model.Action;
 import pl.tispmc.wolfie.common.model.EvaluationSummary;
 import pl.tispmc.wolfie.common.model.Rank;
+import pl.tispmc.wolfie.common.util.DateTimeProvider;
 import pl.tispmc.wolfie.discord.WolfieBot;
 
 import java.awt.*;
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class EvaluationSummaryMessagePublisher
 {
     private final WolfieBot wolfieBot;
+    private final DateTimeProvider dateTimeProvider;
 
     @Value("${bot.discord.guild-id}")
     private long guildId;
@@ -139,7 +140,7 @@ public class EvaluationSummaryMessagePublisher
         embedBuilder.addField(":star2: Gracze z pochwałami", playersWithAppraisals.stream().map(EvaluationSummary.SummaryPlayer::getName).collect(Collectors.joining(", ")), false);
         embedBuilder.addField(":warning: Gracze z naganami", playersWithReprimands.stream().map(EvaluationSummary.SummaryPlayer::getName).collect(Collectors.joining(", ")), false);
 
-        embedBuilder.setTimestamp(Instant.now());
+        embedBuilder.setTimestamp(dateTimeProvider.currentInstant());
 
         textChannel.sendMessageEmbeds(embedBuilder.build()).queue();
     }

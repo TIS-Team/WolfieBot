@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import pl.tispmc.wolfie.common.event.model.RankChangedEvent;
 import pl.tispmc.wolfie.common.model.Rank;
+import pl.tispmc.wolfie.common.util.DateTimeProvider;
 import pl.tispmc.wolfie.discord.WolfieBot;
 
 import java.awt.*;
-import java.time.Instant;
 import java.util.Optional;
 
 @Component
@@ -17,6 +17,7 @@ import java.util.Optional;
 public class RankChangedMessagePublisher
 {
     private final WolfieBot wolfieBot;
+    private final DateTimeProvider dateTimeProvider;
 
     @Value("${bot.discord.guild-id}")
     private long guildId;
@@ -47,7 +48,7 @@ public class RankChangedMessagePublisher
         embedBuilder.addField(":small_red_triangle_down: Poprzednia ranga", oldRankName, true);
         embedBuilder.addField(":small_red_triangle: Nowa ranga", newRankName, true);
         embedBuilder.setThumbnail(data.getAvatarUrl());
-        embedBuilder.setTimestamp(Instant.now());
+        embedBuilder.setTimestamp(dateTimeProvider.currentInstant());
 
         wolfieBot.getJda()
                 .getGuildById(guildId)

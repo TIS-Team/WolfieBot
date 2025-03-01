@@ -1,7 +1,7 @@
-version: '3'
 services:
   wolfie:
     container_name: wolfie-bot
+    restart: unless-stopped
     image: aquerr/wolfie:latest
     ports:
       - "8087:8087"

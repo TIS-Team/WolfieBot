@@ -12,10 +12,10 @@ import pl.tispmc.wolfie.common.model.Rank;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.model.UserId;
 import pl.tispmc.wolfie.common.service.UserDataService;
+import pl.tispmc.wolfie.common.util.DateTimeProvider;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
 
 import java.awt.*;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +26,7 @@ public class RankCommand implements SlashCommand
     private static final String USER_PARAM = "użytkownik";
 
     private final UserDataService userDataService;
+    private final DateTimeProvider dateTimeProvider;
 
     @Override
     public SlashCommandData getSlashCommandData(){
@@ -72,7 +73,7 @@ public class RankCommand implements SlashCommand
                     .setTitle("❌ Błąd")
                     .setDescription("Użytkownik " + targetUser.getName() + " nie został znaleziony w bazie danych.")
                     .setColor(Color.RED)
-                    .setTimestamp(Instant.now());
+                    .setTimestamp(dateTimeProvider.currentInstant());
 
             event.replyEmbeds(errorEmbed.build()).queue();
             return;
@@ -93,7 +94,7 @@ public class RankCommand implements SlashCommand
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle("\uD83D\uDCCA Pozycje w rankingach - " + targetUserData.getName())
                 .setColor(Color.RED)
-                .setTimestamp(Instant.now())
+                .setTimestamp(dateTimeProvider.currentInstant())
                 .setThumbnail(targetUser.getEffectiveAvatarUrl())
                 .setDescription("**Użytkownik:** " + targetUserData.getName() + "\n"
                         + "**Liczba osób w rankingu:** `" + totalUsers + "`\n\n"

@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.service.UserDataService;
+import pl.tispmc.wolfie.common.util.DateTimeProvider;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
 
 import java.time.LocalDateTime;
@@ -27,6 +28,9 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class DailyExpCommandTest
 {
+    private static final LocalDateTime OLD_LOCAL_DATE_TIME = LocalDateTime.of(2025, 1, 4, 12, 30);
+    private static final LocalDateTime NOW_LOCAL_DATE_TIME = LocalDateTime.of(2025, 1, 5, 12, 30);
+
     private static final long MEMBER_ID = 1;
     private static final int MEMBER_BASE_EXP = 25;
     private static final int MEMBER_DAILY_STREAK = 1;
@@ -34,6 +38,8 @@ class DailyExpCommandTest
 
     @Mock
     private UserDataService userDataService;
+    @Mock
+    private DateTimeProvider dateTimeProvider;
 
     @InjectMocks
     private DailyExpCommand dailyExpCommand;
@@ -68,7 +74,8 @@ class DailyExpCommandTest
 
         given(member.getIdLong()).willReturn(MEMBER_ID);
         given(event.getMember()).willReturn(member);
-        given(userDataService.find(MEMBER_ID)).willReturn(prepareUserData(LocalDateTime.now()));
+        given(userDataService.find(MEMBER_ID)).willReturn(prepareUserData(NOW_LOCAL_DATE_TIME));
+        given(dateTimeProvider.currentLocalDateTime()).willReturn(NOW_LOCAL_DATE_TIME);
 
         // when
         Exception exception = catchException(() -> dailyExpCommand.onSlashCommand(event));
@@ -86,10 +93,11 @@ class DailyExpCommandTest
         Member member = mock(Member.class);
         ReplyCallbackAction replyCallbackAction = mock(ReplyCallbackAction.class);
 
+        given(event.deferReply()).willReturn(replyCallbackAction);
         given(member.getIdLong()).willReturn(MEMBER_ID);
         given(event.getMember()).willReturn(member);
-        given(userDataService.find(MEMBER_ID)).willReturn(prepareUserData(LocalDateTime.now().minusDays(1)));
-        given(event.deferReply()).willReturn(replyCallbackAction);
+        given(userDataService.find(MEMBER_ID)).willReturn(prepareUserData(NOW_LOCAL_DATE_TIME.minusDays(1)));
+        given(dateTimeProvider.currentLocalDateTime()).willReturn(NOW_LOCAL_DATE_TIME);
         given(replyCallbackAction.addEmbeds(any(MessageEmbed.class))).willReturn(replyCallbackAction);
 
         // when
@@ -102,7 +110,7 @@ class DailyExpCommandTest
         assertThat(updatedUserData.getExp()).isGreaterThan(MEMBER_BASE_EXP);
         assertThat(updatedUserData.getExpClaims().getDailyExpStreak()).isEqualTo(MEMBER_DAILY_STREAK + 1);
         assertThat(updatedUserData.getExpClaims().getDailyExpStreakMaxRecord()).isEqualTo(MEMBER_DAILY_STREAK_MAX_RECORD + 1);
-        assertThat(updatedUserData.getExpClaims().getLastDailyExpClaim()).hasDayOfMonth(LocalDateTime.now().getDayOfMonth());
+        assertThat(updatedUserData.getExpClaims().getLastDailyExpClaim()).hasDayOfMonth(NOW_LOCAL_DATE_TIME.getDayOfMonth());
     }
 
     private static UserData prepareUserData(LocalDateTime lastDailyExpClaimDate)

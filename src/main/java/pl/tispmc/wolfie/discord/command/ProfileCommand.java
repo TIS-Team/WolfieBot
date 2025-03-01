@@ -12,10 +12,10 @@ import pl.tispmc.wolfie.common.model.Award;
 import pl.tispmc.wolfie.common.model.Rank;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.service.UserDataService;
+import pl.tispmc.wolfie.common.util.DateTimeProvider;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
 
 import java.awt.*;
-import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +25,7 @@ import java.util.Optional;
 public class ProfileCommand implements SlashCommand {
     private static final String PLAYER_PARAM = "gracz";
     private final UserDataService userDataService;
+    private final DateTimeProvider dateTimeProvider;
 
     @Override
     public SlashCommandData getSlashCommandData() {
@@ -104,7 +105,7 @@ public class ProfileCommand implements SlashCommand {
             embedBuilder.addField(":trophy: Wyróżnienia", awardsContent.toString(), false);
         }
 
-        embedBuilder.setTimestamp(Instant.now());
+        embedBuilder.setTimestamp(dateTimeProvider.currentInstant());
         event.replyEmbeds(embedBuilder.build()).queue();
     }
 

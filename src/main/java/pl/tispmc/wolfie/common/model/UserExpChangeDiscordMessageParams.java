@@ -11,8 +11,6 @@ public class UserExpChangeDiscordMessageParams
     String avatarUrl;
     int expChange;
     int totalExp;
-//    int expToNewLevel;
-//    int level;
     int missionsPlayed;
     EnumSet<Action> actions;
 }

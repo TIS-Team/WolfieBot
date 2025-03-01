@@ -14,11 +14,10 @@ import pl.tispmc.wolfie.common.model.Rank;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.model.UserId;
 import pl.tispmc.wolfie.common.service.UserDataService;
+import pl.tispmc.wolfie.common.util.DateTimeProvider;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
 
 import java.awt.*;
-import java.time.Instant;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -71,6 +70,7 @@ public class TopCommand implements SlashCommand
     );
 
     private final UserDataService userDataService;
+    private final DateTimeProvider dateTimeProvider;
 
     @Override
     public SlashCommandData getSlashCommandData(){
@@ -109,7 +109,7 @@ public class TopCommand implements SlashCommand
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle(topMessageParams.getTitle())
                 .setColor(Color.RED)
-                .setTimestamp(Instant.now())
+                .setTimestamp(dateTimeProvider.currentInstant())
                 .setThumbnail(guild.getIconUrl());
 
         int rank = 1;

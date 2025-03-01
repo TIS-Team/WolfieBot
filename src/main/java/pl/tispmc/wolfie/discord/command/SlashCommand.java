@@ -28,7 +28,7 @@ public interface SlashCommand
 
     default SlashCommandData getSlashCommandData()
     {
-        return Commands.slash(getAliases().get(0), getDescription())
+        return Commands.slash(getAliases().getFirst(), getDescription())
                 .setDefaultPermissions(DefaultMemberPermissions.ENABLED);
     }
 
@@ -58,7 +58,7 @@ public interface SlashCommand
      */
     default boolean supports(SlashCommandInteractionEvent event)
     {
-        return event.getName().equals(getAliases().get(0));
+        return event.getName().equals(getAliases().getFirst());
     }
 
     /**

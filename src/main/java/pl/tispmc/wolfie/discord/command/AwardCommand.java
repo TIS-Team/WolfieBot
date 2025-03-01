@@ -14,6 +14,7 @@ import pl.tispmc.wolfie.common.UserDataCreator;
 import pl.tispmc.wolfie.common.model.Award;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.service.UserDataService;
+import pl.tispmc.wolfie.common.util.DateTimeProvider;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
 
 import java.awt.*;
@@ -40,6 +41,7 @@ public class AwardCommand implements SlashCommand {
     private static final String AWARD_CHANNEL_ID = "1344731110407405689";
 
     private final UserDataService userDataService;
+    private final DateTimeProvider dateTimeProvider;
 
     @Override
     public SlashCommandData getSlashCommandData() {
@@ -70,8 +72,8 @@ public class AwardCommand implements SlashCommand {
         int xpAmount = event.getOption(XP_AMOUNT_PARAM).getAsInt();
         String reason = event.getOption(REASON_PARAM).getAsString();
 
-        LocalDateTime awardedAt = LocalDateTime.now();
-        Instant awardTimestamp = Instant.now();
+        LocalDateTime awardedAt = dateTimeProvider.currentLocalDateTime();
+        Instant awardTimestamp = dateTimeProvider.currentInstant();
 
         if (event.getOption(DATE_PARAM) != null) {
             String dateStr = event.getOption(DATE_PARAM).getAsString();
