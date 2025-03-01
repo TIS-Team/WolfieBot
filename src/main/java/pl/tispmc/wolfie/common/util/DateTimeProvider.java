@@ -19,6 +19,6 @@ public class DateTimeProvider
 
     public LocalDateTime currentLocalDateTime()
     {
-        return LocalDateTime.from(CLOCK.instant());
+        return LocalDateTime.now(CLOCK);
     }
 }
