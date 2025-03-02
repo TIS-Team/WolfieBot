@@ -51,22 +51,9 @@ public class RankCommand implements SlashCommand
     {
         OptionMapping userOption = event.getOption(USER_PARAM);
         User targetUser = userOption != null ? userOption.getAsUser() : event.getUser();
-        String targetUserId = targetUser.getId();
 
-        // Get all user data
         Map<UserId, UserData> userDataMap = userDataService.findAll();
-        int totalUsers = userDataMap.size();
-
-
-        //To do sprawdzenia
-        UserData targetUserData = null;
-        for (Map.Entry<UserId, UserData> entry : userDataMap.entrySet()) {
-            if (entry.getKey().toString().equals(targetUserId) ||
-                    (entry.getValue().getName() != null && entry.getValue().getName().equals(targetUser.getName()))) {
-                targetUserData = entry.getValue();
-                break;
-            }
-        }
+        UserData targetUserData = userDataMap.get(UserId.of(targetUser.getIdLong()));
 
         if (targetUserData == null) {
             EmbedBuilder errorEmbed = new EmbedBuilder()
@@ -90,6 +77,7 @@ public class RankCommand implements SlashCommand
         int maxStreakRank = calculateRank(userDataMap.values(), targetUserData, data -> data.getExpClaims().getDailyExpStreakMaxRecord());
 
 
+        int totalUsers = userDataMap.size();
         // embed
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle("\uD83D\uDCCA Pozycje w rankingach - " + targetUserData.getName())
