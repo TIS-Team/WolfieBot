@@ -27,6 +27,7 @@ public class CommandManager
 
     public void processSlashCommand(SlashCommand slashCommand, SlashCommandInteractionEvent event)
     {
+        log.info("User '{}:{}' used command '{}'", event.getUser().getId(), event.getUser().getName(), event.getCommandString());
         InteractionHook interactionHook = event.getHook();
         try
         {
@@ -64,25 +65,21 @@ public class CommandManager
 
     private void handleSlashCommandException(InteractionHook interactionHook, SlashCommand command, CommandException exception)
     {
-        log.error("Błąd: {}", command.getAliases().getFirst(), exception);
-//        log.error(messageSource.getMessage(ERROR_COMMAND_EXCEPTION, command.getAliases().get(0), exception.getMessage()));
+        log.warn("Command '{}' produced a user error: {}", command.getAliases().getFirst(), exception.getMessage(), exception);
         MessageEmbed messageEmbed = new EmbedBuilder()
                 .setColor(Color.RED)
                 .setTitle(exception.getMessage())
-//                .setDescription(messageSource.getMessage(ERROR_COMMAND_EXCEPTION, exception.getMessage()))
                 .build();
         interactionHook.editOriginalEmbeds(messageEmbed).queue();
     }
 
     private void handleSlashException(InteractionHook interactionHook, SlashCommand command, Exception exception)
     {
-        log.error("Błąd: {}", command.getAliases().getFirst(), exception);
-//        log.error(messageSource.getMessage(ERROR_GENERAL, command.getAliases().get(0), exception.getMessage()), exception);
+        log.error("Command '{}' produced a technical error: {}", command.getAliases().getFirst(), exception.getMessage(), exception);
         MessageEmbed messageEmbed = new EmbedBuilder()
                 .setColor(Color.RED)
                 .setDescription("Błąd: " + exception.getMessage() + "\n\n" +
                         "<@272461089541718017> <@361224662912466944> ZAJMIJCIE SIĘ TYM!")
-//                .setDescription(messageSource.getMessage(ERROR_GENERAL, exception.getMessage()))
                 .build();
         interactionHook.editOriginalEmbeds(messageEmbed).queue();
     }

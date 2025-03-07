@@ -59,6 +59,13 @@ public class RoleChangeListener extends ListenerAdapter
                 .complete();
 
         AuditLogEntry logEntry = logEntryList.isEmpty() ? null : logEntryList.getFirst();
+        log.info("Last audit log entry: {}", logEntry);
+
+        if (Optional.ofNullable(logEntry)
+                .map(AuditLogEntry::getUser)
+                .map(User::isBot)
+                .orElse(false))
+            return;
 
         log.info("User {} added role {} to {}",
                 Optional.ofNullable(logEntry).map(AuditLogEntry::getUser).map(User::getName).orElse("Unknown"),
