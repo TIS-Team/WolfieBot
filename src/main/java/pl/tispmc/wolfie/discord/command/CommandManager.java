@@ -32,29 +32,29 @@ public class CommandManager
         try
         {
             slashCommand.onSlashCommand(event);
-            completeEventIfNotAcknowledged(event);
+            completeEventIfNotAcknowledged(event, false);
         }
         catch (CommandException exception)
         {
             // Normal Command Exception handling here...
-            completeEventIfNotAcknowledged(event);
+            completeEventIfNotAcknowledged(event, exception.isEphemeral());
             handleSlashCommandException(interactionHook, slashCommand, exception);
         }
         catch (Exception exception)
         {
             // General error...
-            completeEventIfNotAcknowledged(event);
+            completeEventIfNotAcknowledged(event, false);
             handleSlashException(interactionHook, slashCommand, exception);
         }
     }
 
-    private void completeEventIfNotAcknowledged(GenericCommandInteractionEvent event)
+    private void completeEventIfNotAcknowledged(GenericCommandInteractionEvent event, boolean ephemeral)
     {
         try
         {
             if (!event.isAcknowledged())
             {
-                event.deferReply().complete();
+                event.deferReply(ephemeral).complete();
             }
         }
         catch (Exception exception)
@@ -70,7 +70,7 @@ public class CommandManager
                 .setColor(Color.RED)
                 .setTitle(exception.getMessage())
                 .build();
-        interactionHook.editOriginalEmbeds(messageEmbed).queue();
+        interactionHook.setEphemeral(exception.isEphemeral()).editOriginalEmbeds(messageEmbed).queue();
     }
 
     private void handleSlashException(InteractionHook interactionHook, SlashCommand command, Exception exception)

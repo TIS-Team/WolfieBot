@@ -28,7 +28,6 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class DailyExpCommandTest
 {
-    private static final LocalDateTime OLD_LOCAL_DATE_TIME = LocalDateTime.of(2025, 1, 4, 12, 30);
     private static final LocalDateTime NOW_LOCAL_DATE_TIME = LocalDateTime.of(2025, 1, 5, 12, 30);
 
     private static final long MEMBER_ID = 1;
@@ -82,6 +81,7 @@ class DailyExpCommandTest
 
         // then
         assertThat(exception).isInstanceOf(CommandException.class);
+        assertThat(((CommandException) exception).isEphemeral()).isTrue();
         assertThat(exception.getMessage()).isEqualTo("Dzienny exp już wykorzystany!");
     }
 
