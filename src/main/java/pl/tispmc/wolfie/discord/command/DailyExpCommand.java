@@ -44,8 +44,6 @@ public class DailyExpCommand implements SlashCommand
     @Override
     public void onSlashCommand(SlashCommandInteractionEvent event) throws CommandException
     {
-        ReplyCallbackAction replyCallbackAction = event.deferReply();
-
         Member member = event.getMember();
         UserData userData = Optional.ofNullable(userDataService.find(member.getIdLong())).orElse(UserDataCreator.createUserData(member));
         UserData.ExpClaims expClaims = Optional.ofNullable(userData.getExpClaims()).orElse(UserData.ExpClaims.builder().build());
@@ -54,9 +52,13 @@ public class DailyExpCommand implements SlashCommand
         LocalDateTime lastDailyExpClaimDate = expClaims.getLastDailyExpClaim();
         if (lastDailyExpClaimDate != null && !lastDailyExpClaimDate.toLocalDate().isBefore(now.toLocalDate()))
         {
-            throw new CommandException("Dzienny exp już wykorzystany!");
+            event.reply("Dzienny exp już wykorzystany!")
+                    .setEphemeral(true)
+                    .queue();
+            return;
         }
 
+        ReplyCallbackAction replyCallbackAction = event.deferReply();
         handleDailyExp(replyCallbackAction, member, userData, expClaims, lastDailyExpClaimDate, now);
     }
 
