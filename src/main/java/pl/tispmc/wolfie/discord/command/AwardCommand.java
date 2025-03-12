@@ -20,8 +20,8 @@ import pl.tispmc.wolfie.discord.command.exception.CommandException;
 import java.awt.*;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -72,15 +72,14 @@ public class AwardCommand implements SlashCommand {
         int xpAmount = event.getOption(XP_AMOUNT_PARAM).getAsInt();
         String reason = event.getOption(REASON_PARAM).getAsString();
 
-        LocalDateTime awardedAt = dateTimeProvider.currentLocalDateTime();
+        ZonedDateTime awardedAt = dateTimeProvider.currentZonedDateTime();
         Instant awardTimestamp = dateTimeProvider.currentInstant();
 
         if (event.getOption(DATE_PARAM) != null) {
             String dateStr = event.getOption(DATE_PARAM).getAsString();
             try {
                 LocalDate customDate = LocalDate.parse(dateStr, DATE_FORMATTER);
-                awardedAt = customDate.atTime(12, 0);
-                awardTimestamp = awardedAt.atZone(ZoneId.systemDefault()).toInstant();
+                awardedAt = customDate.atStartOfDay(ZoneId.of("Europe/Warsaw"));
             } catch (DateTimeParseException e) {
                 throw new CommandException("Nieprawidłowy format daty. Użyj formatu: YYYY-MM-DD");
             }
@@ -91,7 +90,7 @@ public class AwardCommand implements SlashCommand {
 
         Award newAward = Award.builder()
                 .reason(reason)
-                .awardedAt(awardedAt)
+                .awardedAt(awardedAt.toLocalDateTime())
                 .build();
 
         List<Award> awards = new ArrayList<>(Optional.ofNullable(userData.getAwards()).orElse(new ArrayList<>()));

@@ -1,24 +1,35 @@
 package pl.tispmc.wolfie.common.util;
 
-import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
-@Component
+@RequiredArgsConstructor
 public class DateTimeProvider
 {
-    private static final Clock CLOCK = Clock.system(ZoneId.of("Europe/Warsaw"));
+    private final Clock clock;
 
     public Instant currentInstant()
     {
-        return Instant.now(CLOCK);
+        return Instant.now(clock);
     }
 
-    public LocalDateTime currentLocalDateTime()
+    public ZonedDateTime currentZonedDateTime()
     {
-        return LocalDateTime.now(CLOCK);
+        return ZonedDateTime.now(clock);
+    }
+
+    public ZonedDateTime withCorrectZone(LocalDateTime localDateTime)
+    {
+        return localDateTime.atZone(clock.getZone());
+    }
+
+    public ZoneId getZoneId()
+    {
+        return clock.getZone();
     }
 }

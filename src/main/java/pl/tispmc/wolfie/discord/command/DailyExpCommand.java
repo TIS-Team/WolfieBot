@@ -14,7 +14,7 @@ import pl.tispmc.wolfie.common.util.DateTimeProvider;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
 
 import java.awt.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
@@ -48,8 +48,8 @@ public class DailyExpCommand implements SlashCommand
         UserData userData = Optional.ofNullable(userDataService.find(member.getIdLong())).orElse(UserDataCreator.createUserData(member));
         UserData.ExpClaims expClaims = Optional.ofNullable(userData.getExpClaims()).orElse(UserData.ExpClaims.builder().build());
 
-        LocalDateTime now = dateTimeProvider.currentLocalDateTime();
-        LocalDateTime lastDailyExpClaimDate = expClaims.getLastDailyExpClaim();
+        ZonedDateTime now = dateTimeProvider.currentZonedDateTime();
+        ZonedDateTime lastDailyExpClaimDate = Optional.ofNullable(expClaims.getLastDailyExpClaim()).map(dateTimeProvider::withCorrectZone).orElse(null);
         if (lastDailyExpClaimDate != null && !lastDailyExpClaimDate.toLocalDate().isBefore(now.toLocalDate()))
         {
             throw new CommandException("Dzienny exp już wykorzystany!", true);
@@ -63,8 +63,8 @@ public class DailyExpCommand implements SlashCommand
                                 Member member,
                                 UserData userData,
                                 UserData.ExpClaims expClaims,
-                                LocalDateTime lastDailyExpClaimDate,
-                                LocalDateTime now)
+                                ZonedDateTime lastDailyExpClaimDate,
+                                ZonedDateTime now)
     {
         int dailyExpStreak = expClaims.getDailyExpStreak();
         if (lastDailyExpClaimDate == null ||
@@ -94,7 +94,7 @@ public class DailyExpCommand implements SlashCommand
                                   int dailyExpStreak,
                                   double expStreakBonus,
                                   int dailyExpStreakMaxRecord,
-                                  LocalDateTime now)
+                                  ZonedDateTime now)
     {
         MessageEmbed messageEmbed = new EmbedBuilder()
                 .setColor(Color.GREEN)
@@ -116,14 +116,14 @@ public class DailyExpCommand implements SlashCommand
                                 int expReward,
                                 int dailyExpStreak,
                                 int dailyExpStreakMaxRecord,
-                                LocalDateTime now)
+                                ZonedDateTime now)
     {
         UserData updatedUserData = userData.toBuilder()
                 .exp(userData.getExp() + expReward)
                 .expClaims(expClaims.toBuilder()
                         .dailyExpStreak(dailyExpStreak)
                         .dailyExpStreakMaxRecord(dailyExpStreakMaxRecord)
-                        .lastDailyExpClaim(now)
+                        .lastDailyExpClaim(now.toLocalDateTime())
                         .build())
                 .build();
 
