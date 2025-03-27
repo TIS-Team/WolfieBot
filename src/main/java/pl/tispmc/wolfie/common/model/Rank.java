@@ -35,7 +35,12 @@ public enum Rank {
     }
 
     public Rank next() {
-        return values()[(this.ordinal() + 1) % values().length];
+        Rank[] ranks = values();
+        int nextIndex = this.ordinal() + 1;
+        if (nextIndex >= ranks.length) {
+            return null;
+        }
+        return ranks[nextIndex];
     }
 
     public static Map<Long, Rank> getRankMap()

@@ -11,6 +11,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
+import pl.tispmc.wolfie.common.event.model.UpdateUserRolesEvent;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.service.UserDataService;
 import pl.tispmc.wolfie.common.util.DateTimeProvider;
@@ -26,8 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DailyExpCommandTest
@@ -43,6 +44,8 @@ class DailyExpCommandTest
     private UserDataService userDataService;
     @Mock
     private DateTimeProvider dateTimeProvider;
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private DailyExpCommand dailyExpCommand;
@@ -110,6 +113,7 @@ class DailyExpCommandTest
         dailyExpCommand.onSlashCommand(event);
 
         // then
+        verify(applicationEventPublisher, times(1)).publishEvent(any(UpdateUserRolesEvent.class));
         verify(userDataService).save(userDataArgumentCaptor.capture());
 
         UserData updatedUserData = userDataArgumentCaptor.getValue();

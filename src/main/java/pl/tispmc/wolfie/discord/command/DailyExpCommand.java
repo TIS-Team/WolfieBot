@@ -6,8 +6,10 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import pl.tispmc.wolfie.common.UserDataCreator;
+import pl.tispmc.wolfie.common.event.model.UpdateUserRolesEvent;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.service.UserDataService;
 import pl.tispmc.wolfie.common.util.DateTimeProvider;
@@ -17,6 +19,7 @@ import java.awt.*;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class DailyExpCommand implements SlashCommand
 
     private final UserDataService userDataService;
     private final DateTimeProvider dateTimeProvider;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     public List<String> getAliases()
@@ -57,6 +61,7 @@ public class DailyExpCommand implements SlashCommand
 
         ReplyCallbackAction replyCallbackAction = event.deferReply();
         handleDailyExp(replyCallbackAction, member, userData, expClaims, lastDailyExpClaimDate, now);
+        applicationEventPublisher.publishEvent(new UpdateUserRolesEvent(this, Set.of(member.getIdLong())));
     }
 
     private void handleDailyExp(ReplyCallbackAction replyCallbackAction,

@@ -115,9 +115,11 @@ public class ProfileCommand implements SlashCommand {
     }
 
     private String generateProgressBarToNextLevel(Rank rank, int playerExp) {
-        int nextLevelRequiredExp = rank.next().getExp();
+        int totalExpForNextRank = rank.next().getExp() - rank.getExp();
+        int currentExp = playerExp - rank.getExp();
+
         int numberOfBars = 10;
-        int bar = (int) (((double) playerExp / nextLevelRequiredExp) * 100 / numberOfBars - 1);
+        int bar = (int) (((double) currentExp / totalExpForNextRank) * 100 / numberOfBars - 1);
         String[] progressBar = new String[numberOfBars];
         for (int i = 0; i < numberOfBars; i++) {
             progressBar[i] = (bar >= i - 1) ? ":green_square:" : ":white_large_square:";
