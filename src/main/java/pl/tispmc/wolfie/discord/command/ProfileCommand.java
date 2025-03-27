@@ -72,7 +72,7 @@ public class ProfileCommand implements SlashCommand {
         embedBuilder.addField(":bar_chart: Ranga", String.format("``%d. %s``", rank.ordinal() + 1, rank.getName()), true);
         embedBuilder.addField(":crossed_swords: Misje", String.format("``%s``", stats.getMissionsPlayed()), true);
 
-        if (nextRank.ordinal() > rank.ordinal()) {
+        if (nextRank != null) {
             embedBuilder.addField(":medal: Postęp do następnego poziomu", generateProgressBarToNextLevel(rank, stats.getExp()), false);
             embedBuilder.addField(":small_red_triangle: Następna ranga:",
                     String.format("``%s EXP do rangi %s``", nextRank.getExp() - stats.getExp(), nextRank.getName()),
