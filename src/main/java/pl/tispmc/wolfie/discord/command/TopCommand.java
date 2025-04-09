@@ -122,7 +122,7 @@ public class TopCommand implements SlashCommand
             };
 
             int value = switch (selectedRankingBy) {
-                case LEVEL -> Rank.getRankForExp(user.getExp()).ordinal();
+                case LEVEL -> Rank.getRankForExp(user.getExp()).ordinal() + 1;
                 case MISSIONS -> user.getMissionsPlayed();
                 case APPRAISALS -> user.getAppraisalsCount();
                 case REPRIMANDS -> user.getReprimandsCount();
