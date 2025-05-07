@@ -13,7 +13,7 @@ public class UserMapper
 
         return User.builder()
                 .id(user.getIdLong())
-                .name(user.getName())
+                .name(user.getEffectiveName())
                 .avatarUrl(user.getAvatarUrl())
                 .build();
     }

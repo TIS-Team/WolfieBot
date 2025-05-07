@@ -58,7 +58,7 @@ public class RankCommand implements SlashCommand
         if (targetUserData == null) {
             EmbedBuilder errorEmbed = new EmbedBuilder()
                     .setTitle("❌ Błąd")
-                    .setDescription("Użytkownik " + targetUser.getName() + " nie został znaleziony w bazie danych.")
+                    .setDescription("Użytkownik " + targetUser.getEffectiveName() + " nie został znaleziony w bazie danych.")
                     .setColor(Color.RED)
                     .setTimestamp(dateTimeProvider.currentInstant());
 
