@@ -1,21 +1,14 @@
 package pl.tispmc.wolfie.common.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 import lombok.Value;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder(toBuilder = true)
-@ToString
+@Value
 public class UserData
 {
     String name;
@@ -25,6 +18,7 @@ public class UserData
     int reprimandsCount;
     int specialAwardCount;
     int missionsPlayed;
+    LocalDateTime joinDate;
 
     @Builder.Default
     ExpClaims expClaims = ExpClaims.builder().build();
