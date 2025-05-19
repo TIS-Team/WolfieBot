@@ -34,13 +34,13 @@ public class TopCommand implements SlashCommand
 {
     private enum RankingBy
     {
-        LEVEL("poziom"),
+        LEVEL("ranga"),
         MISSIONS("misje"),
         APPRAISALS("pochwały"),
         REPRIMANDS("nagany"),
         AWARDS("nagrody"),
         EXP("exp"),
-        CURRENT_STREAK("streak"),
+        CURRENT_STREAK("daily"),
         MAX_STREAK("maxdaily");
 
         private final String paramName;

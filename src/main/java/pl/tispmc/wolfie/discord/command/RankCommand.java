@@ -90,7 +90,7 @@ public class RankCommand implements SlashCommand
                         + "\n"
                         + ":star: EXP: **" + expRank + " miejsce** | `" + targetUserData.getExp() + "`\n"
                         + "\n"
-                        + "📈 Poziom: **" + rankPosition + " miejsce** | `" + (userRank.ordinal() + 1) + ". " + userRank.getName() + "`\n"
+                        + "📈 Ranga: **" + rankPosition + " miejsce** | `" + (userRank.ordinal() + 1) + ". " + userRank.getName() + "`\n"
                         + "\n"
                         + "🎯 Misje: **" + missionsRank + " miejsce** | `" + targetUserData.getMissionsPlayed() + "`\n"
                         + "\n"
