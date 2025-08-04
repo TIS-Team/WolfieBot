@@ -23,6 +23,9 @@ bot:
       id: ???
     rank-change:
       id: ???
+#  join-roles:
+#    add:
+#      - 0
 
 logging:
   file:
