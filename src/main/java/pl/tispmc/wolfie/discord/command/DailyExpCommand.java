@@ -1,6 +1,7 @@
 package pl.tispmc.wolfie.discord.command;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class DailyExpCommand implements SlashCommand
@@ -88,6 +90,8 @@ public class DailyExpCommand implements SlashCommand
 
         double expStreakBonus = calculateExpStreakBonus(dailyExpStreak);
         int expReward = calculateDailyExpReward(expStreakBonus);
+
+        log.info("Giving daily exp reward {}, for user {} {}", expReward, userData.getName(), userData.getUserId());
 
         updateUserData(userData, expClaims, expReward, dailyExpStreak, dailyExpStreakMaxRecord, now);
         sendEmbedMessage(replyCallbackAction, member, expReward, dailyExpStreak, expStreakBonus, dailyExpStreakMaxRecord, now);
