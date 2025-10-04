@@ -1,6 +1,7 @@
 package pl.tispmc.wolfie.discord.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -16,6 +17,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class EvaluationSummaryMessagePublisher
@@ -33,20 +35,23 @@ public class EvaluationSummaryMessagePublisher
     {
         TextChannel textChannel = this.wolfieBot.getJda().getGuildById(guildId).getTextChannelById(summaryChannelId);
 
-        Thread.startVirtualThread(() -> {
-            publishPlayersSummary(textChannel, evaluationSummary.getPlayers());
-        });
-        Thread.startVirtualThread(() -> {
-            publishMissionSummary(textChannel, evaluationSummary);
-        });
+        publishPlayersSummary(textChannel, evaluationSummary.getPlayers());
+        publishMissionSummary(textChannel, evaluationSummary);
     }
 
     private void publishPlayersSummary(TextChannel textChannel, List<EvaluationSummary.SummaryPlayer> players)
     {
         for (EvaluationSummary.SummaryPlayer player : players)
         {
-            MessageEmbed embed = buildSummaryMessageForPlayer(player);
-            textChannel.sendMessageEmbeds(embed).queue();
+            try
+            {
+                MessageEmbed embed = buildSummaryMessageForPlayer(player);
+                textChannel.sendMessageEmbeds(embed).queue();
+            }
+            catch (Exception e)
+            {
+                log.error("Could not publish player summary", e);
+            }
         }
     }
 
@@ -125,27 +130,34 @@ public class EvaluationSummaryMessagePublisher
 
     private void publishMissionSummary(TextChannel textChannel, EvaluationSummary evaluationSummary)
     {
-        List<EvaluationSummary.SummaryPlayer> playersWithAppraisals = evaluationSummary.getPlayers().stream()
-                .filter(summaryPlayer -> summaryPlayer.getActions().stream().anyMatch(action -> action.getValue() > 0))
-                .toList();
-        List<EvaluationSummary.SummaryPlayer> playersWithReprimands = evaluationSummary.getPlayers().stream()
-                .filter(summaryPlayer -> summaryPlayer.getActions().stream().anyMatch(action -> action.getValue() < 0))
-                .toList();
-        int totalAppraisals = (int) playersWithAppraisals.stream().flatMap(player -> player.getActions().stream().filter(action -> action.getValue() > 0))
-                .count();
-        int totalReprimands = (int) playersWithReprimands.stream().flatMap(player -> player.getActions().stream().filter(action -> action.getValue() < 0))
-                .count();
+        try
+        {
+            List<EvaluationSummary.SummaryPlayer> playersWithAppraisals = evaluationSummary.getPlayers().stream()
+                    .filter(summaryPlayer -> summaryPlayer.getActions().stream().anyMatch(action -> action.getValue() > 0))
+                    .toList();
+            List<EvaluationSummary.SummaryPlayer> playersWithReprimands = evaluationSummary.getPlayers().stream()
+                    .filter(summaryPlayer -> summaryPlayer.getActions().stream().anyMatch(action -> action.getValue() < 0))
+                    .toList();
+            int totalAppraisals = (int) playersWithAppraisals.stream().flatMap(player -> player.getActions().stream().filter(action -> action.getValue() > 0))
+                    .count();
+            int totalReprimands = (int) playersWithReprimands.stream().flatMap(player -> player.getActions().stream().filter(action -> action.getValue() < 0))
+                    .count();
 
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setTitle("Podsumowanie misji: " + evaluationSummary.getMissionName());
-        embedBuilder.addField(":thumbsup: Liczba pochwał", String.valueOf(totalAppraisals), true);
-        embedBuilder.addField(":thumbsdown: Liczba nagan", String.valueOf(totalReprimands), true);
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            embedBuilder.setTitle("Podsumowanie misji: " + evaluationSummary.getMissionName());
+            embedBuilder.addField(":thumbsup: Liczba pochwał", String.valueOf(totalAppraisals), true);
+            embedBuilder.addField(":thumbsdown: Liczba nagan", String.valueOf(totalReprimands), true);
 
-        embedBuilder.addField(":star2: Gracze z pochwałami", playersWithAppraisals.stream().map(EvaluationSummary.SummaryPlayer::getName).collect(Collectors.joining(", ")), false);
-        embedBuilder.addField(":warning: Gracze z naganami", playersWithReprimands.stream().map(EvaluationSummary.SummaryPlayer::getName).collect(Collectors.joining(", ")), false);
+            embedBuilder.addField(":star2: Gracze z pochwałami", playersWithAppraisals.stream().map(EvaluationSummary.SummaryPlayer::getName).collect(Collectors.joining(", ")), false);
+            embedBuilder.addField(":warning: Gracze z naganami", playersWithReprimands.stream().map(EvaluationSummary.SummaryPlayer::getName).collect(Collectors.joining(", ")), false);
 
-        embedBuilder.setTimestamp(dateTimeProvider.currentInstant());
+            embedBuilder.setTimestamp(dateTimeProvider.currentInstant());
 
-        textChannel.sendMessageEmbeds(embedBuilder.build()).queue();
+            textChannel.sendMessageEmbeds(embedBuilder.build()).queue();
+        }
+        catch (Exception e)
+        {
+            log.error("Could not publish mission summary");
+        }
     }
 }
