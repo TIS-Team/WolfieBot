@@ -33,8 +33,12 @@ public class EvaluationSummaryMessagePublisher
     {
         TextChannel textChannel = this.wolfieBot.getJda().getGuildById(guildId).getTextChannelById(summaryChannelId);
 
-        publishPlayersSummary(textChannel, evaluationSummary.getPlayers());
-        publishMissionSummary(textChannel, evaluationSummary);
+        Thread.startVirtualThread(() -> {
+            publishPlayersSummary(textChannel, evaluationSummary.getPlayers());
+        });
+        Thread.startVirtualThread(() -> {
+            publishMissionSummary(textChannel, evaluationSummary);
+        });
     }
 
     private void publishPlayersSummary(TextChannel textChannel, List<EvaluationSummary.SummaryPlayer> players)
@@ -69,7 +73,7 @@ public class EvaluationSummaryMessagePublisher
         embedBuilder.addField(":crossed_swords: Misje", String.valueOf(player.getMissionsPlayed()), true);
         embedBuilder.addField(":star: Całkowity EXP", String.valueOf(player.getExp()), true);
 
-        if (nextRank.ordinal() > rank.ordinal()) {
+        if (nextRank != null && nextRank.ordinal() > rank.ordinal()) {
             embedBuilder.addField(":medal: Postęp do następnego poziomu", generateProgressBarToNextLevel(rank, player.getExp()), false);
             embedBuilder.addField(":small_red_triangle: Następna ranga:",
                     String.format("``%s EXP do rangi %s``", nextRank.getExp() - player.getExp(), nextRank.getName()),
