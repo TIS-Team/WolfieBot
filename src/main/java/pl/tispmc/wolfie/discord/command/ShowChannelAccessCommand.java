@@ -2,6 +2,7 @@ package pl.tispmc.wolfie.discord.command;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
@@ -76,6 +77,11 @@ public class ShowChannelAccessCommand extends AbstractSlashCommand
                 stringBuilder.append("- ").append(permission.getName()).append("\n");
             }
             stringBuilder.append("==========================\n");
+        }
+
+        //TODO: Create pagination for this and put in embed message.
+        if (stringBuilder.length() > Message.MAX_CONTENT_LENGTH) {
+            stringBuilder.setLength(Message.MAX_CONTENT_LENGTH);
         }
 
         return stringBuilder.toString();
