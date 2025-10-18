@@ -93,8 +93,9 @@ public interface SlashCommand
      */
     default boolean supports(CommandAutoCompleteInteractionEvent event)
     {
-        return getSlashCommandData().getOptions().stream()
-                .anyMatch(option -> option.getName().equals(event.getName()));
+        SlashCommandData slashCommandData = getSlashCommandData();
+        return slashCommandData.getName().equals(event.getName())
+                && slashCommandData.getOptions().stream().anyMatch(option -> option.getName().equals(event.getFocusedOption().getName()));
     }
 
     boolean supportsChannel(String channelId);

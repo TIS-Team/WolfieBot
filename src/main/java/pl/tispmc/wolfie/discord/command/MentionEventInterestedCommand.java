@@ -73,7 +73,10 @@ public class MentionEventInterestedCommand extends AbstractSlashCommand
     @Override
     public void onAutoComplete(CommandAutoCompleteInteractionEvent event) throws CommandException
     {
-        event.replyChoices(getEventNames(event.getGuild())).queue();
+        if (event.getFocusedOption().getName().equals(EVENT_PARAM))
+        {
+            event.replyChoices(getEventNames(event.getGuild())).queue();
+        }
     }
 
     private List<Command.Choice> getEventNames(Guild guild)
