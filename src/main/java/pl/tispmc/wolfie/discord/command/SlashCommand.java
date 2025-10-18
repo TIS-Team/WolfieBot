@@ -1,5 +1,6 @@
 package pl.tispmc.wolfie.discord.command;
 
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
@@ -49,6 +50,14 @@ public interface SlashCommand
     default void onButtonClick(ButtonInteractionEvent event) throws CommandException {}
 
     /**
+     * Interface implementations can implement this method to react to slash auto complete event.
+     *
+     * @param event the event to handle
+     * @throws CommandException the exception
+     */
+    default void onAutoComplete(CommandAutoCompleteInteractionEvent event) throws CommandException {}
+
+    /**
      * Determines if implementation of this interface supports the given event.
      *
      * By default, it is determined by checking the slash command alias with {@link SlashCommand#getAliases()}
@@ -58,7 +67,7 @@ public interface SlashCommand
      */
     default boolean supports(SlashCommandInteractionEvent event)
     {
-        return event.getName().equals(getAliases().getFirst());
+        return getAliases().contains(event.getName());
     }
 
     /**
@@ -73,4 +82,22 @@ public interface SlashCommand
     {
         return false;
     }
+
+    /**
+     * Determines if the implementation of this interface supports the {@link CommandAutoCompleteInteractionEvent}.
+     *
+     * By default, it is determined by checking the slash command options
+     *
+     * @param event the event to handle
+     * @return true if supports, false if not
+     */
+    default boolean supports(CommandAutoCompleteInteractionEvent event)
+    {
+        return getSlashCommandData().getOptions().stream()
+                .anyMatch(option -> option.getName().equals(event.getName()));
+    }
+
+    boolean supportsChannel(String channelId);
+
+    boolean supportsRole(String roleId);
 }

@@ -3,6 +3,7 @@ package pl.tispmc.wolfie.discord.listener;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -19,22 +20,31 @@ public class SlashCommandEventListener extends ListenerAdapter
 {
     private final CommandManager commandManager;
 
-    @Value("${bot.channels.commands.id:0}")
-    private String commandsChannelId;
+    @Override
+    public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event)
+    {
+        for (final SlashCommand slashCommand : commandManager.getSlashCommands())
+        {
+            if (slashCommand.supports(event))
+            {
+                slashCommand.onAutoComplete(event);
+                break;
+            }
+        }
+    }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event)
     {
-        if (!event.getChannel().getId().equals(commandsChannelId))
-        {
-            showWrongChannelMessage(event);
-            return;
-        }
-
         for (final SlashCommand slashCommand : this.commandManager.getSlashCommands())
         {
             if (slashCommand.supports(event))
             {
+                if (!slashCommand.supportsChannel(event.getChannelId()))
+                {
+                    showWrongChannelMessage(event);
+                    break;
+                }
                 this.commandManager.processSlashCommand(slashCommand, event);
                 break;
             }

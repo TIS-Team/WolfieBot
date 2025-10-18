@@ -1,6 +1,5 @@
 package pl.tispmc.wolfie.discord.command;
 
-import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -15,16 +14,15 @@ import pl.tispmc.wolfie.common.model.Evaluation;
 import pl.tispmc.wolfie.common.model.User;
 import pl.tispmc.wolfie.common.service.UserEvaluationService;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
-import pl.tispmc.wolfie.discord.command.validation.SlashCommandPrerequisites;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static java.util.Optional.ofNullable;
 
 @Component
-@RequiredArgsConstructor
-public class EvaluateCommand implements SlashCommand
+public class EvaluateCommand extends AbstractSlashCommand
 {
     public static final String MM_PARAM = "missionmaker";
     public static final String GM_PARAM = "gamemaster";
@@ -32,15 +30,23 @@ public class EvaluateCommand implements SlashCommand
 
     private final UserMapper userMapper;
     private final UserEvaluationService userEvaluationService;
-    private final SlashCommandPrerequisites prerequisites;
+    private final String frontEndUrl;
 
-    @Value("${bot.front-end.url}")
-    private String frontEndUrl;
+    public EvaluateCommand(
+            @Value("${bot.channels.commands.id:0}") String supportedChannelId,
+            @Value("${bot.front-end.url}") String frontEndUrl,
+            UserEvaluationService userEvaluationService, UserMapper userMapper)
+    {
+        super(Set.of(supportedChannelId), Set.of(ALL_SUPPORTED));
+        this.frontEndUrl = frontEndUrl;
+        this.userEvaluationService = userEvaluationService;
+        this.userMapper = userMapper;
+    }
 
     @Override
     public SlashCommandData getSlashCommandData()
     {
-        return SlashCommand.super.getSlashCommandData()
+        return super.getSlashCommandData()
                 .addOption(OptionType.STRING, MM_PARAM, "Wybierz Mission Makera", true)
                 .addOption(OptionType.STRING, USER_PARAM, "Lista graczy (pingi oddzielone spacją)", true)
                 .addOption(OptionType.STRING, GM_PARAM , "Wybierz gamemastera (jeśli jest)");
@@ -63,7 +69,7 @@ public class EvaluateCommand implements SlashCommand
     {
         ReplyCallbackAction replyCallbackAction = event.deferReply();
 
-        if (!prerequisites.hasGameMasterRole(event.getMember()))
+        if (!hasRequiredRole(event.getMember()))
             throw new CommandException("Brak wymaganej roli do użycia tej komendy.");
 
         String playersString = event.getOption(USER_PARAM, OptionMapping::getAsString);

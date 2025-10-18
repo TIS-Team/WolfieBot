@@ -1,6 +1,5 @@
 package pl.tispmc.wolfie.discord.command;
 
-import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
@@ -9,6 +8,8 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import pl.tispmc.wolfie.common.UserDataCreator;
 import pl.tispmc.wolfie.common.model.Award;
@@ -27,10 +28,10 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
-@RequiredArgsConstructor
 @Component
-public class AwardCommand implements SlashCommand {
+public class AwardCommand extends AbstractSlashCommand {
     private static final String PLAYER_PARAM = "gracz";
     private static final String XP_AMOUNT_PARAM = "ilosc";
     private static final String REASON_PARAM = "powod";
@@ -43,9 +44,20 @@ public class AwardCommand implements SlashCommand {
     private final UserDataService userDataService;
     private final DateTimeProvider dateTimeProvider;
 
+    @Autowired
+    public AwardCommand(
+            @Value("${bot.channels.commands.id:0}") String supportedChannelId,
+            UserDataService userDataService,
+            DateTimeProvider dateTimeProvider)
+    {
+        super(Set.of(supportedChannelId), Set.of(ALL_SUPPORTED));
+        this.userDataService = userDataService;
+        this.dateTimeProvider = dateTimeProvider;
+    }
+
     @Override
     public SlashCommandData getSlashCommandData() {
-        return SlashCommand.super.getSlashCommandData()
+        return super.getSlashCommandData()
                 .addOption(OptionType.USER, PLAYER_PARAM, "Wybierz gracza", true)
                 .addOption(OptionType.INTEGER, XP_AMOUNT_PARAM, "Ilość przyznawanego EXP", true)
                 .addOption(OptionType.STRING, REASON_PARAM, "Powód przyznania nagrody", true)

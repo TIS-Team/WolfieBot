@@ -4,11 +4,11 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
@@ -47,11 +47,16 @@ class DailyExpCommandTest
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
 
-    @InjectMocks
     private DailyExpCommand dailyExpCommand;
 
     @Captor
     private ArgumentCaptor<UserData> userDataArgumentCaptor;
+
+    @BeforeEach
+    void setUp()
+    {
+        dailyExpCommand = new DailyExpCommand("123", userDataService, dateTimeProvider, applicationEventPublisher);
+    }
 
     @Test
     void shouldReturnCorrectAliases()

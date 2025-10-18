@@ -1,11 +1,11 @@
 package pl.tispmc.wolfie.discord.command;
 
-import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import pl.tispmc.wolfie.common.UserDataCreator;
 import pl.tispmc.wolfie.common.model.Award;
@@ -19,17 +19,27 @@ import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
-@RequiredArgsConstructor
-public class ProfileCommand implements SlashCommand {
+public class ProfileCommand extends AbstractSlashCommand {
     private static final String PLAYER_PARAM = "gracz";
     private final UserDataService userDataService;
     private final DateTimeProvider dateTimeProvider;
 
+    public ProfileCommand(
+            @Value("${bot.channels.commands.id:0}") String supportedChannelId,
+            UserDataService userDataService,
+            DateTimeProvider dateTimeProvider)
+    {
+        super(Set.of(supportedChannelId), Set.of(ALL_SUPPORTED));
+        this.userDataService = userDataService;
+        this.dateTimeProvider = dateTimeProvider;
+    }
+
     @Override
     public SlashCommandData getSlashCommandData() {
-        return SlashCommand.super.getSlashCommandData()
+        return super.getSlashCommandData()
                 .addOption(OptionType.USER, PLAYER_PARAM, "Wybierz gracza");
     }
 

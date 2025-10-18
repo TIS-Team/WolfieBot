@@ -1,12 +1,13 @@
 package pl.tispmc.wolfie.discord.command;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import pl.tispmc.wolfie.common.UserDataCreator;
@@ -24,9 +25,8 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
-public class DailyExpCommand implements SlashCommand
+public class DailyExpCommand extends AbstractSlashCommand
 {
     private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
     private static final int DAILY_BASE_EXP = 10;
@@ -34,6 +34,19 @@ public class DailyExpCommand implements SlashCommand
     private final UserDataService userDataService;
     private final DateTimeProvider dateTimeProvider;
     private final ApplicationEventPublisher applicationEventPublisher;
+
+    @Autowired
+    public DailyExpCommand(
+            @Value("${bot.channels.commands.id:0}") String supportedChannelId,
+            UserDataService userDataService,
+            DateTimeProvider dateTimeProvider,
+            ApplicationEventPublisher applicationEventPublisher)
+    {
+        super(Set.of(supportedChannelId), Set.of(ALL_SUPPORTED));
+        this.userDataService = userDataService;
+        this.dateTimeProvider = dateTimeProvider;
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
 
     @Override
     public List<String> getAliases()

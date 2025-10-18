@@ -16,6 +16,8 @@ bot:
   roles:
     game-master:
       id: ???
+    admin:
+      id: ???
   channels:
     commands:
       id: ???
