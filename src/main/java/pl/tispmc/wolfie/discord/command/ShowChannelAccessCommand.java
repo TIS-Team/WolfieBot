@@ -57,27 +57,27 @@ public class ShowChannelAccessCommand extends AbstractSlashCommand
                 .filter(role::hasAccess)
                 .toList();
 
-        replyCallbackAction.setEmbeds(prepareResponse(role, accessibleChannels)).queue();
+        replyCallbackAction.setContent(prepareResponse(role, accessibleChannels)).queue();
     }
 
-    private MessageEmbed prepareResponse(Role role, List<GuildChannel> accessibleChannels)
+    private String prepareResponse(Role role, List<GuildChannel> accessibleChannels)
     {
-        EmbedBuilder embedBuilder = new EmbedBuilder()
-                .setTitle("Uprawnienia roli: " + role.getName());
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Uprawnienia roli: ").append(role.getName());
 
-        embedBuilder.appendDescription("Dostępne kanały:\n");
+        stringBuilder.append("Dostępne kanały:\n");
         for (GuildChannel guildChannel : accessibleChannels)
         {
-            embedBuilder.appendDescription(guildChannel.getName() + format(" (%s)", guildChannel.getId()))
-                    .appendDescription("\n");
-            embedBuilder.appendDescription("Uprawnienia: \n");
+            stringBuilder.append(guildChannel.getName()).append(format(" (%s)", guildChannel.getId()))
+                    .append("\n");
+            stringBuilder.append("Uprawnienia: \n");
             for (Permission permission : role.getPermissions(guildChannel))
             {
-                embedBuilder.appendDescription("-" + permission.getName() + "\n");
+                stringBuilder.append("- ").append(permission.getName()).append("\n");
             }
-            embedBuilder.appendDescription("==========================\n");
+            stringBuilder.append("==========================\n");
         }
 
-        return embedBuilder.build();
+        return stringBuilder.toString();
     }
 }
