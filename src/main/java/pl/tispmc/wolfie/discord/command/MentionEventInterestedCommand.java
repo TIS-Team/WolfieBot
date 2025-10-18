@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -23,9 +24,9 @@ public class MentionEventInterestedCommand extends AbstractSlashCommand
 {
     private static final String EVENT_PARAM = "event";
 
-    protected MentionEventInterestedCommand(@Value("${bot.roles.admin.id}") String adminRoleId)
+    public MentionEventInterestedCommand(@Value("${bot.roles.admin.id}") String adminRoleId)
     {
-        super();
+        super(Set.of(ALL_SUPPORTED), Set.of(adminRoleId));
     }
 
     @Override
