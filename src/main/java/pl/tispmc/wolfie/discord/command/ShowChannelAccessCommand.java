@@ -87,7 +87,8 @@ public class ShowChannelAccessCommand extends AbstractSlashCommand
         stringBuilder.append("==========================\n");
         for (GuildChannel guildChannel : accessibleChannels)
         {
-            stringBuilder.append(guildChannel.getName()).append(format(" (%s)", guildChannel.getId()))
+            stringBuilder.append("Kanał: ")
+                    .append(guildChannel.getName()).append(format(" (%s)", guildChannel.getId()))
                     .append("\n");
             stringBuilder.append("Uprawnienia: \n");
             for (Permission permission : role.getPermissions(guildChannel))
