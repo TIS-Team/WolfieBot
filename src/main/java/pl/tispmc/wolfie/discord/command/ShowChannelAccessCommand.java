@@ -70,8 +70,7 @@ public class ShowChannelAccessCommand extends AbstractSlashCommand
         {
             Path tempFilePath = Files.createTempFile("wolfie-role-permissions", null);
             Files.writeString(tempFilePath, prepareResponse(role, accessibleChannels));
-            return FileUpload.fromData(new FileInputStream(tempFilePath.toFile()),
-                    format("wolfie-role-%s-permissions.txt", role.getName().toUpperCase().replace(" ", "-")));
+            return FileUpload.fromData(tempFilePath, format("wolfie-role-%s-permissions.txt", role.getName().toUpperCase().replace(" ", "-")));
         }
         catch (IOException e)
         {
