@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,6 +52,9 @@ public class ShowChannelAccessCommand extends AbstractSlashCommand
     @Override
     public void onSlashCommand(SlashCommandInteractionEvent event) throws CommandException
     {
+        if(!hasRequiredRole(event.getMember()))
+            throw new CommandException("Brak wymaganej roli do użycia tej komendy.");
+
         ReplyCallbackAction replyCallbackAction = event.deferReply(true);
         Role role = event.getOption(ROLE_PARAM).getAsRole();
 
