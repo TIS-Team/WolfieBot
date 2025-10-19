@@ -70,7 +70,7 @@ public class ShowChannelAccessCommand extends AbstractSlashCommand
         {
             Path tempFilePath = Files.createTempFile("wolfie-role-permissions", null);
             Files.writeString(tempFilePath, prepareResponse(role, accessibleChannels));
-            return FileUpload.fromData(new FileInputStream(tempFilePath.toFile()), format("wolfie-role-%s-permissions", role.getName().toUpperCase()));
+            return FileUpload.fromData(new FileInputStream(tempFilePath.toFile()), format("wolfie-role-%s-permissions.txt", role.getName().toUpperCase()));
         }
         catch (IOException e)
         {
@@ -84,6 +84,7 @@ public class ShowChannelAccessCommand extends AbstractSlashCommand
         stringBuilder.append("Uprawnienia roli: ").append(role.getName()).append("\n");
 
         stringBuilder.append("Dostępne kanały:\n");
+        stringBuilder.append("==========================\n");
         for (GuildChannel guildChannel : accessibleChannels)
         {
             stringBuilder.append(guildChannel.getName()).append(format(" (%s)", guildChannel.getId()))
