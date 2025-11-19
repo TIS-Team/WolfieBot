@@ -32,7 +32,7 @@ gemini:
   api-key: ???
   model-name: ???
   pro-model-name: ???
-  system-prompt: ???
+  system-prompt-file: system-prompt.txt
   knowledge-base-file: knowledge.txt
 
 logging:

@@ -6,6 +6,7 @@ import com.google.cloud.vertexai.generativeai.GenerativeModel;
 import com.google.cloud.vertexai.generativeai.ResponseHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.ScheduledEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -24,8 +25,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import net.dv8tion.jda.api.entities.MessageHistory;
+
+import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -36,17 +40,53 @@ public class WolfieAiPromptService
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
     private static final Set<String> PRO_MODEL_KEYS = Set.of(
-            "java", "python", "javascript", "code", "programming", "programowanie", "kod", "klasa", "funkcja",
-            "metoda", "spring", "jpa", "hibernate", "sql", "docker", "maven", "gradle", "git", "github", "gitlab",
-            "bitbucket", "intellij", "eclipse", "vscode", "visual studio", "debug", "test", "compiler",
-            "kompilator", "error", "exception", "bug", "błąd", "algorytm", "algorithm", "rekurencja", "recursion",
-            "pętla", "loop", "warunek", "if", "else", "switch", "case", "while", "for", "foreach", "lambda",
-            "stream", "api", "rest", "json", "xml", "html", "css", "js", "ts", "typescript", "angular", "react",
-            "vue", "node", "npm", "yarn", "php", "c#", "c++", "assembler", "asembler", "asm", "pro", "script", "skrypt"
+            // --- BAZOWE WYMAGANE (Twoje prośby) ---
+            "stm32", "program", "programuj", "zaprogramuj", "oprogramowanie", "koduj",
+
+            // --- SKRYPTY I AUTOMATYZACJA (To o co pytałeś) ---
+            "skrypt", "skrypty", "skryptu", "skryptowanie", "script", "scripting",
+            "makro", "makra", "macro", // często mylone z kodem
+            "batch", "bash", "powershell", "shell", "cmd", "terminal", "konsola",
+            "wiersz poleceń", "command line", "argumenty", "parametry startowe",
+
+            // --- HARDWARE / EMBEDDED (Specyficzne dla STM i elektroniki) ---
+            "mikrokontroler", "microcontroller", "arduino", "esp32", "esp8266", "raspberry",
+            "gpio", "uart", "i2c", "spi", "pwm", "adc", "dac", "watchdog", "timer",
+            "rejestr", "register", "przerwanie", "interrupt", "bootloader", "wsad",
+            "flashowanie", "flashing", "układ scalony", "płytka stykowa", "breadboard",
+
+            // --- PLIKI I ROZSZERZENIA (Bardzo bezpieczne trigger-y) ---
+            ".py", ".js", ".java", ".cpp", ".h", ".c", ".cs", ".php", ".sh", ".bat", ".json", ".xml", ".bin", ".hex",
+
+            // --- NARZĘDZIA I ŚRODOWISKA ---
+            "cubeide", "keil", "hal", "cmsis", "platformio", "make", "cmake", "gcc", "g++",
+            "maven", "gradle", "docker", "kubernetes", "git", "repo", "branch", "merge",
+            "visual studio", "vscode", "intellij", "pycharm", "eclipse",
+
+            // --- JĘZYKI (Tylko techniczne nazwy) ---
+            "python", "javascript", "typescript", "c++", "c#", "csharp", "rust", "golang",
+            "kotlin", "swift", "scala", "perl", "ruby", "lua", "assembler", "asm", "sql", "nosql",
+
+            // --- POJĘCIA PROGRAMISTYCZNE (Bełkot techniczny) ---
+            "kompilacja", "kompilator", "compiler", "linker", "build",
+            "debug", "debugger", "breakpoint", "stack trace", "zrzut pamięci",
+            "wyjątek", "exception", "segfault", "nullpointer", "błąd składni", "syntax error",
+            "zmienna środowiskowa", "biblioteka", "library", "framework", "moduł",
+            "refaktoryzacja", "deploy", "wdrożenie", "backend", "frontend", "api", "rest", "endpoint"
     );
 
     private final GeminiConfig geminiConfig;
     private final MessageCacheService messageCacheService;
+
+    private String systemPrompt;
+    private String knowledge;
+
+    @PostConstruct
+    public void postConstruct() throws IOException
+    {
+        this.systemPrompt = loadAiSystemPrompt();
+        this.knowledge = loadAiKnowledge();
+    }
 
     public void handleMessage(MessageReceivedEvent event) {
         log.info("Bot was mentioned by {}", event.getAuthor().getName());
@@ -98,17 +138,9 @@ public class WolfieAiPromptService
                         contextBuilder.append(message.getAuthor().getName()).append(": ").append(message.getContentRaw()).append("\n");
                     }
 
-                    String finalQuestion = contextBuilder.toString() + event.getAuthor().getName() + ": " + question;
-
+                    String finalQuestion = contextBuilder + event.getAuthor().getName() + ": " + question;
                     String eventsInfo = formatScheduledEvents(event.getGuild().getScheduledEvents());
                     String fullPrompt = buildFullPrompt(finalQuestion, eventsInfo);
-
-                    if (fullPrompt == null) {
-                        if (currentAnimationTask[0] != null) currentAnimationTask[0].cancel(false);
-                        longWaitTrigger.cancel(false);
-                        thinkingMessage.editMessage("An error occurred while loading my knowledge base.").queue();
-                        return;
-                    }
 
                     try (VertexAI vertexAI = new VertexAI("gen-lang-client-0791168880", "europe-west1")) {
                         String modelName = shouldUseProModel(question) ? geminiConfig.getProModelName() : geminiConfig.getModelName();
@@ -144,13 +176,13 @@ public class WolfieAiPromptService
         });
     }
 
-    private String formatScheduledEvents(List<net.dv8tion.jda.api.entities.ScheduledEvent> events) {
+    private String formatScheduledEvents(List<ScheduledEvent> events) {
         if (events == null || events.isEmpty()) {
             return "Aktualnie nie ma zaplanowanych żadnych wydarzeń.";
         }
 
         StringBuilder eventsInfo = new StringBuilder("Oto lista nadchodzących wydarzeń na serwerze:\n");
-        for (net.dv8tion.jda.api.entities.ScheduledEvent event : events) {
+        for (ScheduledEvent event : events) {
             String formattedDate = event.getStartTime().format(dateFormatter);
             String formattedTime = event.getStartTime().format(timeFormatter);
             eventsInfo.append(String.format("- **%s**: %s o %s\n",
@@ -163,22 +195,15 @@ public class WolfieAiPromptService
 
     private String buildFullPrompt(String question, String eventsInfo) {
         StringBuilder fullPromptBuilder = new StringBuilder();
-        if (geminiConfig.getSystemPrompt() != null) {
-            fullPromptBuilder.append(geminiConfig.getSystemPrompt()).append("\n\n");
+        if (this.systemPrompt != null)
+        {
+            fullPromptBuilder.append(this.systemPrompt).append("\n\n");
         }
 
         fullPromptBuilder.append("### AKTUALNE WYDARZENIA NA SERWERZE:\n").append(eventsInfo).append("\n\n");
-
-        if (geminiConfig.getKnowledgeBaseFile() != null && !geminiConfig.getKnowledgeBaseFile().isEmpty()) {
-            try {
-                Resource resource = new ClassPathResource(geminiConfig.getKnowledgeBaseFile(), WolfieApplication.class.getClassLoader());
-                String knowledgeBaseContent = resource.getContentAsString(StandardCharsets.UTF_8);
-                fullPromptBuilder.append("### KONTEKST (BAZA WIEDZY):\n").append(knowledgeBaseContent).append("\n\n");
-                log.info("Loaded knowledge base from: {}", geminiConfig.getKnowledgeBaseFile());
-            } catch (IOException e) {
-                log.error("Failed to load knowledge base file: {}", geminiConfig.getKnowledgeBaseFile(), e);
-                return null;
-            }
+        if (this.knowledge != null)
+        {
+            fullPromptBuilder.append("### KONTEKST (BAZA WIEDZY):\n").append(this.knowledge).append("\n\n");
         }
         fullPromptBuilder.append(question);
         return fullPromptBuilder.toString();
@@ -225,12 +250,24 @@ public class WolfieAiPromptService
         String lowerCaseQuestion = " " + question.toLowerCase() + " "; // Add spaces for word boundary matching
         for (String keyword : PRO_MODEL_KEYS) {
             String pattern = "\\b" + keyword + "\\b"; // Match whole words
-            if (java.util.regex.Pattern.compile(pattern).matcher(lowerCaseQuestion).find()) {
+            if (Pattern.compile(pattern).matcher(lowerCaseQuestion).find()) {
                 log.info("Programming keyword '{}' found in question, switching to pro model.", keyword);
                 return true;
             }
         }
         return false;
+    }
+
+    private String loadAiSystemPrompt() throws IOException
+    {
+        Resource resource = new ClassPathResource(geminiConfig.getSystemPromptFile(), WolfieApplication.class.getClassLoader());
+        return resource.getContentAsString(StandardCharsets.UTF_8);
+    }
+
+    private String loadAiKnowledge() throws IOException
+    {
+        Resource resource = new ClassPathResource(geminiConfig.getKnowledgeBaseFile(), WolfieApplication.class.getClassLoader());
+        return resource.getContentAsString(StandardCharsets.UTF_8);
     }
 }
 
