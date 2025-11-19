@@ -28,6 +28,13 @@ bot:
 #  join-roles:
 #    add:
 #      - 0
+gemini:
+  api-key: ???
+  channel-id: ???
+  model-name: ???
+  pro-model-name: ???
+  system-prompt: ???
+  knowledge-base-file: ???
 
 logging:
   file:
@@ -40,5 +47,5 @@ logging:
       total-size-cap: 50MB
       max-history: 10
   structured:
-    format:
+    format: 
       file: ecs

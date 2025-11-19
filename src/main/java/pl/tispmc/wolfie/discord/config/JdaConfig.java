@@ -21,13 +21,14 @@ public class JdaConfig
                    BotReadyEventListener botReadyEventListener,
                    RoleChangeListener roleChangeListener,
                    SlashCommandEventListener slashCommandEventListener,
-                   GuildMemberRemoveListener guildMemberRemoveListener)
+                   GuildMemberRemoveListener guildMemberRemoveListener,
+                   pl.tispmc.wolfie.discord.listener.WolfieMentionListener wolfieMentionListener)
     {
         return JDABuilder.createDefault(botConfig.getToken())
-                .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.SCHEDULED_EVENTS)
+                .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.SCHEDULED_EVENTS, GatewayIntent.MESSAGE_CONTENT)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .setChunkingFilter(ChunkingFilter.ALL)
-                .addEventListeners(botReadyEventListener, slashCommandEventListener, roleChangeListener, guildMemberRemoveListener)
+                .addEventListeners(botReadyEventListener, slashCommandEventListener, roleChangeListener, guildMemberRemoveListener, wolfieMentionListener)
                 .setAutoReconnect(true)
                 .setActivity(Activity.customStatus("Ocenia graczy TIS'U"))
                 .build();
