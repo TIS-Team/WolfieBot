@@ -15,6 +15,7 @@ import org.springframework.util.FileCopyUtils;
 import pl.tispmc.wolfie.discord.config.GeminiConfig;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -164,8 +165,8 @@ public class WolfieMentionService implements CommandLineRunner
 
         if (geminiConfig.getKnowledgeBaseFile() != null && !geminiConfig.getKnowledgeBaseFile().isEmpty()) {
             try {
-                Resource resource = new ClassPathResource(geminiConfig.getKnowledgeBaseFile());
-                try (InputStreamReader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)) {
+                InputStream inputStream = WolfieMentionService.class.getClassLoader().getResourceAsStream(geminiConfig.getKnowledgeBaseFile());
+                try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
                     String knowledgeBaseContent = FileCopyUtils.copyToString(reader);
                     fullPromptBuilder.append("### KONTEKST (BAZA WIEDZY):\n").append(knowledgeBaseContent).append("\n\n");
                     log.info("Loaded knowledge base from: {}", geminiConfig.getKnowledgeBaseFile());
@@ -241,8 +242,8 @@ public class WolfieMentionService implements CommandLineRunner
     @Override
     public void run(String... args) throws Exception
     {
-        Resource resource = new ClassPathResource(geminiConfig.getKnowledgeBaseFile());
-        try (InputStreamReader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)) {
+        InputStream inputStream = WolfieMentionService.class.getClassLoader().getResourceAsStream(geminiConfig.getKnowledgeBaseFile());
+        try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
             String knowledgeBaseContent = FileCopyUtils.copyToString(reader);
             log.info("Loaded knowledge base from: {}, {}", geminiConfig.getKnowledgeBaseFile(), knowledgeBaseContent);
         }
