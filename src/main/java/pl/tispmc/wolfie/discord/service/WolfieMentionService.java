@@ -7,7 +7,6 @@ import com.google.cloud.vertexai.generativeai.ResponseHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -31,7 +30,7 @@ import java.time.format.DateTimeFormatter;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class WolfieMentionService implements CommandLineRunner
+public class WolfieMentionService
 {
 
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -233,14 +232,6 @@ public class WolfieMentionService implements CommandLineRunner
             }
         }
         return false;
-    }
-
-    @Override
-    public void run(String... args) throws Exception
-    {
-        Resource resource = new ClassPathResource(geminiConfig.getKnowledgeBaseFile(), WolfieApplication.class.getClassLoader());
-        String knowledgeBaseContent = resource.getContentAsString(StandardCharsets.UTF_8);
-        log.info("Loaded knowledge base from: {}, {}", geminiConfig.getKnowledgeBaseFile(), knowledgeBaseContent);
     }
 }
 
