@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import pl.tispmc.wolfie.discord.config.GeminiConfig;
@@ -35,8 +34,10 @@ import java.time.format.DateTimeFormatter;
 @Slf4j
 public class WolfieMentionService {
 
+    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
     private final GeminiConfig geminiConfig;
-    private final ResourceLoader resourceLoader;
     private final MessageCacheService messageCacheService;
 
     public void handleMention(MessageReceivedEvent event) {
@@ -151,8 +152,6 @@ public class WolfieMentionService {
         if (events == null || events.isEmpty()) {
             return "Aktualnie nie ma zaplanowanych żadnych wydarzeń.";
         }
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
         StringBuilder eventsInfo = new StringBuilder("Oto lista nadchodzących wydarzeń na serwerze:\n");
         for (net.dv8tion.jda.api.entities.ScheduledEvent event : events) {
@@ -177,7 +176,7 @@ public class WolfieMentionService {
         if (geminiConfig.getKnowledgeBaseFile() != null && !geminiConfig.getKnowledgeBaseFile().isEmpty()) {
             try {
                 Resource resource = new ClassPathResource(geminiConfig.getKnowledgeBaseFile());
-                try (Reader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)) {
+                try (InputStreamReader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)) {
                     String knowledgeBaseContent = FileCopyUtils.copyToString(reader);
                     fullPromptBuilder.append("### KONTEKST (BAZA WIEDZY):\n").append(knowledgeBaseContent).append("\n\n");
                     log.info("Loaded knowledge base from: {}", geminiConfig.getKnowledgeBaseFile());
@@ -236,7 +235,7 @@ public class WolfieMentionService {
                 "kompilator", "error", "exception", "bug", "błąd", "algorytm", "algorithm", "rekurencja", "recursion",
                 "pętla", "loop", "warunek", "if", "else", "switch", "case", "while", "for", "do", "foreach", "lambda",
                 "stream", "api", "rest", "json", "xml", "html", "css", "js", "ts", "typescript", "angular", "react",
-                "vue", "node", "npm", "yarn", "php", "c#", "c++", "assembler", "asembler", "asm"
+                "vue", "node", "npm", "yarn", "php", "c#", "c++", "assembler", "asembler", "asm", "pro"
         );
 
         String lowerCaseQuestion = " " + question.toLowerCase() + " "; // Add spaces for word boundary matching
@@ -258,7 +257,7 @@ public class WolfieMentionService {
 
         if (geminiConfig.getKnowledgeBaseFile() != null && !geminiConfig.getKnowledgeBaseFile().isEmpty()) {
             try {
-                org.springframework.core.io.Resource resource = resourceLoader.getResource("file:" + geminiConfig.getKnowledgeBaseFile());
+                org.springframework.core.io.Resource resource = new ClassPathResource(geminiConfig.getKnowledgeBaseFile());
                 try (Reader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)) {
                     String knowledgeBaseContent = FileCopyUtils.copyToString(reader);
                     fullPromptBuilder.append("### KONTEKST (BAZA WIEDZY):\n").append(knowledgeBaseContent).append("\n\n");
