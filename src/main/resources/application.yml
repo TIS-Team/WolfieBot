@@ -33,7 +33,7 @@ gemini:
   model-name: ???
   pro-model-name: ???
   system-prompt: ???
-  knowledge-base-file: ???
+  knowledge-base-file: knowledge.txt
 
 logging:
   file:

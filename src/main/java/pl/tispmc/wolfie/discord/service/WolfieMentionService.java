@@ -7,6 +7,8 @@ import com.google.cloud.vertexai.generativeai.ResponseHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
@@ -174,7 +176,7 @@ public class WolfieMentionService {
 
         if (geminiConfig.getKnowledgeBaseFile() != null && !geminiConfig.getKnowledgeBaseFile().isEmpty()) {
             try {
-                org.springframework.core.io.Resource resource = resourceLoader.getResource("file:" + geminiConfig.getKnowledgeBaseFile());
+                Resource resource = new ClassPathResource(geminiConfig.getKnowledgeBaseFile());
                 try (Reader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)) {
                     String knowledgeBaseContent = FileCopyUtils.copyToString(reader);
                     fullPromptBuilder.append("### KONTEKST (BAZA WIEDZY):\n").append(knowledgeBaseContent).append("\n\n");

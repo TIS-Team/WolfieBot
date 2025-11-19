@@ -12,6 +12,7 @@ import pl.tispmc.wolfie.discord.listener.BotReadyEventListener;
 import pl.tispmc.wolfie.discord.listener.GuildMemberRemoveListener;
 import pl.tispmc.wolfie.discord.listener.RoleChangeListener;
 import pl.tispmc.wolfie.discord.listener.SlashCommandEventListener;
+import pl.tispmc.wolfie.discord.listener.WolfieMentionListener;
 
 @Configuration(proxyBeanMethods = false)
 public class JdaConfig
@@ -22,7 +23,7 @@ public class JdaConfig
                    RoleChangeListener roleChangeListener,
                    SlashCommandEventListener slashCommandEventListener,
                    GuildMemberRemoveListener guildMemberRemoveListener,
-                   pl.tispmc.wolfie.discord.listener.WolfieMentionListener wolfieMentionListener)
+                   WolfieMentionListener wolfieMentionListener)
     {
         return JDABuilder.createDefault(botConfig.getToken())
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.SCHEDULED_EVENTS, GatewayIntent.MESSAGE_CONTENT)
