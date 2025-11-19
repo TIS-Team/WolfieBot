@@ -7,6 +7,7 @@ import com.google.cloud.vertexai.generativeai.ResponseHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,6 @@ import pl.tispmc.wolfie.discord.config.GeminiConfig;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +32,8 @@ import java.time.format.DateTimeFormatter;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class WolfieMentionService {
+public class WolfieMentionService implements CommandLineRunner
+{
 
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
@@ -41,111 +42,99 @@ public class WolfieMentionService {
     private final MessageCacheService messageCacheService;
 
     public void handleMention(MessageReceivedEvent event) {
-        if (event.getAuthor().isBot()) {
-            log.debug("Ignoring message from bot: {}", event.getAuthor().getName());
-            return;
-        }
+        log.info("Bot was mentioned by {}", event.getAuthor().getName());
+        String question = event.getMessage().getContentRaw().replaceAll("<@!?" + event.getJDA().getSelfUser().getId() + ">", "").trim();
+        log.info("Extracted question: '{}'", question);
 
-        boolean isMentioned = event.getMessage().getMentions().getUsers().stream()
-                .anyMatch(user -> user.getId().equals(event.getJDA().getSelfUser().getId()));
+        event.getMessage().reply("Wolfie myśli...").queue(thinkingMessage -> {
+            // Use a single-threaded scheduler for all animation and delayed tasks
+            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-        if (isMentioned) {
-            log.info("Bot was mentioned by {}", event.getAuthor().getName());
-            String question = event.getMessage().getContentRaw().replaceAll("<@!?" + event.getJDA().getSelfUser().getId() + ">", "").trim();
-            log.info("Extracted question: '{}'", question);
+            // Atomic reference to the current animation task, allows reassignment
+            final ScheduledFuture<?>[] currentAnimationTask = new ScheduledFuture[1];
 
-            event.getMessage().reply("Wolfie myśli...").queue(thinkingMessage -> {
-                // Use a single-threaded scheduler for all animation and delayed tasks
-                ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+            // Initial animation states
+            final String[] thinkingStates = {"Wolfie myśli", "Wolfie myśli.", "Wolfie myśli..", "Wolfie myśli..."};
+            AtomicInteger stateIndex = new AtomicInteger(0);
 
-                // Atomic reference to the current animation task, allows reassignment
-                final ScheduledFuture<?>[] currentAnimationTask = new ScheduledFuture[1];
+            // Start initial animation
+            Runnable initialAnimation = () -> {
+                int currentIndex = stateIndex.getAndIncrement() % thinkingStates.length;
+                thinkingMessage.editMessage(thinkingStates[currentIndex]).queue();
+            };
+            currentAnimationTask[0] = scheduler.scheduleAtFixedRate(initialAnimation, 0, 1, TimeUnit.SECONDS);
 
-                // Initial animation states
-                final String[] thinkingStates = {"Wolfie myśli", "Wolfie myśli.", "Wolfie myśli..", "Wolfie myśli..."};
-                AtomicInteger stateIndex = new AtomicInteger(0);
+            // Schedule long wait message trigger
+            ScheduledFuture<?> longWaitTrigger = scheduler.schedule(() -> {
+                // Cancel initial animation if still active
+                if (currentAnimationTask[0] != null) {
+                    currentAnimationTask[0].cancel(false);
+                }
 
-                // Start initial animation
-                Runnable initialAnimation = () -> {
-                    int currentIndex = stateIndex.getAndIncrement() % thinkingStates.length;
-                    thinkingMessage.editMessage(thinkingStates[currentIndex]).queue();
+                // Start long-wait animation
+                final String[] longThinkingStates = {"Hmm... Jeszcze chwilkę...", "Hmm... Jeszcze chwilkę..", "Hmm... Jeszcze chwilkę."};
+                stateIndex.set(0); // Reset index for new animation
+                Runnable longWaitAnimation = () -> {
+                    int currentIndex = stateIndex.getAndIncrement() % longThinkingStates.length;
+                    thinkingMessage.editMessage(longThinkingStates[currentIndex]).queue();
                 };
-                currentAnimationTask[0] = scheduler.scheduleAtFixedRate(initialAnimation, 0, 1, TimeUnit.SECONDS);
+                currentAnimationTask[0] = scheduler.scheduleAtFixedRate(longWaitAnimation, 0, 1, TimeUnit.SECONDS);
+            }, 7, TimeUnit.SECONDS);
 
-                // Schedule long wait message trigger
-                ScheduledFuture<?> longWaitTrigger = scheduler.schedule(() -> {
-                    // Cancel initial animation if still active
-                    if (currentAnimationTask[0] != null) {
-                        currentAnimationTask[0].cancel(false);
+            CompletableFuture.runAsync(() -> {
+                try {
+                    // Fetch last 2 messages for context
+                    MessageHistory history = event.getChannel().getHistoryBefore(event.getMessageId(), 2).complete();
+                    StringBuilder contextBuilder = new StringBuilder();
+                    for (int i = history.getRetrievedHistory().size() - 1; i >= 0; i--) {
+                        var message = history.getRetrievedHistory().get(i);
+                        contextBuilder.append(message.getAuthor().getName()).append(": ").append(message.getContentRaw()).append("\n");
                     }
 
-                    // Start long-wait animation
-                    final String[] longThinkingStates = {"Hmm... Jeszcze chwilkę...", "Hmm... Jeszcze chwilkę..", "Hmm... Jeszcze chwilkę."};
-                    stateIndex.set(0); // Reset index for new animation
-                    Runnable longWaitAnimation = () -> {
-                        int currentIndex = stateIndex.getAndIncrement() % longThinkingStates.length;
-                        thinkingMessage.editMessage(longThinkingStates[currentIndex]).queue();
-                    };
-                    currentAnimationTask[0] = scheduler.scheduleAtFixedRate(longWaitAnimation, 0, 1, TimeUnit.SECONDS);
-                }, 7, TimeUnit.SECONDS);
+                    String finalQuestion = contextBuilder.toString() + event.getAuthor().getName() + ": " + question;
 
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        // Fetch last 2 messages for context
-                        MessageHistory history = event.getChannel().getHistoryBefore(event.getMessageId(), 2).complete();
-                        StringBuilder contextBuilder = new StringBuilder();
-                        for (int i = history.getRetrievedHistory().size() - 1; i >= 0; i--) {
-                            var message = history.getRetrievedHistory().get(i);
-                            contextBuilder.append(message.getAuthor().getName()).append(": ").append(message.getContentRaw()).append("\n");
-                        }
-                        
-                        String finalQuestion = contextBuilder.toString() + event.getAuthor().getName() + ": " + question;
+                    String eventsInfo = formatScheduledEvents(event.getGuild().getScheduledEvents());
+                    String fullPrompt = buildFullPrompt(finalQuestion, eventsInfo);
 
-                        String eventsInfo = formatScheduledEvents(event.getGuild().getScheduledEvents());
-                        String fullPrompt = buildFullPrompt(finalQuestion, eventsInfo);
-
-                        if (fullPrompt == null) {
-                            if (currentAnimationTask[0] != null) currentAnimationTask[0].cancel(false);
-                            longWaitTrigger.cancel(false);
-                            thinkingMessage.editMessage("An error occurred while loading my knowledge base.").queue();
-                            return;
-                        }
-
-                        try (VertexAI vertexAI = new VertexAI("gen-lang-client-0791168880", "europe-west1")) {
-                            String modelName = isProgrammingQuestion(question) ? geminiConfig.getProModelName() : geminiConfig.getModelName();
-                            log.info("Initializing VertexAI and GenerativeModel with model: {}", modelName);
-                            GenerativeModel model = new GenerativeModel(modelName, vertexAI);
-                            GenerateContentResponse response = model.generateContent(fullPrompt);
-                            String text = ResponseHandler.getText(response);
-                            log.info("Generated response from Gemini: '{}'", text);
-
-                            if (currentAnimationTask[0] != null) currentAnimationTask[0].cancel(false);
-                            longWaitTrigger.cancel(false);
-
-                            List<String> messages = splitMessage(text);
-                            thinkingMessage.delete().queue();
-                            event.getMessage().reply(messages.get(0)).queue();
-                            for (int i = 1; i < messages.size(); i++) {
-                                event.getMessage().reply(messages.get(i)).queue(); // Reply to the original message for subsequent parts
-                            }
-
-                            messageCacheService.addMessage(event.getAuthor().getId(), "User: " + question);
-                            messageCacheService.addMessage(event.getAuthor().getId(), "Bot: " + text);
-                        }
-                    } catch (Exception e) {
-                        log.error("An error occurred while communicating with Gemini API", e);
+                    if (fullPrompt == null) {
                         if (currentAnimationTask[0] != null) currentAnimationTask[0].cancel(false);
                         longWaitTrigger.cancel(false);
-                        thinkingMessage.delete().queue(); // Delete the thinking message on error too
-                        event.getMessage().reply("An error occurred while processing your request.").queue();
-                    } finally {
-                        scheduler.shutdown(); // Ensure the scheduler is always shut down
+                        thinkingMessage.editMessage("An error occurred while loading my knowledge base.").queue();
+                        return;
                     }
-                });
+
+                    try (VertexAI vertexAI = new VertexAI("gen-lang-client-0791168880", "europe-west1")) {
+                        String modelName = isProgrammingQuestion(question) ? geminiConfig.getProModelName() : geminiConfig.getModelName();
+                        log.info("Initializing VertexAI and GenerativeModel with model: {}", modelName);
+                        GenerativeModel model = new GenerativeModel(modelName, vertexAI);
+                        GenerateContentResponse response = model.generateContent(fullPrompt);
+                        String text = ResponseHandler.getText(response);
+                        log.info("Generated response from Gemini: '{}'", text);
+
+                        if (currentAnimationTask[0] != null) currentAnimationTask[0].cancel(false);
+                        longWaitTrigger.cancel(false);
+
+                        List<String> messages = splitMessage(text);
+                        thinkingMessage.delete().queue();
+                        event.getMessage().reply(messages.get(0)).queue();
+                        for (int i = 1; i < messages.size(); i++) {
+                            event.getMessage().reply(messages.get(i)).queue(); // Reply to the original message for subsequent parts
+                        }
+
+                        messageCacheService.addMessage(event.getAuthor().getId(), "User: " + question);
+                        messageCacheService.addMessage(event.getAuthor().getId(), "Bot: " + text);
+                    }
+                } catch (Exception e) {
+                    log.error("An error occurred while communicating with Gemini API", e);
+                    if (currentAnimationTask[0] != null) currentAnimationTask[0].cancel(false);
+                    longWaitTrigger.cancel(false);
+                    thinkingMessage.delete().queue(); // Delete the thinking message on error too
+                    event.getMessage().reply("An error occurred while processing your request.").queue();
+                } finally {
+                    scheduler.shutdown(); // Ensure the scheduler is always shut down
+                }
             });
-        } else {
-            log.trace("Bot was not mentioned in the message.");
-        }
+        });
     }
 
     private String formatScheduledEvents(List<net.dv8tion.jda.api.entities.ScheduledEvent> events) {
@@ -249,27 +238,14 @@ public class WolfieMentionService {
         return false;
     }
 
-    private String buildFullPrompt(String question) {
-        StringBuilder fullPromptBuilder = new StringBuilder();
-        if (geminiConfig.getSystemPrompt() != null) {
-            fullPromptBuilder.append(geminiConfig.getSystemPrompt()).append("\n\n");
+    @Override
+    public void run(String... args) throws Exception
+    {
+        Resource resource = new ClassPathResource(geminiConfig.getKnowledgeBaseFile());
+        try (InputStreamReader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)) {
+            String knowledgeBaseContent = FileCopyUtils.copyToString(reader);
+            log.info("Loaded knowledge base from: {}, {}", geminiConfig.getKnowledgeBaseFile(), knowledgeBaseContent);
         }
-
-        if (geminiConfig.getKnowledgeBaseFile() != null && !geminiConfig.getKnowledgeBaseFile().isEmpty()) {
-            try {
-                org.springframework.core.io.Resource resource = new ClassPathResource(geminiConfig.getKnowledgeBaseFile());
-                try (Reader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)) {
-                    String knowledgeBaseContent = FileCopyUtils.copyToString(reader);
-                    fullPromptBuilder.append("### KONTEKST (BAZA WIEDZY):\n").append(knowledgeBaseContent).append("\n\n");
-                    log.info("Loaded knowledge base from: {}", geminiConfig.getKnowledgeBaseFile());
-                }
-            } catch (IOException e) {
-                log.error("Failed to load knowledge base file: {}", geminiConfig.getKnowledgeBaseFile(), e);
-                return null;
-            }
-        }
-        fullPromptBuilder.append(question);
-        return fullPromptBuilder.toString();
     }
 }
 
