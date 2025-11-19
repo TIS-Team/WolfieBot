@@ -4,12 +4,9 @@
 
 ## Features
 
+* AI
 * User experience system
 * Profile management
-
-## Thanks
-
-<img width="200" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.png" alt="JetBrains logo.">
 
 ## License
 

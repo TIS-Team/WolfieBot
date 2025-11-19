@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class GeminiConfig {
     private String apiKey;
-    private String channelId;
     private String modelName;
     private String proModelName;
     private String systemPrompt;
