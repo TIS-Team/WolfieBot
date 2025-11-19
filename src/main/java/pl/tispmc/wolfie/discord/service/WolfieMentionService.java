@@ -11,12 +11,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileCopyUtils;
+import pl.tispmc.wolfie.WolfieApplication;
 import pl.tispmc.wolfie.discord.config.GeminiConfig;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -165,12 +163,10 @@ public class WolfieMentionService implements CommandLineRunner
 
         if (geminiConfig.getKnowledgeBaseFile() != null && !geminiConfig.getKnowledgeBaseFile().isEmpty()) {
             try {
-                InputStream inputStream = WolfieMentionService.class.getClassLoader().getResourceAsStream(geminiConfig.getKnowledgeBaseFile());
-                try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                    String knowledgeBaseContent = FileCopyUtils.copyToString(reader);
-                    fullPromptBuilder.append("### KONTEKST (BAZA WIEDZY):\n").append(knowledgeBaseContent).append("\n\n");
-                    log.info("Loaded knowledge base from: {}", geminiConfig.getKnowledgeBaseFile());
-                }
+                Resource resource = new ClassPathResource(geminiConfig.getKnowledgeBaseFile(), WolfieApplication.class.getClassLoader());
+                String knowledgeBaseContent = resource.getContentAsString(StandardCharsets.UTF_8);
+                fullPromptBuilder.append("### KONTEKST (BAZA WIEDZY):\n").append(knowledgeBaseContent).append("\n\n");
+                log.info("Loaded knowledge base from: {}", geminiConfig.getKnowledgeBaseFile());
             } catch (IOException e) {
                 log.error("Failed to load knowledge base file: {}", geminiConfig.getKnowledgeBaseFile(), e);
                 return null;
@@ -242,11 +238,9 @@ public class WolfieMentionService implements CommandLineRunner
     @Override
     public void run(String... args) throws Exception
     {
-        InputStream inputStream = WolfieMentionService.class.getClassLoader().getResourceAsStream(geminiConfig.getKnowledgeBaseFile());
-        try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-            String knowledgeBaseContent = FileCopyUtils.copyToString(reader);
-            log.info("Loaded knowledge base from: {}, {}", geminiConfig.getKnowledgeBaseFile(), knowledgeBaseContent);
-        }
+        Resource resource = new ClassPathResource(geminiConfig.getKnowledgeBaseFile(), WolfieApplication.class.getClassLoader());
+        String knowledgeBaseContent = resource.getContentAsString(StandardCharsets.UTF_8);
+        log.info("Loaded knowledge base from: {}, {}", geminiConfig.getKnowledgeBaseFile(), knowledgeBaseContent);
     }
 }
 
