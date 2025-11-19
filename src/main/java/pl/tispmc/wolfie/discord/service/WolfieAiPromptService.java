@@ -41,7 +41,7 @@ public class WolfieAiPromptService
 
     private static final Set<String> PRO_MODEL_KEYS = Set.of(
             // --- BAZOWE WYMAGANE (Twoje prośby) ---
-            "stm32", "program", "programuj", "zaprogramuj", "oprogramowanie", "koduj",
+            "stm32", "program", "programuj", "zaprogramuj", "oprogramowanie", "koduj", "pro",
 
             // --- SKRYPTY I AUTOMATYZACJA (To o co pytałeś) ---
             "skrypt", "skrypty", "skryptu", "skryptowanie", "script", "scripting",
