@@ -5,14 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.stereotype.Component;
-import pl.tispmc.wolfie.discord.service.WolfieMentionService;
+import pl.tispmc.wolfie.discord.service.WolfieAiPromptService;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class WolfieMentionListener extends ListenerAdapter
 {
-    private final WolfieMentionService wolfieMentionService;
+    private final WolfieAiPromptService wolfieAiPromptService;
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event)
@@ -28,6 +28,6 @@ public class WolfieMentionListener extends ListenerAdapter
         if (!isMentioned)
             return;
 
-        wolfieMentionService.handleMention(event);
+        wolfieAiPromptService.handleMessage(event);
     }
 }

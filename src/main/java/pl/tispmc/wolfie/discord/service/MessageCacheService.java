@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 public class MessageCacheService {
 
     private final Cache<String, Deque<String>> messageCache;
-    private static final int MAX_HISTORY_SIZE = 5; // 2-3 messages means a bit more context, so 5 entries (user+bot)
+    private static final int MAX_HISTORY_SIZE = 10;
 
     public MessageCacheService() {
         this.messageCache = CacheBuilder.newBuilder()

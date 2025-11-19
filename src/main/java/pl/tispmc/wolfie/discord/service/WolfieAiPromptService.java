@@ -16,8 +16,8 @@ import pl.tispmc.wolfie.discord.config.GeminiConfig;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,16 +30,25 @@ import java.time.format.DateTimeFormatter;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class WolfieMentionService
+public class WolfieAiPromptService
 {
-
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+    private static final Set<String> PRO_MODEL_KEYS = Set.of(
+            "java", "python", "javascript", "code", "programming", "programowanie", "kod", "klasa", "funkcja",
+            "metoda", "spring", "jpa", "hibernate", "sql", "docker", "maven", "gradle", "git", "github", "gitlab",
+            "bitbucket", "intellij", "eclipse", "vscode", "visual studio", "debug", "test", "compiler",
+            "kompilator", "error", "exception", "bug", "błąd", "algorytm", "algorithm", "rekurencja", "recursion",
+            "pętla", "loop", "warunek", "if", "else", "switch", "case", "while", "for", "foreach", "lambda",
+            "stream", "api", "rest", "json", "xml", "html", "css", "js", "ts", "typescript", "angular", "react",
+            "vue", "node", "npm", "yarn", "php", "c#", "c++", "assembler", "asembler", "asm", "pro", "script", "skrypt"
+    );
 
     private final GeminiConfig geminiConfig;
     private final MessageCacheService messageCacheService;
 
-    public void handleMention(MessageReceivedEvent event) {
+    public void handleMessage(MessageReceivedEvent event) {
         log.info("Bot was mentioned by {}", event.getAuthor().getName());
         String question = event.getMessage().getContentRaw().replaceAll("<@!?" + event.getJDA().getSelfUser().getId() + ">", "").trim();
         log.info("Extracted question: '{}'", question);
@@ -82,7 +91,7 @@ public class WolfieMentionService
             CompletableFuture.runAsync(() -> {
                 try {
                     // Fetch last 2 messages for context
-                    MessageHistory history = event.getChannel().getHistoryBefore(event.getMessageId(), 2).complete();
+                    MessageHistory history = event.getChannel().getHistoryBefore(event.getMessageId(), 6).complete();
                     StringBuilder contextBuilder = new StringBuilder();
                     for (int i = history.getRetrievedHistory().size() - 1; i >= 0; i--) {
                         var message = history.getRetrievedHistory().get(i);
@@ -102,7 +111,7 @@ public class WolfieMentionService
                     }
 
                     try (VertexAI vertexAI = new VertexAI("gen-lang-client-0791168880", "europe-west1")) {
-                        String modelName = isProgrammingQuestion(question) ? geminiConfig.getProModelName() : geminiConfig.getModelName();
+                        String modelName = shouldUseProModel(question) ? geminiConfig.getProModelName() : geminiConfig.getModelName();
                         log.info("Initializing VertexAI and GenerativeModel with model: {}", modelName);
                         GenerativeModel model = new GenerativeModel(modelName, vertexAI);
                         GenerateContentResponse response = model.generateContent(fullPrompt);
@@ -212,19 +221,9 @@ public class WolfieMentionService
         return parts;
     }
 
-    private boolean isProgrammingQuestion(String question) {
-        List<String> keywords = Arrays.asList(
-                "java", "python", "javascript", "code", "programming", "programowanie", "kod", "klasa", "funkcja",
-                "metoda", "spring", "jpa", "hibernate", "sql", "docker", "maven", "gradle", "git", "github", "gitlab",
-                "bitbucket", "intellij", "eclipse", "vscode", "visual studio", "debug", "test", "compiler",
-                "kompilator", "error", "exception", "bug", "błąd", "algorytm", "algorithm", "rekurencja", "recursion",
-                "pętla", "loop", "warunek", "if", "else", "switch", "case", "while", "for", "do", "foreach", "lambda",
-                "stream", "api", "rest", "json", "xml", "html", "css", "js", "ts", "typescript", "angular", "react",
-                "vue", "node", "npm", "yarn", "php", "c#", "c++", "assembler", "asembler", "asm", "pro"
-        );
-
+    private boolean shouldUseProModel(String question) {
         String lowerCaseQuestion = " " + question.toLowerCase() + " "; // Add spaces for word boundary matching
-        for (String keyword : keywords) {
+        for (String keyword : PRO_MODEL_KEYS) {
             String pattern = "\\b" + keyword + "\\b"; // Match whole words
             if (java.util.regex.Pattern.compile(pattern).matcher(lowerCaseQuestion).find()) {
                 log.info("Programming keyword '{}' found in question, switching to pro model.", keyword);
