@@ -84,8 +84,10 @@ public class WolfieAiPromptService
     @PostConstruct
     public void postConstruct() throws IOException
     {
+        log.info("Loading system prompt and knowledge files...");
         this.systemPrompt = loadAiSystemPrompt();
         this.knowledge = loadAiKnowledge();
+        log.info("Files loaded.");
     }
 
     public void handleMessage(MessageReceivedEvent event) {
