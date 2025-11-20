@@ -244,22 +244,22 @@ public class WolfieAiPromptService
 
         // Personality
         contentBuilder.addParts(Part.newBuilder()
-                .setText("--- OSOBOWOŚĆ I ZACHOWANIE --- \n" + loadPersonality())
+                .setText("### NASTRÓJ / HUMOR ### \n" + loadPersonality())
                 .build());
 
         // Knowledge
         contentBuilder.addParts(Part.newBuilder()
-                .setText("### KONTEKST (BAZA WIEDZY):\n" + this.knowledge)
+                .setText("### KONTEKST (BAZA WIEDZY) ### \n" + this.knowledge)
                 .build());
 
         // Server events
         contentBuilder.addParts(Part.newBuilder()
-                .setText("### AKTUALNE WYDARZENIA NA SERWERZE:\n" + eventsInfo)
+                .setText("### AKTUALNE WYDARZENIA NA SERWERZE ### \n" + eventsInfo)
                 .build());
 
         // Chat History
         StringBuilder historyPartBuilder = new StringBuilder();
-        historyPartBuilder.append("### HISTORIA CZATU:").append("\n");
+        historyPartBuilder.append("### HISTORIA CZATU ###").append("\n");
         for (int i = discordMessageHistory.getRetrievedHistory().size() - 1; i >= 0; i--) {
             Message message = discordMessageHistory.getRetrievedHistory().get(i);
             historyPartBuilder.append(message.getAuthor().getEffectiveName())
@@ -275,7 +275,7 @@ public class WolfieAiPromptService
         // Conversation history with given user
         if (!authorConversationHistory.isEmpty()) {
             StringBuilder conversationContext = new StringBuilder();
-            conversationContext.append("### KONTEKST ROZMOWY:").append("\n");
+            conversationContext.append("### KONTEKST ROZMOWY ###").append("\n");
             authorConversationHistory.forEach(message -> conversationContext.append(message).append("\n"));
             contentBuilder.addParts(Part.newBuilder()
                     .setText(conversationContext.toString())
