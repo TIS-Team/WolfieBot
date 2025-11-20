@@ -1,7 +1,10 @@
 package pl.tispmc.wolfie.discord.service;
 
 import com.google.cloud.vertexai.VertexAI;
+import com.google.cloud.vertexai.api.Content;
+import com.google.cloud.vertexai.api.FileData;
 import com.google.cloud.vertexai.api.GenerateContentResponse;
+import com.google.cloud.vertexai.api.Part;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
 import com.google.cloud.vertexai.generativeai.ResponseHandler;
 import lombok.RequiredArgsConstructor;
@@ -146,9 +149,9 @@ public class WolfieAiPromptService
 
                     String finalQuestion = contextBuilder + promptMessage.getAuthor() + ": " + promptMessage.getText();
                     String eventsInfo = formatScheduledEvents(event.getGuild().getScheduledEvents());
-                    String fullPrompt = buildFullPrompt(finalQuestion, promptMessage.getAttachments(), eventsInfo);
+                    Content fullPrompt = buildFullPrompt(finalQuestion, promptMessage.getAttachments(), eventsInfo);
 
-                    log.info("Final AI prompt: '{}'", fullPrompt);
+                    log.info("Final AI prompt: '{}'", fullPrompt.toString());
 
                     try (VertexAI vertexAI = new VertexAI("gen-lang-client-0791168880", "europe-west1")) {
                         String modelName = shouldUseProModel(finalQuestion) ? geminiConfig.getProModelName() : geminiConfig.getModelName();
@@ -197,7 +200,7 @@ public class WolfieAiPromptService
         List<PromptMessage.Attachment> attachments = event.getMessage().getAttachments()
                 .stream()
                 .filter(Message.Attachment::isImage)
-                .map(attachment -> new PromptMessage.Attachment(attachment.getProxyUrl()))
+                .map(attachment -> new PromptMessage.Attachment(attachment.getProxyUrl(), attachment.getContentType()))
                 .toList();
 
         return new PromptMessage(event.getMessage().getAuthor().getName(), question, attachments);
@@ -220,7 +223,7 @@ public class WolfieAiPromptService
         return eventsInfo.toString();
     }
 
-    private String buildFullPrompt(String question, List<PromptMessage.Attachment> attachments, String eventsInfo) {
+    private Content buildFullPrompt(String question, List<PromptMessage.Attachment> attachments, String eventsInfo) {
         StringBuilder fullPromptBuilder = new StringBuilder();
         if (this.systemPrompt != null)
         {
@@ -234,12 +237,26 @@ public class WolfieAiPromptService
         }
         fullPromptBuilder.append(question);
 
+        Content.Builder contentBuilder = Content.newBuilder()
+                .setRole("user")
+                .addParts(Part.newBuilder()
+                        .setText(fullPromptBuilder.toString())
+                        .build());
+
         if (!attachments.isEmpty())
         {
-            fullPromptBuilder.append("\n").append("### URL ZAŁĄCZONYCH OBRAZKÓW:").append("\n");
-            attachments.forEach(attachment -> fullPromptBuilder.append(attachment.getUrl()).append("\n"));
+            for (PromptMessage.Attachment attachment : attachments)
+            {
+                contentBuilder.addParts(Part.newBuilder()
+                        .setFileData(FileData.newBuilder()
+                                .setFileUri(attachment.getUrl())
+                                .setMimeType(attachment.getMimeType())
+                                .build())
+                        .build());
+            }
         }
-        return fullPromptBuilder.toString();
+
+        return contentBuilder.build();
     }
 
     private List<String> splitMessage(String longMessage) {
@@ -319,6 +336,7 @@ public class WolfieAiPromptService
         private static class Attachment
         {
             String url;
+            String mimeType;
         }
     }
 }
