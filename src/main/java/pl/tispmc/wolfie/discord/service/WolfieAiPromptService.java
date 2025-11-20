@@ -148,6 +148,8 @@ public class WolfieAiPromptService
                     }
 
                     String finalQuestion = contextBuilder + promptMessage.getAuthor() + ": " + promptMessage.getText();
+                    log.info("Final AI question: '{}'", finalQuestion);
+
                     String eventsInfo = formatScheduledEvents(event.getGuild().getScheduledEvents());
                     Content fullPrompt = buildFullPrompt(finalQuestion, promptMessage.getAttachments(), eventsInfo);
 
