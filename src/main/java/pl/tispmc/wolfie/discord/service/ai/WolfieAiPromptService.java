@@ -273,15 +273,14 @@ public class WolfieAiPromptService
                 .build());
 
         // Conversation history with given user
-        StringBuilder conversationContext = new StringBuilder();
         if (!authorConversationHistory.isEmpty()) {
+            StringBuilder conversationContext = new StringBuilder();
             conversationContext.append("### KONTEKST ROZMOWY:").append("\n");
             authorConversationHistory.forEach(message -> conversationContext.append(message).append("\n"));
-        }
-
-        contentBuilder.addParts(Part.newBuilder()
+            contentBuilder.addParts(Part.newBuilder()
                     .setText(conversationContext.toString())
-                .build());
+                    .build());
+        }
 
         if (!attachments.isEmpty())
         {
