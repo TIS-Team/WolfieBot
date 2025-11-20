@@ -6,6 +6,7 @@ import com.google.cloud.vertexai.generativeai.GenerativeModel;
 import com.google.cloud.vertexai.generativeai.ResponseHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.ScheduledEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.core.io.ClassPathResource;
@@ -92,7 +93,7 @@ public class WolfieAiPromptService
 
     public void handleMessage(MessageReceivedEvent event) {
         log.info("Bot was mentioned by {}", event.getAuthor().getName());
-        String question = event.getMessage().getContentRaw().replaceAll("<@!?" + event.getJDA().getSelfUser().getId() + ">", "").trim();
+        String question = parseMessage(event);
         log.info("Extracted question: '{}'", question);
 
         event.getMessage().reply("Wolfie myśli...").queue(thinkingMessage -> {
@@ -145,7 +146,7 @@ public class WolfieAiPromptService
                     String fullPrompt = buildFullPrompt(finalQuestion, eventsInfo);
 
                     try (VertexAI vertexAI = new VertexAI("gen-lang-client-0791168880", "europe-west1")) {
-                        String modelName = shouldUseProModel(question) ? geminiConfig.getProModelName() : geminiConfig.getModelName();
+                        String modelName = shouldUseProModel(finalQuestion) ? geminiConfig.getProModelName() : geminiConfig.getModelName();
                         log.info("Initializing VertexAI and GenerativeModel with model: {}", modelName);
                         GenerativeModel model = new GenerativeModel(modelName, vertexAI);
                         GenerateContentResponse response = model.generateContent(fullPrompt);
@@ -162,7 +163,7 @@ public class WolfieAiPromptService
                             event.getMessage().reply(messages.get(i)).queue(); // Reply to the original message for subsequent parts
                         }
 
-                        messageCacheService.addMessage(event.getAuthor().getId(), "User: " + question);
+                        messageCacheService.addMessage(event.getAuthor().getId(), "User: " + finalQuestion);
                         messageCacheService.addMessage(event.getAuthor().getId(), "Bot: " + text);
                     }
                 } catch (Exception e) {
@@ -176,6 +177,18 @@ public class WolfieAiPromptService
                 }
             });
         });
+    }
+
+    private String parseMessage(MessageReceivedEvent event)
+    {
+        String question = event.getMessage().getContentRaw()
+                .replace(event.getJDA().getSelfUser().getAsMention(), "Wolfie")
+                .trim();
+        for (Member mentionedMember : event.getMessage().getMentions().getMembers())
+        {
+            question = question.replace(mentionedMember.getAsMention(), mentionedMember.getEffectiveName());
+        }
+        return question;
     }
 
     private String formatScheduledEvents(List<ScheduledEvent> events) {
