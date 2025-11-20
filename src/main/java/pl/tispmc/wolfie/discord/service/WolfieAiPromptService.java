@@ -145,9 +145,10 @@ public class WolfieAiPromptService
                     }
 
                     String finalQuestion = contextBuilder + promptMessage.getAuthor() + ": " + promptMessage.getText();
-                    log.info("Final AI question: '{}'", finalQuestion);
                     String eventsInfo = formatScheduledEvents(event.getGuild().getScheduledEvents());
                     String fullPrompt = buildFullPrompt(finalQuestion, promptMessage.getAttachments(), eventsInfo);
+
+                    log.info("Final AI prompt: '{}'", fullPrompt);
 
                     try (VertexAI vertexAI = new VertexAI("gen-lang-client-0791168880", "europe-west1")) {
                         String modelName = shouldUseProModel(finalQuestion) ? geminiConfig.getProModelName() : geminiConfig.getModelName();
