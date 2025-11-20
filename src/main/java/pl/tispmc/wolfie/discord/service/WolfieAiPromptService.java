@@ -24,7 +24,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -147,6 +150,12 @@ public class WolfieAiPromptService
                         contextBuilder.append(message.getAuthor().getName()).append(": ").append(message.getContentRaw()).append("\n");
                     }
 
+                    Deque<String> conversationHistory = Optional.ofNullable(messageCacheService.getHistory(promptMessage.getAuthorId())).orElse(new LinkedList<>());
+                    if (!conversationHistory.isEmpty()) {
+                        contextBuilder.append("### KONTEKST ROZMOWY:").append("\n");
+                        conversationHistory.forEach(message -> contextBuilder.append(message).append("\n"));
+                    }
+
                     String finalQuestion = contextBuilder + promptMessage.getAuthor() + ": " + promptMessage.getText();
                     log.info("Final AI question: '{}'", finalQuestion);
 
@@ -173,8 +182,8 @@ public class WolfieAiPromptService
                             event.getMessage().reply(messages.get(i)).queue(); // Reply to the original message for subsequent parts
                         }
 
-                        messageCacheService.addMessage(event.getAuthor().getId(), "User: " + finalQuestion);
-                        messageCacheService.addMessage(event.getAuthor().getId(), "Bot: " + text);
+                        messageCacheService.addMessage(promptMessage.getAuthorId(), "User: " + finalQuestion);
+                        messageCacheService.addMessage(promptMessage.getAuthorId(), "Bot: " + text);
                     }
                 } catch (Exception e) {
                     log.error("An error occurred while communicating with Gemini API", e);
@@ -205,7 +214,7 @@ public class WolfieAiPromptService
                 .map(attachment -> new PromptMessage.Attachment(attachment.getProxyUrl(), attachment.getContentType()))
                 .toList();
 
-        return new PromptMessage(event.getMessage().getAuthor().getName(), question, attachments);
+        return new PromptMessage(event.getMessage().getAuthor().getId(), event.getMessage().getAuthor().getName(), question, attachments);
     }
 
     private String formatScheduledEvents(List<ScheduledEvent> events) {
@@ -325,6 +334,7 @@ public class WolfieAiPromptService
     @Value
     private static class PromptMessage
     {
+        String authorId;
         String author;
         String text;
         List<Attachment> attachments;
