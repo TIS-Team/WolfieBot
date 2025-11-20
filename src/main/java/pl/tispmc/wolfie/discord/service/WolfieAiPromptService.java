@@ -182,7 +182,7 @@ public class WolfieAiPromptService
                             event.getMessage().reply(messages.get(i)).queue(); // Reply to the original message for subsequent parts
                         }
 
-                        messageCacheService.addMessage(promptMessage.getAuthorId(), "User: " + finalQuestion);
+                        messageCacheService.addMessage(promptMessage.getAuthorId(), "User: " + promptMessage.getText());
                         messageCacheService.addMessage(promptMessage.getAuthorId(), "Bot: " + text);
                     }
                 } catch (Exception e) {
