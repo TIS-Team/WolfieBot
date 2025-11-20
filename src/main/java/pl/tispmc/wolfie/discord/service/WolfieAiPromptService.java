@@ -236,7 +236,7 @@ public class WolfieAiPromptService
 
         if (!attachments.isEmpty())
         {
-            fullPromptBuilder.append("\n").append("### OBRAZKI:").append("\n");
+            fullPromptBuilder.append("\n").append("### URL ZAŁĄCZONYCH OBRAZKÓW:").append("\n");
             attachments.forEach(attachment -> fullPromptBuilder.append(attachment.getUrl()).append("\n"));
         }
         return fullPromptBuilder.toString();
