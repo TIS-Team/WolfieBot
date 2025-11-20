@@ -239,7 +239,7 @@ public class WolfieAiPromptService
 
         // System Prompt
         contentBuilder.addParts(Part.newBuilder()
-                .setText(this.systemPrompt)
+                .setText("### INFORMACJE BAZOWE (NAJWAŻNIEJSZE) ### \n" + this.systemPrompt)
                 .build());
 
         // Personality
