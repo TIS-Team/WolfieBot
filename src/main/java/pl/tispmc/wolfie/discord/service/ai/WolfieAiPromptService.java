@@ -1,4 +1,4 @@
-package pl.tispmc.wolfie.discord.service;
+package pl.tispmc.wolfie.discord.service.ai;
 
 import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.Content;
@@ -36,6 +36,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import net.dv8tion.jda.api.entities.MessageHistory;
+import pl.tispmc.wolfie.discord.service.MessageCacheService;
 
 import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -88,6 +89,7 @@ public class WolfieAiPromptService
 
     private final GeminiConfig geminiConfig;
     private final MessageCacheService messageCacheService;
+    private final WolfiePersonalityService personalitySelector;
 
     private String systemPrompt;
     private String knowledge;
@@ -247,10 +249,8 @@ public class WolfieAiPromptService
 
     private Content buildFullPrompt(String question, List<PromptMessage.Attachment> attachments, String eventsInfo) {
         StringBuilder fullPromptBuilder = new StringBuilder();
-        if (this.systemPrompt != null)
-        {
-            fullPromptBuilder.append(this.systemPrompt).append("\n\n");
-        }
+        fullPromptBuilder.append(this.systemPrompt).append("\n");
+        fullPromptBuilder.append(loadPersonality()).append("\n");
 
         fullPromptBuilder.append("### AKTUALNE WYDARZENIA NA SERWERZE:\n").append(eventsInfo).append("\n\n");
         if (this.knowledge != null)
@@ -279,6 +279,11 @@ public class WolfieAiPromptService
         }
 
         return contentBuilder.build();
+    }
+
+    private String loadPersonality()
+    {
+        return this.personalitySelector.getWolfiePersonality();
     }
 
     private List<String> splitMessage(String longMessage) {
