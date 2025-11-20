@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 @Slf4j
@@ -42,17 +45,45 @@ public class WolfiePersonalityService
         return this.selectedPersonality;
     }
 
+    public List<String> getAvailablePersonalitiesNames()
+    {
+        return Arrays.stream(getPersonalityResources())
+                .map(Resource::getFilename)
+                .filter(Objects::nonNull)
+                .map(name -> name.substring(name.lastIndexOf(".")))
+                .toList();
+    }
+
     private void selectNewPersonality()
     {
         try
         {
             Resource[] resources = ResourcePatternUtils.getResourcePatternResolver(this.resourceLoader).getResources(PERSONALITIES_DIRECTORY);
             int randomPersonalityResource = RANDOM.nextInt(resources.length);
-            this.selectedPersonality =  resources[randomPersonalityResource].getContentAsString(StandardCharsets.UTF_8);
+            Resource personalityResource = resources[randomPersonalityResource];
+            this.selectedPersonality = personalityResource.getContentAsString(StandardCharsets.UTF_8);
+            log.info("Selected personality: {}", personalityResource.getFile().getName());
         }
         catch (IOException e)
         {
             throw new RuntimeException("Could not load wolfie personalities", e);
         }
+    }
+
+    private Resource[] getPersonalityResources()
+    {
+        try
+        {
+            return ResourcePatternUtils.getResourcePatternResolver(this.resourceLoader).getResources(PERSONALITIES_DIRECTORY);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("Could not load wolfie personalities", e);
+        }
+    }
+
+    public void setPersonality(String personality)
+    {
+
     }
 }
