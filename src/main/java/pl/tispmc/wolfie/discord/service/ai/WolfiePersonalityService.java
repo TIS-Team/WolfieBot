@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
+import static java.lang.String.format;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,7 +28,7 @@ public class WolfiePersonalityService
     private static final Random RANDOM = new Random();
     private final ResourceLoader resourceLoader;
 
-    private String selectedPersonality;
+    private String selectedPersonalityData;
 
     @PostConstruct
     public void postInit()
@@ -42,7 +44,7 @@ public class WolfiePersonalityService
 
     public String getWolfiePersonality()
     {
-        return this.selectedPersonality;
+        return this.selectedPersonalityData;
     }
 
     public List<String> getAvailablePersonalitiesNames()
@@ -58,10 +60,10 @@ public class WolfiePersonalityService
     {
         try
         {
-            Resource[] resources = ResourcePatternUtils.getResourcePatternResolver(this.resourceLoader).getResources(PERSONALITIES_DIRECTORY);
+            Resource[] resources = getPersonalityResources();
             int randomPersonalityResource = RANDOM.nextInt(resources.length);
             Resource personalityResource = resources[randomPersonalityResource];
-            this.selectedPersonality = personalityResource.getContentAsString(StandardCharsets.UTF_8);
+            this.selectedPersonalityData = personalityResource.getContentAsString(StandardCharsets.UTF_8);
             log.info("Selected personality: {}", personalityResource.getFilename());
         }
         catch (IOException e)
@@ -84,6 +86,17 @@ public class WolfiePersonalityService
 
     public void setPersonality(String personality)
     {
-
+        try
+        {
+            this.selectedPersonalityData = Arrays.stream(getPersonalityResources())
+                    .filter(resource -> resource.getFilename().startsWith(personality))
+                    .findFirst()
+                    .orElseThrow()
+                    .getContentAsString(StandardCharsets.UTF_8);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(format("Could not set personality %s", personality), e);
+        }
     }
 }
