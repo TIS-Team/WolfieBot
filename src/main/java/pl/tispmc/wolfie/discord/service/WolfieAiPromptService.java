@@ -169,7 +169,7 @@ public class WolfieAiPromptService
                     log.info("Final AI prompt: '{}'", fullPrompt.toString());
 
                     try (VertexAI vertexAI = new VertexAI("gen-lang-client-0791168880", "europe-west1")) {
-                        String modelName = shouldUseProModel(finalQuestion) ? geminiConfig.getProModelName() : geminiConfig.getModelName();
+                        String modelName = shouldUseProModel(promptMessage.getText()) ? geminiConfig.getProModelName() : geminiConfig.getModelName();
                         log.info("Initializing VertexAI and GenerativeModel with model: {}", modelName);
                         GenerativeModel model = new GenerativeModel(modelName, vertexAI);
                         GenerateContentResponse response = model.generateContent(fullPrompt);
