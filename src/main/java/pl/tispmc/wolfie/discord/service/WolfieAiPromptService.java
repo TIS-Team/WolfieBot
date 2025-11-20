@@ -5,8 +5,10 @@ import com.google.cloud.vertexai.api.GenerateContentResponse;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
 import com.google.cloud.vertexai.generativeai.ResponseHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.ScheduledEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.core.io.ClassPathResource;
@@ -18,6 +20,7 @@ import pl.tispmc.wolfie.discord.config.GeminiConfig;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -93,8 +96,8 @@ public class WolfieAiPromptService
 
     public void handleMessage(MessageReceivedEvent event) {
         log.info("Bot was mentioned by {}", event.getAuthor().getName());
-        String question = parseMessage(event);
-        log.info("Extracted question: '{}'", question);
+        PromptMessage promptMessage = parseMessage(event);
+        log.info("Extracted question: '{}' with attachments: {}", promptMessage.getText(), promptMessage.getAttachmentsAsString());
 
         event.getMessage().reply("Wolfie myśli...").queue(thinkingMessage -> {
             // Use a single-threaded scheduler for all animation and delayed tasks
@@ -141,9 +144,10 @@ public class WolfieAiPromptService
                         contextBuilder.append(message.getAuthor().getName()).append(": ").append(message.getContentRaw()).append("\n");
                     }
 
-                    String finalQuestion = contextBuilder + event.getAuthor().getName() + ": " + question;
+                    String finalQuestion = contextBuilder + promptMessage.getAuthor() + ": " + promptMessage.getText();
+                    log.info("Final AI question: '{}'", finalQuestion);
                     String eventsInfo = formatScheduledEvents(event.getGuild().getScheduledEvents());
-                    String fullPrompt = buildFullPrompt(finalQuestion, eventsInfo);
+                    String fullPrompt = buildFullPrompt(finalQuestion, promptMessage.getAttachments(), eventsInfo);
 
                     try (VertexAI vertexAI = new VertexAI("gen-lang-client-0791168880", "europe-west1")) {
                         String modelName = shouldUseProModel(finalQuestion) ? geminiConfig.getProModelName() : geminiConfig.getModelName();
@@ -179,7 +183,7 @@ public class WolfieAiPromptService
         });
     }
 
-    private String parseMessage(MessageReceivedEvent event)
+    private PromptMessage parseMessage(MessageReceivedEvent event)
     {
         String question = event.getMessage().getContentRaw()
                 .replace(event.getJDA().getSelfUser().getAsMention(), "Wolfie")
@@ -188,7 +192,14 @@ public class WolfieAiPromptService
         {
             question = question.replace(mentionedMember.getAsMention(), mentionedMember.getEffectiveName());
         }
-        return question;
+
+        List<PromptMessage.Attachment> attachments = event.getMessage().getAttachments()
+                .stream()
+                .filter(Message.Attachment::isImage)
+                .map(attachment -> new PromptMessage.Attachment(attachment.getProxyUrl()))
+                .toList();
+
+        return new PromptMessage(event.getMessage().getAuthor().getName(), question, attachments);
     }
 
     private String formatScheduledEvents(List<ScheduledEvent> events) {
@@ -208,7 +219,7 @@ public class WolfieAiPromptService
         return eventsInfo.toString();
     }
 
-    private String buildFullPrompt(String question, String eventsInfo) {
+    private String buildFullPrompt(String question, List<PromptMessage.Attachment> attachments, String eventsInfo) {
         StringBuilder fullPromptBuilder = new StringBuilder();
         if (this.systemPrompt != null)
         {
@@ -221,6 +232,12 @@ public class WolfieAiPromptService
             fullPromptBuilder.append("### KONTEKST (BAZA WIEDZY):\n").append(this.knowledge).append("\n\n");
         }
         fullPromptBuilder.append(question);
+
+        if (!attachments.isEmpty())
+        {
+            fullPromptBuilder.append("\n").append("### OBRAZKI:").append("\n");
+            attachments.forEach(attachment -> fullPromptBuilder.append(attachment.getUrl()).append("\n"));
+        }
         return fullPromptBuilder.toString();
     }
 
@@ -283,6 +300,25 @@ public class WolfieAiPromptService
     {
         Resource resource = new ClassPathResource(geminiConfig.getKnowledgeBaseFile(), WolfieApplication.class.getClassLoader());
         return resource.getContentAsString(StandardCharsets.UTF_8);
+    }
+
+    @Value
+    private static class PromptMessage
+    {
+        String author;
+        String text;
+        List<Attachment> attachments;
+
+        public String getAttachmentsAsString()
+        {
+            return Arrays.toString(attachments.stream().map(Attachment::getUrl).toArray());
+        }
+
+        @Value
+        private static class Attachment
+        {
+            String url;
+        }
     }
 }
 
