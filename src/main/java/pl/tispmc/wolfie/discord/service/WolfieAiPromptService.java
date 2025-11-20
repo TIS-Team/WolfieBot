@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Mentions;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.ScheduledEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -131,7 +132,7 @@ public class WolfieAiPromptService
                 }
 
                 // Start long-wait animation
-                final String[] longThinkingStates = {"Hmm... Jeszcze chwilkę...", "Hmm... Jeszcze chwilkę..", "Hmm... Jeszcze chwilkę."};
+                final String[] longThinkingStates = {"Hmm... Jeszcze chwilkę.", "Hmm... Jeszcze chwilkę..", "Hmm... Jeszcze chwilkę..."};
                 stateIndex.set(0); // Reset index for new animation
                 Runnable longWaitAnimation = () -> {
                     int currentIndex = stateIndex.getAndIncrement() % longThinkingStates.length;
@@ -146,8 +147,11 @@ public class WolfieAiPromptService
                     MessageHistory history = event.getChannel().getHistoryBefore(event.getMessageId(), 6).complete();
                     StringBuilder contextBuilder = new StringBuilder();
                     for (int i = history.getRetrievedHistory().size() - 1; i >= 0; i--) {
-                        var message = history.getRetrievedHistory().get(i);
-                        contextBuilder.append(message.getAuthor().getName()).append(": ").append(message.getContentRaw()).append("\n");
+                        Message message = history.getRetrievedHistory().get(i);
+                        contextBuilder.append(message.getAuthor().getEffectiveName())
+                                .append(": ")
+                                .append(replaceMentionsInDiscordMessage(message.getContentRaw(), message.getMentions()))
+                                .append("\n");
                     }
 
                     Deque<String> conversationHistory = Optional.ofNullable(messageCacheService.getHistory(promptMessage.getAuthorId())).orElse(new LinkedList<>());
@@ -182,8 +186,8 @@ public class WolfieAiPromptService
                             event.getMessage().reply(messages.get(i)).queue(); // Reply to the original message for subsequent parts
                         }
 
-                        messageCacheService.addMessage(promptMessage.getAuthorId(), "User: " + promptMessage.getText());
-                        messageCacheService.addMessage(promptMessage.getAuthorId(), "Bot: " + text);
+                        messageCacheService.addMessage(promptMessage.getAuthorId(), promptMessage.getAuthor() + ": " + promptMessage.getText());
+                        messageCacheService.addMessage(promptMessage.getAuthorId(), event.getJDA().getSelfUser().getEffectiveName() + ": " + text);
                     }
                 } catch (Exception e) {
                     log.error("An error occurred while communicating with Gemini API", e);
@@ -203,10 +207,8 @@ public class WolfieAiPromptService
         String question = event.getMessage().getContentRaw()
                 .replace(event.getJDA().getSelfUser().getAsMention(), "Wolfie")
                 .trim();
-        for (Member mentionedMember : event.getMessage().getMentions().getMembers())
-        {
-            question = question.replace(mentionedMember.getAsMention(), mentionedMember.getEffectiveName());
-        }
+
+        question = replaceMentionsInDiscordMessage(question, event.getMessage().getMentions());
 
         List<PromptMessage.Attachment> attachments = event.getMessage().getAttachments()
                 .stream()
@@ -215,6 +217,15 @@ public class WolfieAiPromptService
                 .toList();
 
         return new PromptMessage(event.getMessage().getAuthor().getId(), event.getMessage().getAuthor().getName(), question, attachments);
+    }
+
+    private String replaceMentionsInDiscordMessage(String message, Mentions mentions)
+    {
+        for (Member mentionedMember : mentions.getMembers())
+        {
+            message = message.replace(mentionedMember.getAsMention(), mentionedMember.getEffectiveName());
+        }
+        return message;
     }
 
     private String formatScheduledEvents(List<ScheduledEvent> events) {
