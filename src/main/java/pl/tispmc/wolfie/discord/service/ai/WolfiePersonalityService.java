@@ -62,7 +62,7 @@ public class WolfiePersonalityService
             int randomPersonalityResource = RANDOM.nextInt(resources.length);
             Resource personalityResource = resources[randomPersonalityResource];
             this.selectedPersonality = personalityResource.getContentAsString(StandardCharsets.UTF_8);
-            log.info("Selected personality: {}", personalityResource.getFile().getName());
+            log.info("Selected personality: {}", personalityResource.getFilename());
         }
         catch (IOException e)
         {
