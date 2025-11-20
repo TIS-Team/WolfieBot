@@ -50,7 +50,7 @@ public class WolfiePersonalityService
         return Arrays.stream(getPersonalityResources())
                 .map(Resource::getFilename)
                 .filter(Objects::nonNull)
-                .map(name -> name.substring(name.lastIndexOf(".")))
+                .map(name -> name.substring(0, name.lastIndexOf(".")))
                 .toList();
     }
 
