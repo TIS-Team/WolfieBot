@@ -1,6 +1,7 @@
 package pl.tispmc.wolfie.discord.command;
 
 
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 @Component
+@Slf4j
 public class SelectAiPersonalityCommand extends AbstractSlashCommand
 {
     public static final String PERSONALITY_PARAM  = "personality";
@@ -61,6 +63,7 @@ public class SelectAiPersonalityCommand extends AbstractSlashCommand
         this.wolfiePersonalityService.setPersonality(personality);
         replyCallbackAction.setContent("Osobowość zmieniona na: " + personality);
         replyCallbackAction.complete();
+        log.info("{} set Wolfie's personality to: {}", event.getMember().getEffectiveName(), personality);
     }
 
     @Override

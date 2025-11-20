@@ -147,34 +147,17 @@ public class WolfieAiPromptService
                 try {
                     // Fetch last 2 messages for context
                     MessageHistory history = event.getChannel().getHistoryBefore(event.getMessageId(), 6).complete();
-                    StringBuilder contextBuilder = new StringBuilder();
-                    for (int i = history.getRetrievedHistory().size() - 1; i >= 0; i--) {
-                        Message message = history.getRetrievedHistory().get(i);
-                        contextBuilder.append(message.getAuthor().getEffectiveName())
-                                .append(": ")
-                                .append(replaceMentionsInDiscordMessage(message.getContentRaw(), message.getMentions()))
-                                .append("\n");
-                    }
-
                     Deque<String> conversationHistory = Optional.ofNullable(messageCacheService.getHistory(promptMessage.getAuthorId())).orElse(new LinkedList<>());
-                    if (!conversationHistory.isEmpty()) {
-                        contextBuilder.append("### KONTEKST ROZMOWY:").append("\n");
-                        conversationHistory.forEach(message -> contextBuilder.append(message).append("\n"));
-                    }
-
-                    String finalQuestion = contextBuilder + promptMessage.getAuthor() + ": " + promptMessage.getText();
-                    log.info("Final AI question: '{}'", finalQuestion);
-
                     String eventsInfo = formatScheduledEvents(event.getGuild().getScheduledEvents());
-                    Content fullPrompt = buildFullPrompt(finalQuestion, promptMessage.getAttachments(), eventsInfo);
 
-                    log.info("Final AI prompt: '{}'", fullPrompt.toString());
+                    Content promptContent = buildFullPrompt(promptMessage, history, conversationHistory, promptMessage.getAttachments(), eventsInfo);
+                    log.info("Final AI prompt: '{}'", promptContent.toString());
 
                     try (VertexAI vertexAI = new VertexAI("gen-lang-client-0791168880", "europe-west1")) {
                         String modelName = shouldUseProModel(promptMessage.getText()) ? geminiConfig.getProModelName() : geminiConfig.getModelName();
                         log.info("Initializing VertexAI and GenerativeModel with model: {}", modelName);
                         GenerativeModel model = new GenerativeModel(modelName, vertexAI);
-                        GenerateContentResponse response = model.generateContent(fullPrompt);
+                        GenerateContentResponse response = model.generateContent(promptContent);
                         String text = ResponseHandler.getText(response);
                         log.info("Generated response from Gemini: '{}'", text);
 
@@ -247,23 +230,58 @@ public class WolfieAiPromptService
         return eventsInfo.toString();
     }
 
-    private Content buildFullPrompt(String question, List<PromptMessage.Attachment> attachments, String eventsInfo) {
-        StringBuilder fullPromptBuilder = new StringBuilder();
-        fullPromptBuilder.append(this.systemPrompt).append("\n");
-        fullPromptBuilder.append(loadPersonality()).append("\n");
+    private Content buildFullPrompt(PromptMessage promptMessage,
+                                    MessageHistory discordMessageHistory,
+                                    Deque<String> authorConversationHistory,
+                                    List<PromptMessage.Attachment> attachments,
+                                    String eventsInfo) {
+        Content.Builder contentBuilder = Content.newBuilder();
 
-        fullPromptBuilder.append("### AKTUALNE WYDARZENIA NA SERWERZE:\n").append(eventsInfo).append("\n\n");
-        if (this.knowledge != null)
-        {
-            fullPromptBuilder.append("### KONTEKST (BAZA WIEDZY):\n").append(this.knowledge).append("\n\n");
+        // System Prompt
+        contentBuilder.addParts(Part.newBuilder()
+                .setText(this.systemPrompt)
+                .build());
+
+        // Personality
+        contentBuilder.addParts(Part.newBuilder()
+                .setText("--- OSOBOWOŚĆ I ZACHOWANIE --- \n" + loadPersonality())
+                .build());
+
+        // Knowledge
+        contentBuilder.addParts(Part.newBuilder()
+                .setText("### KONTEKST (BAZA WIEDZY):\n" + this.knowledge)
+                .build());
+
+        // Server events
+        contentBuilder.addParts(Part.newBuilder()
+                .setText("### AKTUALNE WYDARZENIA NA SERWERZE:\n" + eventsInfo)
+                .build());
+
+        // Chat History
+        StringBuilder historyPartBuilder = new StringBuilder();
+        historyPartBuilder.append("### HISTORIA CZATU:").append("\n");
+        for (int i = discordMessageHistory.getRetrievedHistory().size() - 1; i >= 0; i--) {
+            Message message = discordMessageHistory.getRetrievedHistory().get(i);
+            historyPartBuilder.append(message.getAuthor().getEffectiveName())
+                    .append(": ")
+                    .append(replaceMentionsInDiscordMessage(message.getContentRaw(), message.getMentions()))
+                    .append("\n");
         }
-        fullPromptBuilder.append(question);
 
-        Content.Builder contentBuilder = Content.newBuilder()
-                .setRole("user")
-                .addParts(Part.newBuilder()
-                        .setText(fullPromptBuilder.toString())
-                        .build());
+        contentBuilder.addParts(Part.newBuilder()
+                .setText(historyPartBuilder.toString())
+                .build());
+
+        // Conversation history with given user
+        StringBuilder conversationContext = new StringBuilder();
+        if (!authorConversationHistory.isEmpty()) {
+            conversationContext.append("### KONTEKST ROZMOWY:").append("\n");
+            authorConversationHistory.forEach(message -> conversationContext.append(message).append("\n"));
+        }
+
+        contentBuilder.addParts(Part.newBuilder()
+                    .setText(conversationContext.toString())
+                .build());
 
         if (!attachments.isEmpty())
         {
@@ -278,7 +296,13 @@ public class WolfieAiPromptService
             }
         }
 
-        return contentBuilder.build();
+        contentBuilder.addParts(Part.newBuilder()
+                .setText("### AKTUALNA WIADOMOŚĆ: \n" + promptMessage.getAuthor() + ": " + promptMessage.getText())
+                .build());
+
+        return contentBuilder
+                .setRole("user")
+                .build();
     }
 
     private String loadPersonality()

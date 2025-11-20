@@ -93,6 +93,7 @@ public class WolfiePersonalityService
                     .findFirst()
                     .orElseThrow()
                     .getContentAsString(StandardCharsets.UTF_8);
+            log.info("Selected personality: {}", personality);
         }
         catch (IOException e)
         {
