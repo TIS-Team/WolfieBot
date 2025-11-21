@@ -14,7 +14,6 @@ import pl.tispmc.wolfie.discord.ai.exception.CouldNotGenerateAiResponse;
 import pl.tispmc.wolfie.discord.ai.model.AiChatMessageRequest;
 import pl.tispmc.wolfie.discord.ai.model.AiChatMessageResponse;
 import pl.tispmc.wolfie.discord.config.GeminiConfig;
-import pl.tispmc.wolfie.discord.service.MessageCacheService;
 
 import java.io.IOException;
 import java.util.Set;
@@ -62,7 +61,6 @@ public class VertexAiChat implements AiChat
     );
 
     private final GeminiConfig geminiConfig;
-    private final MessageCacheService messageCacheService;
 
     private VertexAI vertexAI;
 
@@ -92,9 +90,6 @@ public class VertexAiChat implements AiChat
 
         String text = ResponseHandler.getText(response);
         log.info("Generated response from Gemini: '{}'", text);
-
-        messageCacheService.addMessage(params.getAuthorId(), params.getAuthorId() + ": " + params.getOriginalQuestion());
-        messageCacheService.addMessage(params.getAuthorId(), params.getBotName() + ": " + text);
 
         return AiChatMessageResponse.builder().response(text).build();
     }

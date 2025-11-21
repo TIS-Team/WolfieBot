@@ -111,9 +111,9 @@ public class WolfieAiPromptService
                     Deque<String> conversationHistory = Optional.ofNullable(messageCacheService.getHistory(inputChatMessage.getAuthorId())).orElse(new LinkedList<>());
                     String eventsInfo = formatScheduledEvents(event.getGuild().getScheduledEvents());
 
-                    AiChatMessageRequest chatMessageRequest = buildChatMessageRequest(inputChatMessage, history, conversationHistory, inputChatMessage.getAttachments(), eventsInfo);
-
-                    AiChatMessageResponse aiChatMessageResponse = aiChat.sendMessage(chatMessageRequest);
+                    AiChatMessageRequest aiChatMessageRequest = buildChatMessageRequest(inputChatMessage, history, conversationHistory, inputChatMessage.getAttachments(), eventsInfo);
+                    AiChatMessageResponse aiChatMessageResponse = aiChat.sendMessage(aiChatMessageRequest);
+                    saveConversationCache(aiChatMessageRequest, aiChatMessageResponse);
 
                     if (currentAnimationTask[0] != null) currentAnimationTask[0].cancel(false);
                     longWaitTrigger.cancel(false);
@@ -135,6 +135,12 @@ public class WolfieAiPromptService
                 }
             });
         });
+    }
+
+    private void saveConversationCache(AiChatMessageRequest aiChatMessageRequest, AiChatMessageResponse aiChatMessageResponse)
+    {
+        messageCacheService.addMessage(aiChatMessageRequest.getAuthorId(), aiChatMessageRequest.getAuthorId() + ": " + aiChatMessageRequest.getOriginalQuestion());
+        messageCacheService.addMessage(aiChatMessageRequest.getAuthorId(), aiChatMessageRequest.getBotName() + ": " + aiChatMessageResponse.getResponse());
     }
 
     private static InputChatMessage parseMessage(MessageReceivedEvent event)
