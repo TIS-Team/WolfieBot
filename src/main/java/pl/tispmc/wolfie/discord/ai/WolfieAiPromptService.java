@@ -188,7 +188,7 @@ public class WolfieAiPromptService
         List<String> parts = new ArrayList<>();
 
         // System Prompt
-        parts.add("### INFORMACJE BAZOWE (NAJWAŻNIEJSZE) ### \\n\"" + this.systemPrompt);
+        parts.add("### INFORMACJE BAZOWE (NAJWAŻNIEJSZE) ### \n" + this.systemPrompt);
 
         // Personality
         parts.add("### NASTRÓJ / HUMOR ### \n" + loadPersonality());
