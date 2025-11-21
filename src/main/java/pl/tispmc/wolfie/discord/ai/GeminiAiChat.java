@@ -101,7 +101,9 @@ public class GeminiAiChat implements AiChat
     public void initialize()
     {
         this.client = Client.builder()
-                .apiKey(geminiConfig.getApiKey())
+                .project(this.geminiConfig.getProjectId())
+                .location(this.geminiConfig.getLocation())
+                .vertexAI(true)
                 .build();
     }
 
