@@ -82,6 +82,7 @@ public class VertexAiChat implements AiChat
         try
         {
             response = model.generateContent(content);
+            log.info("AI Response: {}", response.toString());
         }
         catch (IOException e)
         {
