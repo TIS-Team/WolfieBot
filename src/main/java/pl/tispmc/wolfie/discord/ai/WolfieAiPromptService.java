@@ -68,7 +68,7 @@ public class WolfieAiPromptService
         InputChatMessage inputChatMessage = parseMessage(event);
         log.info("Extracted question: '{}' with attachments: {}", inputChatMessage.getText(), inputChatMessage.getAttachmentsAsString());
 
-        event.getMessage().reply("Wolfie myśli...").queue(thinkingMessage -> {
+        event.getMessage().reply("Myślę...").queue(thinkingMessage -> {
             // Use a single-threaded scheduler for all animation and delayed tasks
             ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
@@ -76,7 +76,7 @@ public class WolfieAiPromptService
             final ScheduledFuture<?>[] currentAnimationTask = new ScheduledFuture[1];
 
             // Initial animation states
-            final String[] thinkingStates = {"Wolfie myśli", "Wolfie myśli.", "Wolfie myśli..", "Wolfie myśli..."};
+            final String[] thinkingStates = {"Myślę.", "Myślę..", "Myślę..."};
             AtomicInteger stateIndex = new AtomicInteger(0);
 
             // Start initial animation
