@@ -31,7 +31,7 @@ public class JdaConfig
                 .setChunkingFilter(ChunkingFilter.ALL)
                 .addEventListeners(botReadyEventListener, slashCommandEventListener, roleChangeListener, guildMemberRemoveListener, wolfieMentionListener)
                 .setAutoReconnect(true)
-                .setActivity(Activity.customStatus("Ocenia graczy TIS'U"))
+                .setActivity(Activity.customStatus("Obserwuje..."))
                 .build();
     }
 }
