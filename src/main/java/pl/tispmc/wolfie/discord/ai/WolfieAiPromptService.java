@@ -1,12 +1,5 @@
-package pl.tispmc.wolfie.discord.service.ai;
+package pl.tispmc.wolfie.discord.ai;
 
-import com.google.cloud.vertexai.VertexAI;
-import com.google.cloud.vertexai.api.Content;
-import com.google.cloud.vertexai.api.FileData;
-import com.google.cloud.vertexai.api.GenerateContentResponse;
-import com.google.cloud.vertexai.api.Part;
-import com.google.cloud.vertexai.generativeai.GenerativeModel;
-import com.google.cloud.vertexai.generativeai.ResponseHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +12,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import pl.tispmc.wolfie.WolfieApplication;
-import pl.tispmc.wolfie.discord.config.GeminiConfig;
+import pl.tispmc.wolfie.discord.ai.model.AiChatMessageRequest;
+import pl.tispmc.wolfie.discord.ai.model.AiChatMessageResponse;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -29,19 +23,18 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import net.dv8tion.jda.api.entities.MessageHistory;
+import pl.tispmc.wolfie.discord.config.AiConfig;
 import pl.tispmc.wolfie.discord.service.MessageCacheService;
 
 import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.time.format.DateTimeFormatter;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -51,45 +44,13 @@ public class WolfieAiPromptService
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
-    private static final Set<String> PRO_MODEL_KEYS = Set.of(
-            // --- BAZOWE WYMAGANE (Twoje prośby) ---
-            "stm32", "program", "programuj", "zaprogramuj", "oprogramowanie", "koduj", "pro",
+    private static final String BOT_NAME = "Wolfie";
 
-            // --- SKRYPTY I AUTOMATYZACJA (To o co pytałeś) ---
-            "skrypt", "skrypty", "skryptu", "skryptowanie", "script", "scripting",
-            "makro", "makra", "macro", // często mylone z kodem
-            "batch", "bash", "powershell", "shell", "cmd", "terminal", "konsola",
-            "wiersz poleceń", "command line", "argumenty", "parametry startowe",
-
-            // --- HARDWARE / EMBEDDED (Specyficzne dla STM i elektroniki) ---
-            "mikrokontroler", "microcontroller", "arduino", "esp32", "esp8266", "raspberry",
-            "gpio", "uart", "i2c", "spi", "pwm", "adc", "dac", "watchdog", "timer",
-            "rejestr", "register", "przerwanie", "interrupt", "bootloader", "wsad",
-            "flashowanie", "flashing", "układ scalony", "płytka stykowa", "breadboard",
-
-            // --- PLIKI I ROZSZERZENIA (Bardzo bezpieczne trigger-y) ---
-            ".py", ".js", ".java", ".cpp", ".h", ".c", ".cs", ".php", ".sh", ".bat", ".json", ".xml", ".bin", ".hex",
-
-            // --- NARZĘDZIA I ŚRODOWISKA ---
-            "cubeide", "keil", "hal", "cmsis", "platformio", "make", "cmake", "gcc", "g++",
-            "maven", "gradle", "docker", "kubernetes", "git", "repo", "branch", "merge",
-            "visual studio", "vscode", "intellij", "pycharm", "eclipse",
-
-            // --- JĘZYKI (Tylko techniczne nazwy) ---
-            "python", "javascript", "typescript", "c++", "c#", "csharp", "rust", "golang",
-            "kotlin", "swift", "scala", "perl", "ruby", "lua", "assembler", "asm", "sql", "nosql",
-
-            // --- POJĘCIA PROGRAMISTYCZNE (Bełkot techniczny) ---
-            "kompilacja", "kompilator", "compiler", "linker", "build",
-            "debug", "debugger", "breakpoint", "stack trace", "zrzut pamięci",
-            "wyjątek", "exception", "segfault", "nullpointer", "błąd składni", "syntax error",
-            "zmienna środowiskowa", "biblioteka", "library", "framework", "moduł",
-            "refaktoryzacja", "deploy", "wdrożenie", "backend", "frontend", "api", "rest", "endpoint"
-    );
-
-    private final GeminiConfig geminiConfig;
     private final MessageCacheService messageCacheService;
     private final WolfiePersonalityService personalitySelector;
+
+    private final AiConfig aiConfig;
+    private final AiChat aiChat;
 
     private String systemPrompt;
     private String knowledge;
@@ -105,8 +66,8 @@ public class WolfieAiPromptService
 
     public void handleMessage(MessageReceivedEvent event) {
         log.info("Bot was mentioned by {}", event.getAuthor().getName());
-        PromptMessage promptMessage = parseMessage(event);
-        log.info("Extracted question: '{}' with attachments: {}", promptMessage.getText(), promptMessage.getAttachmentsAsString());
+        InputChatMessage inputChatMessage = parseMessage(event);
+        log.info("Extracted question: '{}' with attachments: {}", inputChatMessage.getText(), inputChatMessage.getAttachmentsAsString());
 
         event.getMessage().reply("Wolfie myśli...").queue(thinkingMessage -> {
             // Use a single-threaded scheduler for all animation and delayed tasks
@@ -147,32 +108,21 @@ public class WolfieAiPromptService
                 try {
                     // Fetch last 2 messages for context
                     MessageHistory history = event.getChannel().getHistoryBefore(event.getMessageId(), 6).complete();
-                    Deque<String> conversationHistory = Optional.ofNullable(messageCacheService.getHistory(promptMessage.getAuthorId())).orElse(new LinkedList<>());
+                    Deque<String> conversationHistory = Optional.ofNullable(messageCacheService.getHistory(inputChatMessage.getAuthorId())).orElse(new LinkedList<>());
                     String eventsInfo = formatScheduledEvents(event.getGuild().getScheduledEvents());
 
-                    Content promptContent = buildFullPrompt(promptMessage, history, conversationHistory, promptMessage.getAttachments(), eventsInfo);
-                    log.info("Final AI prompt: '{}'", promptContent.toString());
+                    AiChatMessageRequest chatMessageRequest = buildChatMessageRequest(inputChatMessage, history, conversationHistory, inputChatMessage.getAttachments(), eventsInfo);
 
-                    try (VertexAI vertexAI = new VertexAI("gen-lang-client-0791168880", "europe-west1")) {
-                        String modelName = shouldUseProModel(promptMessage.getText()) ? geminiConfig.getProModelName() : geminiConfig.getModelName();
-                        log.info("Initializing VertexAI and GenerativeModel with model: {}", modelName);
-                        GenerativeModel model = new GenerativeModel(modelName, vertexAI);
-                        GenerateContentResponse response = model.generateContent(promptContent);
-                        String text = ResponseHandler.getText(response);
-                        log.info("Generated response from Gemini: '{}'", text);
+                    AiChatMessageResponse aiChatMessageResponse = aiChat.sendMessage(chatMessageRequest);
 
-                        if (currentAnimationTask[0] != null) currentAnimationTask[0].cancel(false);
-                        longWaitTrigger.cancel(false);
+                    if (currentAnimationTask[0] != null) currentAnimationTask[0].cancel(false);
+                    longWaitTrigger.cancel(false);
 
-                        List<String> messages = splitMessage(text);
-                        thinkingMessage.delete().queue();
-                        event.getMessage().reply(messages.get(0)).queue();
-                        for (int i = 1; i < messages.size(); i++) {
-                            event.getMessage().reply(messages.get(i)).queue(); // Reply to the original message for subsequent parts
-                        }
-
-                        messageCacheService.addMessage(promptMessage.getAuthorId(), promptMessage.getAuthor() + ": " + promptMessage.getText());
-                        messageCacheService.addMessage(promptMessage.getAuthorId(), event.getJDA().getSelfUser().getEffectiveName() + ": " + text);
+                    List<String> messages = splitMessage(aiChatMessageResponse.getResponse());
+                    thinkingMessage.delete().queue();
+                    event.getMessage().reply(messages.get(0)).queue();
+                    for (int i = 1; i < messages.size(); i++) {
+                        event.getMessage().reply(messages.get(i)).queue(); // Reply to the original message for subsequent parts
                     }
                 } catch (Exception e) {
                     log.error("An error occurred while communicating with Gemini API", e);
@@ -187,24 +137,24 @@ public class WolfieAiPromptService
         });
     }
 
-    private PromptMessage parseMessage(MessageReceivedEvent event)
+    private static InputChatMessage parseMessage(MessageReceivedEvent event)
     {
         String question = event.getMessage().getContentRaw()
-                .replace(event.getJDA().getSelfUser().getAsMention(), "Wolfie")
+                .replace(event.getJDA().getSelfUser().getAsMention(), BOT_NAME)
                 .trim();
 
         question = replaceMentionsInDiscordMessage(question, event.getMessage().getMentions());
 
-        List<PromptMessage.Attachment> attachments = event.getMessage().getAttachments()
+        List<InputChatMessage.Attachment> attachments = event.getMessage().getAttachments()
                 .stream()
                 .filter(Message.Attachment::isImage)
-                .map(attachment -> new PromptMessage.Attachment(attachment.getProxyUrl(), attachment.getContentType()))
+                .map(attachment -> new InputChatMessage.Attachment(attachment.getProxyUrl(), attachment.getContentType()))
                 .toList();
 
-        return new PromptMessage(event.getMessage().getAuthor().getId(), event.getMessage().getAuthor().getName(), question, attachments);
+        return new InputChatMessage(event.getMessage().getAuthor().getId(), event.getMessage().getAuthor().getName(), question, attachments);
     }
 
-    private String replaceMentionsInDiscordMessage(String message, Mentions mentions)
+    private static String replaceMentionsInDiscordMessage(String message, Mentions mentions)
     {
         for (Member mentionedMember : mentions.getMembers())
         {
@@ -213,7 +163,7 @@ public class WolfieAiPromptService
         return message;
     }
 
-    private String formatScheduledEvents(List<ScheduledEvent> events) {
+    private static String formatScheduledEvents(List<ScheduledEvent> events) {
         if (events == null || events.isEmpty()) {
             return "Aktualnie nie ma zaplanowanych żadnych wydarzeń.";
         }
@@ -230,32 +180,24 @@ public class WolfieAiPromptService
         return eventsInfo.toString();
     }
 
-    private Content buildFullPrompt(PromptMessage promptMessage,
-                                    MessageHistory discordMessageHistory,
-                                    Deque<String> authorConversationHistory,
-                                    List<PromptMessage.Attachment> attachments,
-                                    String eventsInfo) {
-        Content.Builder contentBuilder = Content.newBuilder();
+    private AiChatMessageRequest buildChatMessageRequest(InputChatMessage inputChatMessage,
+                                                         MessageHistory discordMessageHistory,
+                                                         Deque<String> authorConversationHistory,
+                                                         List<InputChatMessage.Attachment> attachments,
+                                                         String eventsInfo) {
+        List<String> parts = new ArrayList<>();
 
         // System Prompt
-        contentBuilder.addParts(Part.newBuilder()
-                .setText("### INFORMACJE BAZOWE (NAJWAŻNIEJSZE) ### \n" + this.systemPrompt)
-                .build());
+        parts.add("### INFORMACJE BAZOWE (NAJWAŻNIEJSZE) ### \\n\"" + this.systemPrompt);
 
         // Personality
-        contentBuilder.addParts(Part.newBuilder()
-                .setText("### NASTRÓJ / HUMOR ### \n" + loadPersonality())
-                .build());
+        parts.add("### NASTRÓJ / HUMOR ### \n" + loadPersonality());
 
         // Knowledge
-        contentBuilder.addParts(Part.newBuilder()
-                .setText("### KONTEKST (BAZA WIEDZY) ### \n" + this.knowledge)
-                .build());
+        parts.add("### KONTEKST (BAZA WIEDZY) ### \n" + this.knowledge);
 
         // Server events
-        contentBuilder.addParts(Part.newBuilder()
-                .setText("### AKTUALNE WYDARZENIA NA SERWERZE ### \n" + eventsInfo)
-                .build());
+        parts.add("### AKTUALNE WYDARZENIA NA SERWERZE ### \n" + eventsInfo);
 
         // Chat History
         StringBuilder historyPartBuilder = new StringBuilder();
@@ -268,39 +210,33 @@ public class WolfieAiPromptService
                     .append("\n");
         }
 
-        contentBuilder.addParts(Part.newBuilder()
-                .setText(historyPartBuilder.toString())
-                .build());
+        parts.add(historyPartBuilder.toString());
 
         // Conversation history with given user
         if (!authorConversationHistory.isEmpty()) {
             StringBuilder conversationContext = new StringBuilder();
             conversationContext.append("### KONTEKST ROZMOWY ###").append("\n");
             authorConversationHistory.forEach(message -> conversationContext.append(message).append("\n"));
-            contentBuilder.addParts(Part.newBuilder()
-                    .setText(conversationContext.toString())
-                    .build());
+            parts.add(conversationContext.toString());
         }
 
-        if (!attachments.isEmpty())
-        {
-            for (PromptMessage.Attachment attachment : attachments)
-            {
-                contentBuilder.addParts(Part.newBuilder()
-                        .setFileData(FileData.newBuilder()
-                                .setFileUri(attachment.getUrl())
-                                .setMimeType(attachment.getMimeType())
-                                .build())
-                        .build());
-            }
-        }
+        // Actual message
+        parts.add("### AKTUALNA WIADOMOŚĆ: \n" + inputChatMessage.getAuthor() + ": " + inputChatMessage.getText());
 
-        contentBuilder.addParts(Part.newBuilder()
-                .setText("### AKTUALNA WIADOMOŚĆ: \n" + promptMessage.getAuthor() + ": " + promptMessage.getText())
-                .build());
+        // Attachments
+        List<AiChatMessageRequest.Attachment> messageAttachments = attachments.stream()
+                .map(attachment -> AiChatMessageRequest.Attachment.builder()
+                        .url(attachment.getUrl())
+                        .mimeType(attachment.getMimeType())
+                        .build())
+                .toList();
 
-        return contentBuilder
-                .setRole("user")
+        return AiChatMessageRequest.builder()
+                .botName(BOT_NAME)
+                .authorId(inputChatMessage.getAuthor())
+                .originalQuestion(inputChatMessage.getText())
+                .parts(parts)
+                .attachments(messageAttachments)
                 .build();
     }
 
@@ -309,7 +245,7 @@ public class WolfieAiPromptService
         return this.personalitySelector.getWolfiePersonality();
     }
 
-    private List<String> splitMessage(String longMessage) {
+    private static List<String> splitMessage(String longMessage) {
         List<String> parts = new ArrayList<>();
         if (longMessage.length() <= 2000) {
             parts.add(longMessage);
@@ -346,32 +282,20 @@ public class WolfieAiPromptService
         return parts;
     }
 
-    private boolean shouldUseProModel(String question) {
-        String lowerCaseQuestion = " " + question.toLowerCase() + " "; // Add spaces for word boundary matching
-        for (String keyword : PRO_MODEL_KEYS) {
-            String pattern = "\\b" + keyword + "\\b"; // Match whole words
-            if (Pattern.compile(pattern).matcher(lowerCaseQuestion).find()) {
-                log.info("Programming keyword '{}' found in question, switching to pro model.", keyword);
-                return true;
-            }
-        }
-        return false;
-    }
-
     private String loadAiSystemPrompt() throws IOException
     {
-        Resource resource = new ClassPathResource(geminiConfig.getSystemPromptFile(), WolfieApplication.class.getClassLoader());
+        Resource resource = new ClassPathResource(aiConfig.getSystemPromptFile(), WolfieApplication.class.getClassLoader());
         return resource.getContentAsString(StandardCharsets.UTF_8);
     }
 
     private String loadAiKnowledge() throws IOException
     {
-        Resource resource = new ClassPathResource(geminiConfig.getKnowledgeBaseFile(), WolfieApplication.class.getClassLoader());
+        Resource resource = new ClassPathResource(aiConfig.getKnowledgeBaseFile(), WolfieApplication.class.getClassLoader());
         return resource.getContentAsString(StandardCharsets.UTF_8);
     }
 
     @Value
-    private static class PromptMessage
+    private static class InputChatMessage
     {
         String authorId;
         String author;

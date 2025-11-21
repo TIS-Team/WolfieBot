@@ -1,4 +1,4 @@
-package pl.tispmc.wolfie.discord.service.ai;
+package pl.tispmc.wolfie.discord.ai;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

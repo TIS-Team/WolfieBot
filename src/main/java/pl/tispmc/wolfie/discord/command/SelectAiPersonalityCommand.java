@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import pl.tispmc.wolfie.discord.command.exception.CommandException;
-import pl.tispmc.wolfie.discord.service.ai.WolfiePersonalityService;
+import pl.tispmc.wolfie.discord.ai.WolfiePersonalityService;
 
 import java.util.List;
 import java.util.Set;

@@ -6,13 +6,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "gemini")
+@ConfigurationProperties(prefix = "ai")
 @Getter
 @Setter
-public class GeminiConfig {
-    private String projectId;
-    private String location;
-    private String apiKey;
-    private String modelName;
-    private String proModelName;
+public class AiConfig
+{
+    private String systemPromptFile;
+    private String knowledgeBaseFile;
 }
