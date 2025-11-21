@@ -1,4 +1,4 @@
-package pl.tispmc.wolfie.discord.service;
+package pl.tispmc.wolfie.discord.ai;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 public class MessageCacheService {
 
     private final Cache<String, Deque<String>> messageCache;
-    private static final int MAX_HISTORY_SIZE = 10;
+    private static final int MAX_HISTORY_SIZE = 20;
 
     public MessageCacheService() {
         this.messageCache = CacheBuilder.newBuilder()

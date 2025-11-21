@@ -30,7 +30,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import pl.tispmc.wolfie.discord.config.AiConfig;
-import pl.tispmc.wolfie.discord.service.MessageCacheService;
 
 import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -107,7 +106,7 @@ public class WolfieAiPromptService
             CompletableFuture.runAsync(() -> {
                 try {
                     // Fetch last 2 messages for context
-                    MessageHistory history = event.getChannel().getHistoryBefore(event.getMessageId(), 6).complete();
+                    MessageHistory history = event.getChannel().getHistoryBefore(event.getMessageId(), 20).complete();
                     Deque<String> conversationHistory = Optional.ofNullable(messageCacheService.getHistory(inputChatMessage.getAuthorId())).orElse(new LinkedList<>());
                     String eventsInfo = formatScheduledEvents(event.getGuild().getScheduledEvents());
 
