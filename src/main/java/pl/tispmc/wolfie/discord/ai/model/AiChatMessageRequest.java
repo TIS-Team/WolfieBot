@@ -12,6 +12,7 @@ public class AiChatMessageRequest
 {
     String originalQuestion;
     List<String> parts;
+    String systemInstruction;
     String authorId;
     String botName;
     List<Attachment> attachments;

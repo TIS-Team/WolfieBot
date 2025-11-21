@@ -1,12 +1,9 @@
 package pl.tispmc.wolfie.discord.ai;
 
-import com.google.cloud.vertexai.VertexAI;
-import com.google.cloud.vertexai.api.Content;
-import com.google.cloud.vertexai.api.FileData;
-import com.google.cloud.vertexai.api.GenerateContentResponse;
-import com.google.cloud.vertexai.api.Part;
-import com.google.cloud.vertexai.generativeai.GenerativeModel;
-import com.google.cloud.vertexai.generativeai.ResponseHandler;
+import com.google.genai.Client;
+import com.google.genai.types.Content;
+import com.google.genai.types.GenerateContentResponse;
+import com.google.genai.types.Part;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -15,14 +12,15 @@ import pl.tispmc.wolfie.discord.ai.model.AiChatMessageRequest;
 import pl.tispmc.wolfie.discord.ai.model.AiChatMessageResponse;
 import pl.tispmc.wolfie.discord.config.GeminiConfig;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class VertexAiChat implements AiChat
+public class GeminiAiChat implements AiChat
 {
     private static final Set<String> PRO_MODEL_KEYS = Set.of(
             // --- BAZOWE WYMAGANE (Twoje prośby) ---
@@ -62,7 +60,7 @@ public class VertexAiChat implements AiChat
 
     private final GeminiConfig geminiConfig;
 
-    private VertexAI vertexAI;
+    private Client client;
 
     @Override
     public AiChatMessageResponse sendMessage(AiChatMessageRequest params) throws CouldNotGenerateAiResponse
@@ -73,7 +71,6 @@ public class VertexAiChat implements AiChat
         String aiModel = selectAiModel(params.getOriginalQuestion());
         log.info("Selected AI Model: {}", aiModel);
 
-        GenerativeModel model = new GenerativeModel(aiModel, vertexAI);
         Content content = buildPromptMessage(params);
 
         log.info("Final AI prompt: '{}'", content.toString());
@@ -81,58 +78,49 @@ public class VertexAiChat implements AiChat
         GenerateContentResponse response = null;
         try
         {
-            response = model.generateContent(content);
-            log.info("AI Response: {}", response.toString());
+            response = client.models.generateContent(aiModel, content, null);
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             throw new CouldNotGenerateAiResponse("Could not generate AI response", e);
         }
 
-        String text = ResponseHandler.getText(response);
-        log.info("Generated response from Gemini: '{}'", text);
+        String responseText = response.text();
+        log.info("Generated response from Gemini: '{}'", responseText);
 
-        return AiChatMessageResponse.builder().response(text).build();
+        return AiChatMessageResponse.builder().response(responseText).build();
     }
 
     @Override
     public boolean isInitialized()
     {
-        return vertexAI != null && !vertexAI.getPredictionServiceClient().isShutdown();
+        return client != null;
     }
 
     @Override
     public void initialize()
     {
-        this.vertexAI = new VertexAI.Builder()
-                .setProjectId(this.geminiConfig.getProjectId())
-                .setLocation(this.geminiConfig.getLocation())
+        this.client = Client.builder()
+                .apiKey(geminiConfig.getApiKey())
                 .build();
     }
 
     private static Content buildPromptMessage(AiChatMessageRequest params)
     {
-        Content.Builder contentBuilder = Content.newBuilder();
-
+        List<Part> partList = new ArrayList<>();
         for (String part : params.getParts())
         {
-            contentBuilder.addParts(Part.newBuilder()
-                    .setText(part)
-                    .build());
+            partList.add(Part.fromText(part));
         }
 
         for (AiChatMessageRequest.Attachment attachment : params.getAttachments())
         {
-            contentBuilder.addParts(Part.newBuilder()
-                    .setFileData(FileData.newBuilder()
-                            .setFileUri(attachment.getUrl())
-                            .setMimeType(attachment.getMimeType())
-                            .build())
-                    .build());
+            partList.add(Part.fromUri(attachment.getUrl(), attachment.getMimeType()));
         }
 
-        return contentBuilder
-                .setRole("user")
+        return Content.builder()
+                .parts(partList)
+                .role("user")
                 .build();
     }
 
