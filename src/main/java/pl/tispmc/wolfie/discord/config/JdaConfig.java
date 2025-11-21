@@ -31,7 +31,7 @@ public class JdaConfig
                 .setChunkingFilter(ChunkingFilter.ALL)
                 .addEventListeners(botReadyEventListener, slashCommandEventListener, roleChangeListener, guildMemberRemoveListener, wolfieMentionListener)
                 .setAutoReconnect(true)
-                .setActivity(Activity.customStatus("Obserwuje..."))
+                .setActivity(Activity.customStatus("Obserwuje członków TIS..."))
                 .build();
     }
 }
