@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.tispmc.wolfie.discord.listener.BotReadyEventListener;
+import pl.tispmc.wolfie.discord.listener.GuildJoinEventListener;
 import pl.tispmc.wolfie.discord.listener.GuildMemberRemoveListener;
 import pl.tispmc.wolfie.discord.listener.RoleChangeListener;
 import pl.tispmc.wolfie.discord.listener.SlashCommandEventListener;
@@ -23,13 +24,14 @@ public class JdaConfig
                    RoleChangeListener roleChangeListener,
                    SlashCommandEventListener slashCommandEventListener,
                    GuildMemberRemoveListener guildMemberRemoveListener,
-                   WolfieMentionListener wolfieMentionListener)
+                   WolfieMentionListener wolfieMentionListener,
+                   GuildJoinEventListener guildJoinEventListener)
     {
         return JDABuilder.createDefault(botConfig.getToken())
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.SCHEDULED_EVENTS, GatewayIntent.MESSAGE_CONTENT)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .setChunkingFilter(ChunkingFilter.ALL)
-                .addEventListeners(botReadyEventListener, slashCommandEventListener, roleChangeListener, guildMemberRemoveListener, wolfieMentionListener)
+                .addEventListeners(botReadyEventListener, slashCommandEventListener, roleChangeListener, guildMemberRemoveListener, wolfieMentionListener, guildJoinEventListener)
                 .setAutoReconnect(true)
                 .setActivity(Activity.customStatus("Obserwuje członków TIS..."))
                 .build();
