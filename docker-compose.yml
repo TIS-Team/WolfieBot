@@ -3,6 +3,9 @@ services:
     container_name: wolfie-bot
     restart: unless-stopped
     image: aquerr/wolfie:latest
+    environment:
+      PUID: ???
+      PGID: ???
     ports:
       - "8087:8087"
     volumes:

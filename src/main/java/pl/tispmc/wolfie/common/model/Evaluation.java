@@ -1,7 +1,9 @@
 package pl.tispmc.wolfie.common.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -13,6 +15,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Evaluation
 {
     private UUID id;

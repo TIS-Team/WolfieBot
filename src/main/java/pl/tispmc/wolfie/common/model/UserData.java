@@ -1,7 +1,6 @@
 package pl.tispmc.wolfie.common.model;
 
-import lombok.Builder;
-import lombok.Value;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -9,6 +8,8 @@ import java.util.List;
 
 @Builder(toBuilder = true)
 @Value
+@Data
+@AllArgsConstructor
 public class UserData
 {
     String name;
@@ -28,6 +29,8 @@ public class UserData
 
     @Value
     @Builder(toBuilder = true)
+    @Data
+    @AllArgsConstructor
     public static class ExpClaims
     {
         int dailyExpStreak;

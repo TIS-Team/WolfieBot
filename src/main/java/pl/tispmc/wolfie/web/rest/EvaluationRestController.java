@@ -1,10 +1,7 @@
 package pl.tispmc.wolfie.web.rest;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -82,6 +79,7 @@ public class EvaluationRestController
 
     @Builder
     @Value
+    @AllArgsConstructor
     public static class EvaluationResponse
     {
         UUID id;

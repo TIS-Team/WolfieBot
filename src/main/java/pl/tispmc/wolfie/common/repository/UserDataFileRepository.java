@@ -1,12 +1,13 @@
 package pl.tispmc.wolfie.common.repository;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import pl.tispmc.wolfie.common.model.UserData;
 import pl.tispmc.wolfie.common.model.UserId;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -90,7 +91,7 @@ public class UserDataFileRepository implements UserDataRepository
         {
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(USER_DATA_FILE_PATH.toFile(), cache.values());
         }
-        catch (IOException e)
+        catch (JacksonException e)
         {
             throw new RuntimeException(e);
         }
