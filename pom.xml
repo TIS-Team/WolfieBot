@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.6</version>
+		<version>4.0.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>pl.tispmc</groupId>
@@ -45,17 +45,19 @@
 	</scm>
 	<properties>
 		<java.version>25</java.version>
-		<jda.version>6.1.1</jda.version>
+		<jda.version>6.3.0</jda.version>
+		<google-genai.version>1.35.0</google-genai.version>
+		<guava.version>33.5.0-jre</guava.version>
 	</properties>
 	<dependencies>
 		<dependency>
             <groupId>com.google.genai</groupId>
             <artifactId>google-genai</artifactId>
-            <version>1.28.0</version>
+            <version>${google-genai.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.dv8tion</groupId>
@@ -69,13 +71,13 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
+			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>33.0.0-jre</version>
+			<version>${guava.version}</version>
 		</dependency>
 	</dependencies>
 
