@@ -8,10 +8,9 @@ LABEL description="Wolfie discord bot, for TIS Arma group"
 LABEL version="${VERSION}-${COMMMIT_ID}"
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-    gosu \
-    ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+ && apt-get install --update -y gosu \
+ && rm -rf /var/lib/apt/lists/* \
+    gosu nobody true
 
 RUN mkdir -p /opt/app/config  \
     && mkdir -p /opt/app/data  \
