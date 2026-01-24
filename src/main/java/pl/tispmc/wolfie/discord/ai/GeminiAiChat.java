@@ -72,7 +72,9 @@ public class GeminiAiChat implements AiChat
 
         Content content = buildPromptMessage(params);
 
-        log.info("Final AI prompt: '{}'", content.toString());
+        log.info("System prompt: {}", params.getPreparedFullSystemInstruction());
+
+        log.info("Final AI prompt: '{}'", content.toJson());
 
         GenerateContentConfig config = GenerateContentConfig.builder()
                 .tools(List.of(Tool.builder()

@@ -1,5 +1,6 @@
 package pl.tispmc.wolfie.discord.ai;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import net.dv8tion.jda.api.entities.MessageHistory;
 
-import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.time.format.DateTimeFormatter;
 
