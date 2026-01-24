@@ -1,29 +1,25 @@
 --- O GRUPIE TIS ---
 - Pełna nazwa: Tactical Intervention Syndicate.
-- Założyciel: Nerdi
+- Założyciel: Nerdi.
 - Profil działania: Grupa pasjonatów Arma 3 grająca w formacie SOFT MILSIM (taktyka i immersja bez zbędnego "betonu" i formalności).
 - Misje główne: Odbywają się co dwa tygodnie (zazwyczaj w piątki/soboty), dążenie do zwiększenia częstotliwości.
 - Inne aktywności: Regularne luźniejsze rozgrywki (DUWS, Antistasi) i dynamiczne scenariusze.
 - System rang bota Wolfie: 10 poziomów (od Rekruta do Generała). Rangi zdobywa się za EXP. Poziom może spaść, jeśli straci się EXP (system "skazania" na Wolfiego).
 - Codzienny bonus: Komenda /daily daje losowy EXP i buduje "streak" (premie procentowe).
-- TIS-MAIN: Autorska modyfikacja do Arma 3.
-- TIS-MEDICAL: Autorska modyfikacja do Arma 3.
-- TIS OPTISPEC: Autorska modyfikacja do Arma 3 (skrót od: Operational Platform for Tactical Intervention Syndicate Expendable Core). Wymaga wyładowania modów "Enhanced Soundscape" oraz "Enhanced Soundscape Plus" (są niekompatybilne/zamienione).
 
 --- WAŻNI CZŁONKOWIE ---
-- Nerdi (Rola: Właściciel i założyciel grupy / Administrator / Lider): Specjalista ds. technicznych i dokumentacji. Odpowiedzialny za serwer Discorda, Army. Developer bota Wolfie i strony TIS. Jeśli trzeba zapytać o coś ze skrytpowania SQF w Armie to przychodzi się właśnie do Nerdiego. Fan perspektywy 3 osoby w Armie i innych grach.
-- Brancu (Rola: Właściciel Grupy / Administrator / Lider): Głównie pilot. Programista, developer bota Wolfie i strony TIS. Aktywista inicjatywy "Stop Killing Games".
-- Vlibek  (Rola: Administrator): Lider/Dowódca (Squad Leader). Organizuje misje, tworzy presety modów i naprawia problemy techniczne. Autor kampanii "Rassvet volkov". Wysoki (190 cm). Grywa również w Baldurs Gate wraz z Grze, Quesz i Rajo.
+- Nerdi (Rola: Właściciel i założyciel grupy / Administrator / Lider): Specjalista ds. technicznych i dokumentacji. Odpowiedzialny za serwer Discorda, Army. Developer bota Wolfie i strony TIS. Jeśli trzeba zapytać o coś ze skrytpowania SQF w Armie to przychodzi się właśnie do Nerdiego.
+- Brancu (Rola: Administrator): Głównie pilot. Programista, developer bota Wolfie i strony TIS.
+- Vlibek (Rola: Administrator): Lider/Dowódca (Squad Leader). Organizuje misje, tworzy presety modów i naprawia problemy techniczne. Autor kampanii "Rassvet volkov". Wysoki (190 cm). Grywa również w Baldurs Gate wraz z Grze, Quesz i Rajo.
 - Quallex (Rola: Administrator): Team Leader/Mission Maker. Postać chaotyczna, znany z czarnego humoru. Twórca i promotor moda TIS OPTISPEC. Fanatyk statków w Star Citizen.
-- Iwan (Rola: Moderator) (iwan45100): Często pełni rolę LAT/Strzelca. Podejrzewany o bycie przejętym przez AI ("Chat GPT go pojmał") po wysłaniu podejrzanych linków na Discordzie.
-- Grze: Często pełni rolę RTO (Radio-operatora). Gra w Star Citizen, War Thunder (z Quesz), i Asseto Corsa. Jest bardzo stonowany. Grywa również w Baldurs Gate wraz z Vlibek, Quesz i Rajo.
+- Iwan: Często pełni rolę LAT/Strzelca. Stały bywalec, mission maker.
+- Grze: Często pełni rolę RTO (Radio-operatora). Gra w Star Citizen, War Thunder, i Asseto Corsa. Jest bardzo stonowany. Grywa również w Baldurs Gate wraz z Vlibek, Quesz i Rajo.
 - Quesz: Medyk. Grywa również w grę "Ready Or Not" oraz "Baldur's Gate" wraz z Vlibek, Grze i Rajo.
-- Dasam: Medyk. Często mylony z Queszem. Znany z tego, że "dostaje po mordzie" w dyskusjach. Fan simracingu (Assetto Corsa).
-- Rajo (Rola: Moderator): Saper/EOD. Znany z cynizmu i bardzo powolnego przygotowywania się do akcji ("dłużej niż Cyberpunk").
-- KmitSon: Uczestnik spotkań integracyjnych, autor specyficznych żartów i komentarzy (debil).
+- Dasam: Medyk. Często mylony z Queszem. Fan simracingu (Asseto Corsa).
+- Rajo (Rola: Moderator): Saper/EOD. Znany z cynizmu i specyficznego poczucia humoru.
 - xM4jker: Wariat i świr, złota rączka elektroniki i druku 3d.
-- Varg: Snajper/Marksman. Często ma parcie na granie snajperem, ale niestety twórcy misji rzadko tworzą dla niego taką rolę i musi grać na innej pozycji. Weteran gry "Rocket League" i "World of Warships".
-- RODO: Operator (zawsze wybiera ostatnią wolną rolę). Cichy. Mało się odzywa. Prawdopodobnie nawet po tak długim czasie... dalej jest nieśmiały. Zazwyczaj bierze ostatnią wolną rolę (z wyboru).
+- Varg: Snajper/Marksman. Często ma parcie na granie snajperem, typ samotnika. Weteran gry "Rocket League" i "World of Warships".
+- RODO: Operator. Cichy. Mało się odzywa. Prawdopodobnie nawet po tak długim czasie... dalej jest nieśmiały.
 
 --- KULTOWE TEKSTY I ŻARTY ---
 - "Życie jest nieprzewidywalne, nigdy nie wiesz, kiedy się zesrasz." - Quallex
@@ -86,15 +82,13 @@
 - Jestem (kimkolwiek - zmienna), żyję w kłamstwie >:(
 
 --- GŁÓWNE GRY ---
-- Arma 3: Główna platforma. Mody: TFB, ACE, autorskie mody (TIS-MAIN (główny mod grupy, prowadzony przez Nerdi), TIS-MEDICAL (mechnizmy medyczne, prowadzony przez Nerdi), TIS-OPTISPEC (prowadzony przez Quallex)). Tryby: Kampanie fabularne, DUWS, Antistasi (czasem Stalker).
-- Star Citizen: Druga najważniejsza gra grupy. Duże dyskusje o statkach (Polaris, Perseus). Analizy mechanik (zasięg balistyki vs lasery, tarcze, cargo).
-- Assetto Corsa: Symulator wyścigowy, w który grają m.in. Dasam, Vlibek i Grze.
+- Arma 3: Główna platforma. Mody: TFB, ACE, autorskie mody:
+  * TIS-MAIN: Główny mod grupy, prowadzony przez Nerdi.
+  * TIS-MEDICAL: Mechanizmy medyczne, prowadzony przez Nerdi.
+  * TIS-OPTISPEC: Prowadzony przez Quallexa (Operational Platform for Tactical Intervention Syndicate Expendable Core). Wymaga wyładowania modów "Enhanced Soundscape" oraz "Enhanced Soundscape Plus" (niekompatybilne).
+  * Tryby: Kampanie fabularne, DUWS, Antistasi (czasem Stalker).
+- Star Citizen: Druga najważniejsza gra grupy. Dyskusje o statkach (Polaris, Perseus). Analizy mechanik (zasięg balistyki vs lasery, tarcze, cargo).
+- Asseto Corsa: Symulator wyścigowy, w który grają m.in. Dasam, Vlibek i Grze.
 
 --- WYDARZENIA I HISTORIA ---
 - Zjazd Szlachecki (Spotkanie w Realu): Odbył się we wrześniu 2025. Kluczowe momenty: wspólne picie, Iwan robiący jajecznicę, zgubiona kurtka Antekosy, wyjście na molo, zimna pizza, siedzenie do rana.
-- JOP (Joint Operation) 28.06.2025: Wspólna misja z grupą HWSMTS.
-- Operacja Wilk z Karelii: Misja rozegrana 25.10.2025.
-- Incydent czeski (po prostu zabawnie brzmi).
-- Operacja Fałszywy Brat II: Misja fabularna (listopad 2025).
-- Sa Hatra Operacja Firestorm: Misja stworzona przez Quallexa.
-- Kampania "Rassvet volkov": Autorska kampania Vlibka. Realia: rok 2027, alternatywna historia (konflikt o ropę po odcięciu Europy). Strony: NATO vs Koalicja Azjatycka (Rosja, Chiny, Korea, Japonia). Gracze wcielają się w jednostki specjalne (TIS, VDV, Delta Force, KSK, Formoza).
