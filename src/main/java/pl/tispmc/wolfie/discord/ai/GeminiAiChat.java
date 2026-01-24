@@ -1,9 +1,7 @@
 package pl.tispmc.wolfie.discord.ai;
 
 import com.google.genai.Client;
-import com.google.genai.types.Content;
-import com.google.genai.types.GenerateContentResponse;
-import com.google.genai.types.Part;
+import com.google.genai.types.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -14,6 +12,7 @@ import pl.tispmc.wolfie.discord.config.GeminiConfig;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -75,10 +74,17 @@ public class GeminiAiChat implements AiChat
 
         log.info("Final AI prompt: '{}'", content.toString());
 
-        GenerateContentResponse response = null;
+        GenerateContentConfig config = GenerateContentConfig.builder()
+                .tools(List.of(Tool.builder()
+                        .googleSearch(GoogleSearch.builder().build()).build()))
+                .labels(Map.of("application", "wolfie"))
+                .systemInstruction(Content.fromParts(Part.fromText(params.getPreparedFullSystemInstruction())))
+                .build();
+
+        GenerateContentResponse response;
         try
         {
-            response = client.models.generateContent(aiModel, content, null);
+            response = client.models.generateContent(aiModel, content, config);
         }
         catch (Exception e)
         {
@@ -110,10 +116,7 @@ public class GeminiAiChat implements AiChat
     private static Content buildPromptMessage(AiChatMessageRequest params)
     {
         List<Part> partList = new ArrayList<>();
-        for (String part : params.getParts())
-        {
-            partList.add(Part.fromText(part));
-        }
+        partList.add(Part.fromText(params.getPreparedQuestion()));
 
         for (AiChatMessageRequest.Attachment attachment : params.getAttachments())
         {

@@ -11,10 +11,15 @@ import java.util.List;
 public class AiChatMessageRequest
 {
     String originalQuestion;
-    List<String> parts;
-    String systemInstruction;
     String authorId;
     String botName;
+
+    // Message parts
+    String preparedQuestion;
+    String personality;
+    String knowledgeBase;
+    String baseSystemInstruction; // Base system instruction
+    String preparedFullSystemInstruction; // Prepared full system instruction. Includes baseSystemInstruction + personality + knowledgeBase + message history and more. Should be used most of the time
     List<Attachment> attachments;
 
     public String getAttachmentsAsString()

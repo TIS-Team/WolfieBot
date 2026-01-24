@@ -29,7 +29,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import net.dv8tion.jda.api.entities.MessageHistory;
-import pl.tispmc.wolfie.discord.config.AiConfig;
 
 import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -48,18 +47,18 @@ public class WolfieAiPromptService
     private final MessageCacheService messageCacheService;
     private final WolfiePersonalityService personalitySelector;
 
-    private final AiConfig aiConfig;
+    private final AiConfigurationProperties aiConfigurationProperties;
     private final AiChat aiChat;
 
-    private String systemPrompt;
-    private String knowledge;
+    private String baseSystemPrompt;
+    private String knowledgeBase;
 
     @PostConstruct
     public void postConstruct() throws IOException
     {
         log.info("Loading system prompt and knowledge files...");
-        this.systemPrompt = loadAiSystemPrompt();
-        this.knowledge = loadAiKnowledge();
+        this.baseSystemPrompt = loadAiSystemPrompt();
+        this.knowledgeBase = loadAiKnowledge();
         log.info("Files loaded.");
     }
 
@@ -190,19 +189,20 @@ public class WolfieAiPromptService
                                                          Deque<String> authorConversationHistory,
                                                          List<InputChatMessage.Attachment> attachments,
                                                          String eventsInfo) {
-        List<String> parts = new ArrayList<>();
+        List<String> systemInstructionParts = new ArrayList<>();
 
         // System Prompt
-        parts.add("### INFORMACJE BAZOWE (NAJWAŻNIEJSZE) ### \n" + this.systemPrompt);
+        systemInstructionParts.add("### INFORMACJE BAZOWE (NAJWAŻNIEJSZE) ### \n" + this.baseSystemPrompt);
 
         // Personality
-        parts.add("### NASTRÓJ / HUMOR ### \n" + loadPersonality());
+        String personality = loadPersonality();
+        systemInstructionParts.add("### NASTRÓJ / HUMOR ### \n" + personality);
 
         // Knowledge
-        parts.add("### KONTEKST (BAZA WIEDZY) ### \n" + this.knowledge);
+        systemInstructionParts.add("### KONTEKST (BAZA WIEDZY) ### \n" + this.knowledgeBase);
 
         // Server events
-        parts.add("### AKTUALNE WYDARZENIA NA SERWERZE ### \n" + eventsInfo);
+        systemInstructionParts.add("### AKTUALNE WYDARZENIA NA SERWERZE ### \n" + eventsInfo);
 
         // Chat History
         StringBuilder historyPartBuilder = new StringBuilder();
@@ -215,18 +215,24 @@ public class WolfieAiPromptService
                     .append("\n");
         }
 
-        parts.add(historyPartBuilder.toString());
+        systemInstructionParts.add(historyPartBuilder.toString());
 
         // Conversation history with given user
         if (!authorConversationHistory.isEmpty()) {
             StringBuilder conversationContext = new StringBuilder();
             conversationContext.append("### KONTEKST ROZMOWY ###").append("\n");
             authorConversationHistory.forEach(message -> conversationContext.append(message).append("\n"));
-            parts.add(conversationContext.toString());
+            systemInstructionParts.add(conversationContext.toString());
+        }
+
+        StringBuilder fullSystemInstruction = new StringBuilder();
+        for (String part : systemInstructionParts)
+        {
+            fullSystemInstruction.append(part).append("\n");
         }
 
         // Actual message
-        parts.add("### AKTUALNA WIADOMOŚĆ: \n" + inputChatMessage.getAuthor() + ": " + inputChatMessage.getText());
+        String preparedQuestion = "### AKTUALNA WIADOMOŚĆ: \n" + inputChatMessage.getAuthor() + ": " + inputChatMessage.getText();
 
         // Attachments
         List<AiChatMessageRequest.Attachment> messageAttachments = attachments.stream()
@@ -240,7 +246,12 @@ public class WolfieAiPromptService
                 .botName(BOT_NAME)
                 .authorId(inputChatMessage.getAuthor())
                 .originalQuestion(inputChatMessage.getText())
-                .parts(parts)
+                .preparedQuestion(preparedQuestion)
+                .baseSystemInstruction(this.baseSystemPrompt)
+                .personality(personality)
+                .knowledgeBase(knowledgeBase)
+                .baseSystemInstruction(baseSystemPrompt)
+                .preparedFullSystemInstruction(fullSystemInstruction.toString())
                 .attachments(messageAttachments)
                 .build();
     }
@@ -289,13 +300,13 @@ public class WolfieAiPromptService
 
     private String loadAiSystemPrompt() throws IOException
     {
-        Resource resource = new ClassPathResource(aiConfig.getSystemPromptFile(), WolfieApplication.class.getClassLoader());
+        Resource resource = new ClassPathResource(aiConfigurationProperties.getSystemPromptFile(), WolfieApplication.class.getClassLoader());
         return resource.getContentAsString(StandardCharsets.UTF_8);
     }
 
     private String loadAiKnowledge() throws IOException
     {
-        Resource resource = new ClassPathResource(aiConfig.getKnowledgeBaseFile(), WolfieApplication.class.getClassLoader());
+        Resource resource = new ClassPathResource(aiConfigurationProperties.getKnowledgeBaseFile(), WolfieApplication.class.getClassLoader());
         return resource.getContentAsString(StandardCharsets.UTF_8);
     }
 

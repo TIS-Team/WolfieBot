@@ -29,9 +29,16 @@ bot:
 #    add:
 #      - 0
 
-ai:
-  system-prompt-file: system-prompt.txt
-  knowledge-base-file: knowledge.txt
+wolfie:
+  ai:
+    system-prompt-file: system-prompt.txt
+    knowledge-base-file: knowledge.txt
+    personality:
+      changing:
+        enabled: false
+        #      cron: 0 30 4 * * *
+        cron: '-'
+
 gemini:
   project-id: gen-lang-client-0791168880
   location: europe-central2
