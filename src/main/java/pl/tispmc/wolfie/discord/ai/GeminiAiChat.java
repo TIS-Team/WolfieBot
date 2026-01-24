@@ -81,6 +81,9 @@ public class GeminiAiChat implements AiChat
                         .googleSearch(GoogleSearch.builder().build()).build()))
                 .labels(Map.of("application", "wolfie"))
                 .systemInstruction(Content.fromParts(Part.fromText(params.getPreparedFullSystemInstruction())))
+                .modelSelectionConfig(ModelSelectionConfig.builder()
+                        .featureSelectionPreference(FeatureSelectionPreference.Known.PRIORITIZE_QUALITY)
+                        .build())
                 .build();
 
         GenerateContentResponse response;
