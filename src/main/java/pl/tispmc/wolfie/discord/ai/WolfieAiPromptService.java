@@ -127,7 +127,7 @@ public class WolfieAiPromptService
                     if (currentAnimationTask[0] != null) currentAnimationTask[0].cancel(false);
                     longWaitTrigger.cancel(false);
                     thinkingMessage.delete().queue(); // Delete the thinking message on error too
-                    event.getMessage().reply("An error occurred while processing your request.").queue();
+                    event.getMessage().reply("Mam problem z odpowiedzią. <@272461089541718017> <@361224662912466944> możecie zerknąć co się dzieje?").queue();
                 } finally {
                     scheduler.shutdown(); // Ensure the scheduler is always shut down
                 }

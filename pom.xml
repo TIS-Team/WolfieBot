@@ -45,8 +45,8 @@
 	</scm>
 	<properties>
 		<java.version>25</java.version>
-		<jda.version>6.3.0</jda.version>
-		<google-genai.version>1.35.0</google-genai.version>
+		<jda.version>6.3.1</jda.version>
+		<google-genai.version>1.41.0</google-genai.version>
 		<guava.version>33.5.0-jre</guava.version>
 	</properties>
 	<dependencies>
