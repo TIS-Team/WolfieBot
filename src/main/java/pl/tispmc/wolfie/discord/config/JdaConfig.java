@@ -12,6 +12,7 @@ import pl.tispmc.wolfie.discord.listener.BotReadyEventListener;
 import pl.tispmc.wolfie.discord.listener.GuildJoinEventListener;
 import pl.tispmc.wolfie.discord.listener.GuildMemberRemoveListener;
 import pl.tispmc.wolfie.discord.listener.RoleChangeListener;
+import pl.tispmc.wolfie.discord.listener.SilentChannelMessageListener;
 import pl.tispmc.wolfie.discord.listener.SlashCommandEventListener;
 import pl.tispmc.wolfie.discord.listener.WolfieMentionListener;
 
@@ -25,13 +26,20 @@ public class JdaConfig
                    SlashCommandEventListener slashCommandEventListener,
                    GuildMemberRemoveListener guildMemberRemoveListener,
                    WolfieMentionListener wolfieMentionListener,
-                   GuildJoinEventListener guildJoinEventListener)
+                   GuildJoinEventListener guildJoinEventListener,
+                   SilentChannelMessageListener silentChannelMessageListener)
     {
         return JDABuilder.createDefault(botConfig.getToken())
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.SCHEDULED_EVENTS, GatewayIntent.MESSAGE_CONTENT)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .setChunkingFilter(ChunkingFilter.ALL)
-                .addEventListeners(botReadyEventListener, slashCommandEventListener, roleChangeListener, guildMemberRemoveListener, wolfieMentionListener, guildJoinEventListener)
+                .addEventListeners(botReadyEventListener,
+                        slashCommandEventListener,
+                        roleChangeListener,
+                        guildMemberRemoveListener,
+                        wolfieMentionListener,
+                        guildJoinEventListener,
+                        silentChannelMessageListener)
                 .setAutoReconnect(true)
                 .setActivity(Activity.customStatus("Obserwuje członków TIS..."))
                 .build();
