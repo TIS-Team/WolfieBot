@@ -34,10 +34,11 @@ public class EvaluateCommand extends AbstractSlashCommand
 
     public EvaluateCommand(
             @Value("${bot.channels.commands.id:0}") String supportedChannelId,
+            @Value("${bot.roles.game-master.id:0}") String gameMasterRoleId,
             @Value("${bot.front-end.url}") String frontEndUrl,
             UserEvaluationService userEvaluationService, UserMapper userMapper)
     {
-        super(Set.of(supportedChannelId), Set.of(ALL_SUPPORTED));
+        super(Set.of(supportedChannelId), Set.of(gameMasterRoleId));
         this.frontEndUrl = frontEndUrl;
         this.userEvaluationService = userEvaluationService;
         this.userMapper = userMapper;

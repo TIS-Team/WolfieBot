@@ -32,6 +32,11 @@ bot:
 #      - 0
 
 wolfie:
+  silent-channel:
+    target:
+      target-when-no-roles: true
+      user-role-ids:
+        - ???
   ai:
     system-prompt-file: system-prompt.txt
     knowledge-base-file: knowledge.txt
