@@ -25,6 +25,8 @@ bot:
       id: ???
     rank-change:
       id: ???
+    silent-channel:
+      id: ???
 #  join-roles:
 #    add:
 #      - 0
