@@ -39,6 +39,6 @@ public class SilentChannelMessageListener extends ListenerAdapter
         if (member == null)
             return;
 
-        this.silentChannelService.handleSilentChannelMessage(event.getGuildChannel(), member);
+        this.silentChannelService.handleSilentChannelMessage(event.getGuildChannel(), event.getMessage(), member);
     }
 }

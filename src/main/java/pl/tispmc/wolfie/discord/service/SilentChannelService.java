@@ -3,6 +3,7 @@ package pl.tispmc.wolfie.discord.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import org.jspecify.annotations.NonNull;
@@ -26,11 +27,17 @@ public class SilentChannelService
     private final UserDataService userDataService;
     private final SilentChannelConfigurationProperties silentChannelConfigurationProperties;
 
-    public void handleSilentChannelMessage(GuildMessageChannel channel, @NonNull Member member)
+    public void handleSilentChannelMessage(GuildMessageChannel channel, Message message, @NonNull Member member)
     {
         if (!hasTargetRoles(member))
         {
             log.info("Silent channel - Member ignored because target roles were not found");
+            Message response = channel.sendMessage("Widzę że masz immunitet... ale i tak usuwam Twoją wiadomość... ma tu być cisza...")
+                    .setMessageReference(message.getId())
+                    .complete();
+            response.delete().queueAfter(10, TimeUnit.SECONDS);
+            message.delete().queueAfter(10, TimeUnit.SECONDS);
+            return;
         }
 
         log.info("Silent channel - Banning user: {} {}", member.getUser().getName(), member.getEffectiveName());
