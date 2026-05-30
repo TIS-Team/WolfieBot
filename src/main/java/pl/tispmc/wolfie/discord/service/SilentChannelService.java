@@ -40,11 +40,12 @@ public class SilentChannelService
             return;
         }
 
-        log.info("Silent channel - Banning user: {} {}", member.getUser().getName(), member.getEffectiveName());
+        String contentDisplayMessage = message.getContentDisplay();
+        log.info("Silent channel - Banning user: {} {}, because of message: {}", member.getUser().getName(), member.getEffectiveName(), contentDisplayMessage);
         log.info("Silent channel - Deleting 1h timeframe messages for user: {} {}", member.getUser().getName(), member.getEffectiveName());
         try
         {
-            String reason = "Pisanie na zakazanym kanale!";
+            String reason = "Pisanie na zakazanym kanale! Kanał: " + channel.getName() + " (" + channel.getId() +  ") | Wiadomość: " + contentDisplayMessage;
             channel.sendMessage("Wynocha stąd " + member.getAsMention() + "!").queue();
             member.ban(1, TimeUnit.HOURS).reason(reason).queue();
             saveBanData(member, reason);
