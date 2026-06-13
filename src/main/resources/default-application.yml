@@ -10,10 +10,14 @@ bot:
   roles:
     game-master:
       id:
+    tis-vulture:
+      id:
   channels:
     commands:
       id:
     summary:
       id:
     rank-change:
+      id:
+    star-citizen:
       id:
