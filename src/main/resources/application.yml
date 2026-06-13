@@ -18,6 +18,8 @@ bot:
       id: ???
     admin:
       id: ???
+    tis-vulture:
+      id: ???
   channels:
     commands:
       id: ???
@@ -25,11 +27,16 @@ bot:
       id: ???
     rank-change:
       id: ???
+    star-citizen:
+      id: ???
     silent-channel:
       id: ???
 #  join-roles:
 #    add:
 #      - 0
+
+fleetyards:
+  url: https://api.fleetyards.net/v1
 
 wolfie:
   silent-channel:
