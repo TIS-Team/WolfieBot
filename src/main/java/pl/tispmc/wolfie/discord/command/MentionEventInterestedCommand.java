@@ -82,7 +82,7 @@ public class MentionEventInterestedCommand extends AbstractSlashCommand
 
     private List<Command.Choice> getEventNames(Guild guild)
     {
-        return guild.getScheduledEvents().stream()
+        return guild.getScheduledEventCache().stream()
                 .map(event -> new Command.Choice(event.getName(), event.getId()))
                 .toList();
     }

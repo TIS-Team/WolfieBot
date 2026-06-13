@@ -12,7 +12,6 @@ public class UserDataCreator
         return UserData.builder()
                 .userId(member.getIdLong())
                 .name(member.getEffectiveName())
-                .awards(new ArrayList<>())
                 .build();
     }
 

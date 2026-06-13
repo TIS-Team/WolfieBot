@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.3</version>
+		<version>4.0.6</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>pl.tispmc</groupId>
@@ -45,9 +45,9 @@
 	</scm>
 	<properties>
 		<java.version>25</java.version>
-		<jda.version>6.3.1</jda.version>
-		<google-genai.version>1.41.0</google-genai.version>
-		<guava.version>33.5.0-jre</guava.version>
+		<jda.version>6.4.1</jda.version>
+		<google-genai.version>1.52.0</google-genai.version>
+		<guava.version>33.6.0-jre</guava.version>
 	</properties>
 	<dependencies>
 		<dependency>

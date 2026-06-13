@@ -27,6 +27,9 @@ public class UserData
     @Builder.Default
     List<Award> awards = new ArrayList<>();
 
+    @Builder.Default
+    List<Ban> bans = new ArrayList<>();
+
     @Value
     @Builder(toBuilder = true)
     @Data
@@ -36,5 +39,15 @@ public class UserData
         int dailyExpStreak;
         int dailyExpStreakMaxRecord;
         LocalDateTime lastDailyExpClaim;
+    }
+
+    @Value
+    @Builder(toBuilder = true)
+    @AllArgsConstructor
+    @Data
+    public static class Ban
+    {
+        LocalDateTime dateTime;
+        String reason;
     }
 }

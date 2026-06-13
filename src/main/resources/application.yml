@@ -29,6 +29,8 @@ bot:
       id: ???
     star-citizen:
       id: ???
+    silent-channel:
+      id: ???
 #  join-roles:
 #    add:
 #      - 0
@@ -37,6 +39,11 @@ fleetyards:
   url: https://api.fleetyards.net/v1
 
 wolfie:
+  silent-channel:
+    target:
+      target-when-no-roles: true
+      user-role-ids:
+        - ???
   ai:
     system-prompt-file: system-prompt.txt
     knowledge-base-file: knowledge.txt
