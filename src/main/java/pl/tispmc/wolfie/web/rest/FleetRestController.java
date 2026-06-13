@@ -1,6 +1,7 @@
 package pl.tispmc.wolfie.web.rest;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/fleet")
 @RequiredArgsConstructor
@@ -27,6 +29,7 @@ public class FleetRestController
     @GetMapping
     public List<FleetShipDto> getFleet()
     {
+        log.info("Getting fleet");
         Map<String, List<String>> ownersBySlug = new TreeMap<>();
         for (UserShips userShips : fleetService.findAll().values())
         {
