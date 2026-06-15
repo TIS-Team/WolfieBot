@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.tispmc.wolfie.discord.listener.AuditLogListener;
 import pl.tispmc.wolfie.discord.listener.BotReadyEventListener;
 import pl.tispmc.wolfie.discord.listener.GuildJoinEventListener;
 import pl.tispmc.wolfie.discord.listener.GuildMemberRemoveListener;
@@ -28,7 +29,8 @@ public class JdaConfig
                    GuildMemberRemoveListener guildMemberRemoveListener,
                    WolfieMentionListener wolfieMentionListener,
                    GuildJoinEventListener guildJoinEventListener,
-                   SilentChannelMessageListener silentChannelMessageListener)
+                   SilentChannelMessageListener silentChannelMessageListener,
+                   AuditLogListener auditLogListener)
     {
         return JDABuilder.createDefault(botConfig.getToken())
                 .enableCache(CacheFlag.SCHEDULED_EVENTS)
@@ -41,7 +43,8 @@ public class JdaConfig
                         guildMemberRemoveListener,
                         wolfieMentionListener,
                         guildJoinEventListener,
-                        silentChannelMessageListener)
+                        silentChannelMessageListener,
+                        auditLogListener)
                 .setAutoReconnect(true)
                 .setActivity(Activity.customStatus("Obserwuje członków TIS..."))
                 .build();
