@@ -41,11 +41,12 @@ public class SilentChannelService
         }
 
         String messageContent = message.getContentRaw();
-        log.info("Silent channel - Banning user: {} {}, because of message: {}", member.getUser().getName(), member.getEffectiveName(), messageContent);
+        String attachmentsString = attachmentsToString(message.getAttachments());
+        log.info("Silent channel - Banning user: {} {}, because of message: {}, attachments: {}", member.getUser().getName(), member.getEffectiveName(), messageContent, attachmentsString);
         log.info("Silent channel - Deleting 1h timeframe messages for user: {} {}", member.getUser().getName(), member.getEffectiveName());
         try
         {
-            String reason = "Pisanie na zakazanym kanale! Kanał: " + channel.getName() + " (" + channel.getId() +  ") | Wiadomość: " + messageContent;
+            String reason = "Pisanie na zakazanym kanale! Kanał: " + channel.getName() + " (" + channel.getId() +  ") | Wiadomość: " + messageContent + " Załączniki: " + attachmentsString;
             channel.sendMessage("Wynocha stąd " + member.getAsMention() + "!").queue();
             member.ban(1, TimeUnit.HOURS).reason(reason).queue();
             saveBanData(member, reason);
@@ -54,6 +55,23 @@ public class SilentChannelService
         {
             log.error(MessageFormat.format("Could not ban the given user: name: {0} nickname: {1}", member.getUser().getName(), member.getUser().getEffectiveName()), e);
         }
+    }
+
+    private String attachmentsToString(List<Message.Attachment> attachments)
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("[");
+        for (Message.Attachment attachment : attachments)
+        {
+            stringBuilder.append("{")
+                    .append("filename: ").append(attachment.getFileName())
+                    .append(", size: ").append(attachment.getSize())
+                    .append(", url: ").append(attachment.getUrl());
+        }
+
+        stringBuilder.append("]");
+
+        return stringBuilder.toString();
     }
 
     private void saveBanData(Member member, String reason)
