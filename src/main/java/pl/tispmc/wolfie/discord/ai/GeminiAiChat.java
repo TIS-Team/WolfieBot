@@ -79,11 +79,12 @@ public class GeminiAiChat implements AiChat
         GenerateContentConfig.Builder configbuilder = GenerateContentConfig.builder()
                 .tools(List.of(Tool.builder()
                         .googleSearch(GoogleSearch.builder().build()).build()))
-                .labels(Map.of("application", "wolfie"))
                 .systemInstruction(Content.fromParts(Part.fromText(params.getPreparedFullSystemInstruction())));
 
         if (geminiConfig.isUseVertexAi()) {
-            configbuilder.modelSelectionConfig(ModelSelectionConfig.builder()
+            configbuilder
+                    .labels(Map.of("application", "wolfie"))
+                    .modelSelectionConfig(ModelSelectionConfig.builder()
                     .featureSelectionPreference(FeatureSelectionPreference.Known.PRIORITIZE_QUALITY)
                     .build());
         }
