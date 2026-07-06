@@ -15,4 +15,5 @@ public class GeminiConfig {
     private String apiKey;
     private String modelName;
     private String proModelName;
+    private boolean useVertexAi;
 }

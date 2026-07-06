@@ -111,11 +111,20 @@ public class GeminiAiChat implements AiChat
     @Override
     public void initialize()
     {
-        this.client = Client.builder()
-                .project(this.geminiConfig.getProjectId())
-                .location(this.geminiConfig.getLocation())
-                .vertexAI(true)
-                .build();
+        if (this.geminiConfig.isUseVertexAi())
+        {
+            this.client = Client.builder()
+                    .project(this.geminiConfig.getProjectId())
+                    .location(this.geminiConfig.getLocation())
+                    .vertexAI(true)
+                    .build();
+        }
+        else
+        {
+            this.client = Client.builder()
+                    .apiKey(this.geminiConfig.getApiKey())
+                    .build();
+        }
     }
 
     private static Content buildPromptMessage(AiChatMessageRequest params)

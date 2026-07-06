@@ -59,6 +59,7 @@ gemini:
   api-key: ???
   model-name: ???
   pro-model-name: ???
+  use-vertex-ai: false
 
 logging:
   file:
