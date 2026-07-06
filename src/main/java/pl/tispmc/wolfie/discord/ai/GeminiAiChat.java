@@ -76,20 +76,22 @@ public class GeminiAiChat implements AiChat
 
         log.info("Final AI prompt: '{}'", content.toJson());
 
-        GenerateContentConfig config = GenerateContentConfig.builder()
+        GenerateContentConfig.Builder configbuilder = GenerateContentConfig.builder()
                 .tools(List.of(Tool.builder()
                         .googleSearch(GoogleSearch.builder().build()).build()))
                 .labels(Map.of("application", "wolfie"))
-                .systemInstruction(Content.fromParts(Part.fromText(params.getPreparedFullSystemInstruction())))
-                .modelSelectionConfig(ModelSelectionConfig.builder()
-                        .featureSelectionPreference(FeatureSelectionPreference.Known.PRIORITIZE_QUALITY)
-                        .build())
-                .build();
+                .systemInstruction(Content.fromParts(Part.fromText(params.getPreparedFullSystemInstruction())));
+
+        if (geminiConfig.isUseVertexAi()) {
+            configbuilder.modelSelectionConfig(ModelSelectionConfig.builder()
+                    .featureSelectionPreference(FeatureSelectionPreference.Known.PRIORITIZE_QUALITY)
+                    .build());
+        }
 
         GenerateContentResponse response;
         try
         {
-            response = client.models.generateContent(aiModel, content, config);
+            response = client.models.generateContent(aiModel, content, configbuilder.build());
         }
         catch (Exception e)
         {
