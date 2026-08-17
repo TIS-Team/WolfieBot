@@ -1,5 +1,5 @@
-import { calculatePlayerXpForUser, getEvaluationIdFromUrl, updatePlayerXP } from './utils.mjs';
-import { updatePlayerProgress, updateSidebar, renderMissionHosts, renderPlayers, renderRanks, renderActions } from './dom.mjs';
+import { getEvaluationIdFromUrl, updatePlayerXP } from './utils.mjs';
+import { updatePlayerProgress, updateSidebar, renderMissionHosts, renderPlayers, renderRanks, renderActions, renderGlobalActions } from './dom.mjs';
 import { sendEvaluationData, getEvaluationData, getRanksData, getActionsData } from './api.mjs';
 import { findPlayerRank } from './ranks.mjs';
 import { API_URL } from './environment.mjs';
@@ -19,8 +19,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         ]);
 
         if (!evaluationData) {
-                    showEvaluationNotFound();
-                    return;
+            showEvaluationNotFound();
+            return;
         }
 
         ranks = fetchedRanks;
@@ -49,6 +49,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (actions) {
             renderActions(actions);
+            renderGlobalActions(actions);
+            setupGlobalActionsListener();
 
             const playerCards = document.querySelectorAll('.player-card');
             playerCards.forEach(card => {
@@ -62,12 +64,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         setupFormSubmitListener();
 
     } catch (error) {
-              console.error('Error processing data:', error);
-              if (error.status === 404) {
-                  showEvaluationNotFound();
-              }
-          }
-      });
+        console.error('Error processing data:', error);
+        if (error.status === 404) {
+            showEvaluationNotFound();
+        }
+    }
+});
 
 
 export function setupFormSubmitListener() {
@@ -95,30 +97,69 @@ export function setupFormSubmitListener() {
         if (e.target.name === 'actions') {
             const playerCard = e.target.closest('.player-card');
             if (playerCard) {
-                const userId = playerCard.querySelector('input[name="userId"]').value;
-                const newXp = updatePlayerXP(playerCard, actionsMap);
-                updatePlayerProgress(playerCard, ranks, newXp);
-
-                const name = playerCard.dataset.name;
-                const avatarUrl = playerCard.dataset.avatarUrl;
-                const checkedActions = Array.from(playerCard.querySelectorAll('input[name="actions"]:checked'))
-                    .map(i => i.value);
-
-                let totalXpChange = 0;
-                checkedActions.forEach(actionName => {
-                    totalXpChange += actionsMap[actionName].value;
-                });
-
-                selectedActionsMap[userId] = {
-                    name,
-                    avatarUrl,
-                    actions: checkedActions,
-                    totalXpChange
-                };
-
+                applyActionToggleToPlayer(playerCard);
                 updateSidebar(selectedActionsMap, actionsMap);
             }
         }
+    });
+}
+
+function applyActionToggleToPlayer(playerCard) {
+    const userId = playerCard.querySelector('input[name="userId"]').value;
+    const newXp = updatePlayerXP(playerCard, actionsMap);
+    updatePlayerProgress(playerCard, ranks, newXp);
+
+    const name = playerCard.dataset.name;
+    const avatarUrl = playerCard.dataset.avatarUrl;
+    const checkedActions = Array.from(playerCard.querySelectorAll('input[name="actions"]:checked'))
+        .map(i => i.value);
+
+    let totalXpChange = 0;
+    checkedActions.forEach(actionName => {
+        totalXpChange += actionsMap[actionName].value;
+    });
+
+    selectedActionsMap[userId] = {
+        name,
+        avatarUrl,
+        actions: checkedActions,
+        totalXpChange
+    };
+}
+
+function setupGlobalActionsListener() {
+    const globalContainer = document.querySelector('.global-actions-container');
+    if (!globalContainer) return;
+
+    globalContainer.addEventListener('change', function (e) {
+        if (e.target.name !== 'global-actions') return;
+
+        const checkbox = e.target;
+        const actionName = checkbox.value;
+        const actionLabel = actionsMap[actionName]?.displayName ?? actionName;
+        const willApply = checkbox.checked;
+
+        const confirmText = willApply
+            ? `Na pewno zastosować "${actionLabel}" do WSZYSTKICH graczy?`
+            : `Na pewno odznaczyć "${actionLabel}" u WSZYSTKICH graczy?`;
+
+        if (!confirm(confirmText)) {
+            checkbox.checked = !willApply; // revert the click
+            return;
+        }
+
+        const playerCards = document.querySelectorAll('.player-card');
+        playerCards.forEach(card => {
+            const matchingInput = card.querySelector(`input[name="actions"][value="${actionName}"]`);
+            if (matchingInput && matchingInput.checked !== willApply) {
+                matchingInput.checked = willApply;
+                applyActionToggleToPlayer(card);
+            }
+        });
+
+        updateSidebar(selectedActionsMap, actionsMap);
+
+        checkbox.checked = false;
     });
 }
 
