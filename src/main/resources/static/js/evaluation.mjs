@@ -158,8 +158,6 @@ function setupGlobalActionsListener() {
         });
 
         updateSidebar(selectedActionsMap, actionsMap);
-
-        checkbox.checked = false;
     });
 }
 

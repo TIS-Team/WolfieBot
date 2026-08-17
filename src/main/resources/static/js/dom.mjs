@@ -177,7 +177,7 @@ export function renderRanks(ranks) {
 }
 
 export function renderActions(actions) {
-    const actionsContainers = document.querySelectorAll('.actions-container');
+    const actionsContainers = document.querySelectorAll('.player-card .actions-container');
     if (!actionsContainers || actionsContainers.length === 0) return;
 
     let actionInputCounter = 0;
@@ -216,4 +216,44 @@ export function renderActions(actions) {
             actionsContainer.appendChild(categoryDiv);
         }
     });
+}
+
+export function renderGlobalActions(actions) {
+    const container = document.querySelector('.global-actions-container');
+    if (!container) return;
+
+    let actionInputCounter = 0;
+
+    for (const category in actions) {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.classList.add('action-category');
+
+        const heading = document.createElement('h3');
+        heading.textContent = category;
+        categoryDiv.appendChild(heading);
+
+        const ul = document.createElement('ul');
+        actions[category].forEach(actionItem => {
+            const li = document.createElement('li');
+            const isPositive = actionItem.value > 0;
+            li.classList.add(isPositive ? 'appraisal' : 'reprimand');
+
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.name = 'global-actions';
+            input.value = actionItem.name;
+            const inputId = `global_action_${actionInputCounter++}`;
+            input.id = inputId;
+
+            const label = document.createElement('label');
+            label.setAttribute('for', inputId);
+            label.innerHTML = `${actionItem.displayName} <span>${actionItem.value}XP</span>`;
+
+            li.appendChild(input);
+            li.appendChild(label);
+            ul.appendChild(li);
+        });
+        categoryDiv.appendChild(ul);
+        container.appendChild(categoryDiv);
+    }
 }
